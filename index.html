@@ -391,7 +391,7 @@
                 
                 // Sanitize and format the answer
                 let formattedAnswer = answer
-                    .replace(/&g, "&amp;")
+                    .replace(/&/g, "&amp;")  // <-- ¡¡¡ARREGLADO!!!
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
                     .replace(/\n/g, "<br>") // Convert newlines to <br>
