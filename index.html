@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FastMind - AI Fasting Tracker</title>
+    
+    <!-- PWA: Link al Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- PWA: Color de la barra de estado del navegador -->
+    <meta name="theme-color" content="#111827"/>
+    
+    <!-- PWA: Icono para Apple -->
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/111827/FFFFFF?text=🧠&font=noto">
+
     <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Use Inter font -->
@@ -737,6 +747,19 @@ ${localKnowledgeBase}
 
         // --- INICIALIZACIÓN DE LA APP ---
         switchTab('timer'); // Empezar en el tab de timer
+
+        // --- PWA: REGISTRAR EL SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.error('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
 
     </script>
 
