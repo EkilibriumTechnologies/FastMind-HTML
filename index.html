@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FastMind - AI Fasting Tracker</title>
     
-    <!-- PWA: Link al Manifest -->
+    <!-- PWA: Link to Manifest -->
     <link rel="manifest" href="/manifest.json">
     
-    <!-- PWA: Color de la barra de estado del navegador -->
+    <!-- PWA: Theme color for browser UI -->
     <meta name="theme-color" content="#111827"/>
     
-    <!-- PWA: Icono para Apple -->
+    <!-- PWA: Apple Icon -->
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/111827/FFFFFF?text=🧠&font=noto">
 
     <!-- Load Tailwind CSS from CDN -->
@@ -45,7 +45,7 @@
             position: absolute;
             text-align: center;
         }
-        /* Ocultar scrollbar pero permitir scroll */
+        /* Hide scrollbar but allow scrolling */
         .scrollbar-hide {
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
@@ -189,7 +189,7 @@
             onSnapshot,
             serverTimestamp,
             orderBy,
-            enableIndexedDbPersistence // <-- ¡¡¡ESTA ES LA LÍNEA NUEVA!!!
+            enableIndexedDbPersistence // <-- Offline Persistence!
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
@@ -211,7 +211,7 @@
         ];
 
         // --- STATE MANAGEMENT ---
-        let startTime = null;
+        let startTime = null; // This will be set from localStorage if a fast is running
         let running = false;
         let elapsedHours = 0;
         let chatHistory = [];
@@ -222,7 +222,7 @@
         let auth;
         let db;
         let currentUser = null;
-        let historyUnsubscribe = null; // Para detener el listener de historial
+        let historyUnsubscribe = null; // To stop the history listener
 
         // --- DOM ELEMENTS ---
         const btnTimer = document.getElementById('btn-timer');
@@ -267,18 +267,22 @@
         }
 
         function updateTimer() {
-            if (!running) return;
+            if (!running || !startTime) return; // Need startTime to be set
+            
             const elapsedMs = Date.now() - startTime;
             const elapsedSec = Math.floor(elapsedMs / 1000);
             elapsedHours = elapsedMs / (1000 * 3600);
+            
             const currentPhase = getPhase(elapsedHours);
             const maxHours = 120;
             const pct = Math.min((elapsedHours / maxHours) * 100, 100);
+            
             chronometerEl.textContent = formatTime(elapsedSec);
             chronometerEl.style.color = currentPhase.color_hex;
             phaseNameEl.textContent = currentPhase.keyword;
             phaseNameEl.style.color = currentPhase.color_hex;
             progressCircle.style.background = `conic-gradient(${currentPhase.color_hex} ${pct}%, #4A5568 0)`;
+            
             if (running) {
                  timerMessage.innerHTML = `<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
             }
@@ -288,31 +292,45 @@
             startTime = Date.now();
             running = true;
             elapsedHours = 0;
+
+            // --- NEW: Save to localStorage ---
+            localStorage.setItem('fastStartTime', startTime.toString());
+            localStorage.setItem('fastRunning', 'true');
+
             if (timerInterval) {
                 clearInterval(timerInterval);
             }
             timerInterval = setInterval(updateTimer, 1000);
             updateTimer();
+
+            // --- NEW: Tell Service Worker to show notification ---
+            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.active.postMessage('START_TIMER');
+                });
+            }
         }
 
-        /**
-         * MODIFIED: stopTimer
-         * Ahora también guarda en la base de datos si el usuario está logueado.
-         */
         function stopTimer() {
-            if (!running) return; // No hacer nada si no estaba corriendo
+            if (!running) return; // Don't do anything if already stopped
             
             running = false;
+            
+            // --- NEW: Clear from localStorage ---
+            localStorage.removeItem('fastStartTime');
+            localStorage.removeItem('fastRunning');
+            
             if (timerInterval) {
                 clearInterval(timerInterval);
             }
+            
             const finalTime = chronometerEl.textContent;
             const finalHours = elapsedHours;
             const finalPhase = getPhase(finalHours);
             
             timerMessage.innerHTML = `Fast completed! Total time: <strong>${finalTime}</strong>. Press Start to begin again.`;
             
-            // Guardar en la base de datos si el usuario está logueado
+            // Save to database (this now works offline thanks to persistence)
             if (currentUser) {
                 saveFastToFirestore(finalHours, finalTime, finalPhase);
             } else {
@@ -327,24 +345,32 @@
             chronometerEl.style.color = "#E0E0E0";
             progressCircle.style.background = `conic-gradient(#4A5568 0%, #E0E0E0 0)`;
             elapsedHours = 0;
+            startTime = null; // Clear start time variable
+
+            // --- NEW: Tell Service Worker to close notification ---
+            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.active.postMessage('STOP_TIMER');
+                });
+            }
         }
 
         function switchTab(tabName) {
             currentTab = tabName;
             
-            // Ocultar todos los contenidos
+            // Hide all content
             timerContent.classList.add('hidden');
             chatContent.classList.add('hidden');
             historyContent.classList.add('hidden');
             
-            // Quitar estilos activos de todos los botones
+            // Deactivate all buttons
             btnTimer.classList.remove('border-blue-500', 'text-white');
             btnChat.classList.remove('border-blue-500', 'text-white');
             btnHistory.classList.remove('border-blue-500', 'text-white');
             btnTimer.classList.add('border-transparent', 'text-gray-400');
             btnChat.classList.add('border-transparent', 'text-gray-400');
             
-            // Activar el tab correcto
+            // Activate the correct one
             if (tabName === 'timer') {
                 timerContent.classList.remove('hidden');
                 btnTimer.classList.add('border-blue-500', 'text-white');
@@ -353,11 +379,10 @@
                 chatContent.classList.remove('hidden');
                 btnChat.classList.add('border-blue-500', 'text-white');
                 btnChat.classList.remove('border-transparent', 'text-gray-400');
-                renderChatHistory(); // Renderizar historial de chat
+                renderChatHistory(); // Render chat
             } else if (tabName === 'history') {
                 historyContent.classList.remove('hidden');
                 btnHistory.classList.add('border-blue-500', 'text-white');
-                // No quitamos 'text-gray-400' si está deshabilitado
                 if (!btnHistory.disabled) {
                     btnHistory.classList.remove('border-transparent', 'text-gray-400');
                 }
@@ -381,7 +406,7 @@
                 aDiv.className = "p-3 bg-gray-700 rounded-lg";
                 
                 let formattedAnswer = answer
-                    .replace(/&/g, "&amp;") // <-- Corregido
+                    .replace(/&/g, "&amp;") // <-- Bug fix
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
                     .replace(/\n/g, "<br>")
@@ -441,7 +466,7 @@ ${localKnowledgeBase}
 ---
 **User question:** ${question}`;
             
-            // ¡¡¡YA ESTÁ INCLUIDA TU CLAVE de Gemini!!!
+            // Your Gemini API Key is already here
             const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; 
 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
@@ -530,11 +555,11 @@ ${localKnowledgeBase}
 
 
         // ---
-        // --- INICIO: LÓGICA DE FIREBASE
+        // --- START: FIREBASE LOGIC
         // ---
 
         // ==================================================================
-        // --- ¡¡¡HE PEGADO TU CONFIGURACIÓN DE FIREBASE AQUÍ!!! ---
+        // --- Your Firebase Config is already here ---
         const firebaseConfig = {
           apiKey: "AIzaSyDFD5Ba2Y-rCDcMTxvubsr41LCYGO9_GyU",
           authDomain: "fastmind-c6603.firebaseapp.com",
@@ -547,14 +572,14 @@ ${localKnowledgeBase}
         // ==================================================================
 
 
-        // --- 1. Inicializar Firebase ---
+        // --- 1. Initialize Firebase ---
         try {
             if (firebaseConfig.apiKey && firebaseConfig.projectId) {
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // --- ¡¡¡NUEVA LÍNEA PARA MODO OFFLINE!!! ---
+                // --- NEW: Enable Offline Persistence ---
                 enableIndexedDbPersistence(db)
                   .catch((err) => {
                       if (err.code == 'failed-precondition') {
@@ -564,27 +589,26 @@ ${localKnowledgeBase}
                       }
                   });
                 
-                // --- 2. Escuchar cambios de autenticación ---
+                // --- 2. Authentication State Listener ---
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        // Usuario está logueado
+                        // User is logged in
                         console.log("User is logged in:", user.uid);
                         currentUser = user;
                         updateUIForLoggedIn(user);
-                        loadFastingHistory(); // Cargar historial cuando el usuario entra
+                        loadFastingHistory(); // Load user's history
                     } else {
-                        // Usuario está deslogueado
+                        // User is logged out
                         console.log("User is logged out.");
                         currentUser = null;
                         updateUIForLoggedOut();
                         if (historyUnsubscribe) {
-                            historyUnsubscribe(); // Detener el listener de historial
+                            historyUnsubscribe(); // Stop listening to history
                         }
                     }
                 });
             } else {
                 console.warn("Firebase config is missing or incomplete. Please add it to index.html.");
-                // Ocultar botones de login y historial si no hay config
                 document.getElementById('auth-container').innerHTML = '<p class="text-red-500 text-center">Firebase config is missing.</p>';
                 btnHistory.classList.add('hidden');
             }
@@ -594,13 +618,18 @@ ${localKnowledgeBase}
         }
 
 
-        // --- 3. Funciones de Autenticación ---
+        // --- 3. Auth Functions ---
 
         /**
-         * Inicia sesión con Google
+         * Sign in with Google
          */
         async function signIn() {
             if (!auth) return;
+            // --- NEW: Ask for notification permission on login ---
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+
             const provider = new GoogleAuthProvider();
             try {
                 const result = await signInWithPopup(auth, provider);
@@ -611,7 +640,7 @@ ${localKnowledgeBase}
         }
 
         /**
-         * Cierra la sesión
+         * Sign out
          */
         async function logOut() {
             if (!auth) return;
@@ -624,7 +653,7 @@ ${localKnowledgeBase}
         }
 
         /**
-         * Actualiza la UI cuando el usuario inicia sesión
+         * Update UI for logged-in user
          */
         function updateUIForLoggedIn(user) {
             btnLogin.classList.add('hidden');
@@ -632,13 +661,13 @@ ${localKnowledgeBase}
             userEmailEl.textContent = user.email;
             userEmailEl.classList.remove('hidden');
             
-            // Activar el botón de historial
+            // Enable history button
             btnHistory.disabled = false;
             btnHistory.classList.remove('text-gray-400');
         }
 
         /**
-         * Actualiza la UI cuando el usuario cierra sesión
+         * Update UI for logged-out user
          */
         function updateUIForLoggedOut() {
             btnLogin.classList.remove('hidden');
@@ -646,28 +675,28 @@ ${localKnowledgeBase}
             userEmailEl.textContent = '';
             userEmailEl.classList.add('hidden');
             
-            // Desactivar y resetear el botón/tab de historial
+            // Disable and reset history button
             btnHistory.disabled = true;
             btnHistory.classList.add('text-gray-400');
             btnHistory.classList.remove('border-blue-500', 'text-white');
             btnHistory.classList.add('border-transparent');
             
-            // Limpiar la lista de historial
+            // Clear history list
             historyList.innerHTML = '';
             historyEmpty.classList.remove('hidden');
             historyLoading.classList.add('hidden');
 
-            // Si estaba en el tab de historial, volver al timer
+            // If on history tab, switch back to timer
             if (currentTab === 'history') {
                 switchTab('timer');
             }
         }
 
 
-        // --- 4. Funciones de Firestore (Base de Datos) ---
+        // --- 4. Firestore (Database) Functions ---
 
         /**
-         * Guarda el ayuno completado en Firestore
+         * Save completed fast to Firestore
          */
         async function saveFastToFirestore(hours, durationString, phase) {
             if (!currentUser || !db) {
@@ -676,11 +705,10 @@ ${localKnowledgeBase}
             }
 
             try {
-                // Crear un nuevo documento en la subcolección 'fasts' del usuario
-                // la ruta será: /users/{userId}/fasts/{newFastId}
+                // This will now work offline!
                 const docRef = await addDoc(collection(db, "users", currentUser.uid, "fasts"), {
                     userId: currentUser.uid,
-                    completedAt: serverTimestamp(), // Usa la hora del servidor
+                    completedAt: serverTimestamp(), // Use server time
                     durationHours: hours,
                     durationString: durationString,
                     finalPhase: phase.keyword,
@@ -690,12 +718,13 @@ ${localKnowledgeBase}
                 timerMessage.innerHTML += "<br><em>Saved to your history!</em>";
             } catch (e) {
                 console.error("Error adding document: ", e);
-                timerMessage.innerHTML += "<br><em>Error saving to history. Will sync when online.</em>";
+                // This message will show if offline
+                timerMessage.innerHTML += "<br><em>Saved offline. Will sync when online.</em>";
             }
         }
 
         /**
-         * Carga el historial de ayunos del usuario logueado
+         * Load fasting history for current user
          */
         function loadFastingHistory() {
             if (!currentUser || !db) return;
@@ -703,13 +732,12 @@ ${localKnowledgeBase}
             console.log("Loading history for user:", currentUser.uid);
             historyLoading.classList.remove('hidden');
             historyEmpty.classList.add('hidden');
-            historyList.innerHTML = ''; // Limpiar lista
+            historyList.innerHTML = ''; // Clear list
 
-            // Crear una consulta para la colección de ayunos del usuario, ordenado por fecha
+            // Query the user's 'fasts' collection, order by date
             const q = query(collection(db, "users", currentUser.uid, "fasts"), orderBy("completedAt", "desc"));
 
-            // Usar onSnapshot para escuchar cambios en tiempo real
-            // (se actualiza solo si guardas un nuevo ayuno)
+            // onSnapshot listens for real-time updates (and works offline)
             historyUnsubscribe = onSnapshot(q, (querySnapshot) => {
                 historyLoading.classList.add('hidden');
                 const fasts = [];
@@ -732,10 +760,10 @@ ${localKnowledgeBase}
         }
 
         /**
-         * Renderiza la lista de ayunos en el HTML
+         * Render the list of fasts to the HTML
          */
         function renderHistoryList(fasts) {
-            historyList.innerHTML = ''; // Limpiar lista
+            historyList.innerHTML = ''; // Clear list
             fasts.forEach(fast => {
                 const div = document.createElement('div');
                 div.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
@@ -756,10 +784,24 @@ ${localKnowledgeBase}
             });
         }
 
-        // --- INICIALIZACIÓN DE LA APP ---
-        switchTab('timer'); // Empezar en el tab de timer
+        // --- APP INITIALIZATION ---
+        
+        // --- NEW: Check for running fast on app load ---
+        const savedStartTime = localStorage.getItem('fastStartTime');
+        const savedRunning = localStorage.getItem('fastRunning');
 
-        // --- PWA: REGISTRAR EL SERVICE WORKER ---
+        if (savedStartTime && savedRunning === 'true') {
+            console.log('Found a running fast in localStorage.');
+            startTime = parseInt(savedStartTime, 10);
+            running = true;
+            timerInterval = setInterval(updateTimer, 1000);
+            updateTimer(); // Run immediately to show correct time
+        }
+        
+        // Start on the timer tab
+        switchTab('timer'); 
+
+        // --- PWA: REGISTER THE SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
