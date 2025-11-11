@@ -168,7 +168,6 @@
         ==================================================================
         NEW: FIREBASE SDKs
         ==================================================================
-        Estos scripts cargan todo lo necesario para Firebase
     -->
     <script type="module">
         // Importar los SDKs de Firebase que necesitamos
@@ -189,7 +188,8 @@
             query,
             onSnapshot,
             serverTimestamp,
-            orderBy // <--- Import orderBy
+            orderBy,
+            enableIndexedDbPersistence // <-- ¡¡¡ESTA ES LA LÍNEA NUEVA!!!
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
@@ -317,6 +317,7 @@
                 saveFastToFirestore(finalHours, finalTime, finalPhase);
             } else {
                 console.log("User not logged in. Fast not saved to history.");
+                timerMessage.innerHTML += "<br><em>Login to save your fast to history!</em>";
             }
 
             // Reset visual
@@ -552,6 +553,16 @@ ${localKnowledgeBase}
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
+
+                // --- ¡¡¡NUEVA LÍNEA PARA MODO OFFLINE!!! ---
+                enableIndexedDbPersistence(db)
+                  .catch((err) => {
+                      if (err.code == 'failed-precondition') {
+                          console.warn("Firebase persistence failed. Multiple tabs open?");
+                      } else if (err.code == 'unimplemented') {
+                          console.log("Firebase persistence is not available in this browser.");
+                      }
+                  });
                 
                 // --- 2. Escuchar cambios de autenticación ---
                 onAuthStateChanged(auth, (user) => {
@@ -679,7 +690,7 @@ ${localKnowledgeBase}
                 timerMessage.innerHTML += "<br><em>Saved to your history!</em>";
             } catch (e) {
                 console.error("Error adding document: ", e);
-                timerMessage.innerHTML += "<br><em>Could not save to history.</em>";
+                timerMessage.innerHTML += "<br><em>Error saving to history. Will sync when online.</em>";
             }
         }
 
