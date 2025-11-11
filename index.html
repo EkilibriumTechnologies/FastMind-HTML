@@ -15,33 +15,33 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-
-        /* Style for the circular progress bar */
         .progress-circle {
             width: 300px;
             height: 300px;
             border-radius: 50%;
             display: grid;
             place-items: center;
-            /* The 'background' will be set by JavaScript */
             background: conic-gradient(#4A5568 0%, #E0E0E0 0);
             transition: background 0.3s ease-out;
         }
-
-        /* The inner "hole" of the donut chart */
         .progress-circle::before {
             content: "";
             width: 85%;
             height: 85%;
-            background: #111827; /* Dark background */
+            background: #111827;
             border-radius: 50%;
         }
-
-        /* Container for the text inside the circle */
         .progress-text {
-            /* Positioned on top of the circle */
             position: absolute;
             text-align: center;
+        }
+        /* Ocultar scrollbar pero permitir scroll */
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
         }
     </style>
 </head>
@@ -54,6 +54,17 @@
             <p class="text-lg text-gray-400">Your AI Fasting & Wellness Coach</p>
         </header>
 
+        <!-- NEW: Login/Logout Button -->
+        <div id="auth-container" class="flex justify-center mb-4">
+            <button id="btn-login" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                Login with Google
+            </button>
+            <button id="btn-logout" class="hidden bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                Logout
+            </button>
+            <p id="user-email" class="hidden text-gray-400 self-center ml-4"></p>
+        </div>
+
         <!-- Tab Buttons -->
         <nav class="flex justify-center space-x-4 mb-6 border-b border-gray-700">
             <button id="btn-timer" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent">
@@ -61,6 +72,10 @@
             </button>
             <button id="btn-chat" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent">
                 💬 FastMind Chatbot
+            </button>
+            <!-- NEW: History Tab Button -->
+            <button id="btn-history" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent text-gray-400" disabled>
+                📜 My History
             </button>
         </nav>
 
@@ -71,7 +86,6 @@
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-semibold text-center mb-6">Fasting Tracker</h2>
                     
-                    <!-- Start/Stop Buttons -->
                     <div class="flex justify-center space-x-4 mb-8">
                         <button id="btn-start" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-200">
                             ▶️ Start
@@ -81,12 +95,8 @@
                         </button>
                     </div>
 
-                    <!-- Progress Circle and Timer -->
                     <div id="timer-display" class="relative flex justify-center items-center mb-6">
-                        <!-- The circular progress bar -->
                         <div id="progress-circle" class="progress-circle"></div>
-                        
-                        <!-- Text inside the circle -->
                         <div class="progress-text">
                             <div id="phase-name" class="text-3xl font-bold" style="color: #E0E0E0;">
                                 Not Started
@@ -97,28 +107,22 @@
                         </div>
                     </div>
 
-                    <!-- Message Area -->
                     <div id="timer-message" class="text-center text-gray-400 text-lg p-4 bg-gray-700 rounded-lg">
                         Press ▶️ <strong>Start</strong> to begin your fast.
                     </div>
                 </div>
             </div>
 
-            <!-- Chat Tab Content (hidden by default) -->
+            <!-- Chat Tab Content -->
             <div id="chat-content" class="hidden">
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-semibold text-center mb-6">FastMind AI Assistant</h2>
-
-                    <!-- Chat History -->
-                    <div id="chat-history" class="h-96 overflow-y-auto mb-4 p-4 bg-gray-900 rounded-lg space-y-4">
-                        <!-- Chat messages will be added here -->
+                    <div id="chat-history" class="h-96 overflow-y-auto mb-4 p-4 bg-gray-900 rounded-lg space-y-4 scrollbar-hide">
                         <div class="p-3 bg-gray-700 rounded-lg">
                             <span class="font-bold text-blue-300">💡 FastMind:</span>
-                            <p class="text-gray-200">Hello! I'm FastMind. Ask me anything about fasting. My advice is independent of your timer.</p>
+                            <p class="text-gray-200">Hello! I'm FastMind. Ask me anything about fasting.</p>
                         </div>
                     </div>
-
-                    <!-- Chat Input Form -->
                     <form id="chat-form" class="flex space-x-2">
                         <input type="text" id="chat-input" placeholder="Ask a question about fasting..." class="flex-1 p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <button type="submit" id="chat-submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
@@ -130,6 +134,18 @@
                     </div>
                 </div>
             </div>
+
+            <!-- NEW: History Tab Content -->
+            <div id="history-content" class="hidden">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-semibold text-center mb-6">My Fasting History</h2>
+                    <div id="history-list" class="h-96 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
+                        <!-- History items will be loaded here -->
+                        <p id="history-loading" class="text-gray-400 text-center">Loading history...</p>
+                        <p id="history-empty" class="text-gray-400 text-center hidden">No fasts recorded yet. Stop a fast to save it here.</p>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- Footer -->
@@ -138,90 +154,50 @@
         </footer>
     </div>
 
-    <!-- Main JavaScript Logic -->
+    <!-- 
+        ==================================================================
+        NEW: FIREBASE SDKs
+        ==================================================================
+        Estos scripts cargan todo lo necesario para Firebase
+    -->
     <script type="module">
+        // Importar los SDKs de Firebase que necesitamos
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged,
+            signInWithPopup,
+            GoogleAuthProvider,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore,
+            doc,
+            setDoc,
+            addDoc,
+            collection,
+            query,
+            onSnapshot,
+            serverTimestamp,
+            orderBy // <--- Import orderBy
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+
+        // Nivel de log para depuración
+        setLogLevel('Debug');
+
         // --- DATA (From your uploaded CSV 'fastmind_fasting_phases_en.csv') ---
         const fastingData = [
-            {
-                fase_inicio_h: 0, fase_fin_h: 4, keyword: "Digest", color_hex: "#FFA500",
-                description: "Your body is processing the last meal and absorbing nutrients.",
-                what_to_eat: "Water, green tea, or black coffee.",
-                symptoms: "Drowsiness or heaviness.",
-                recommendations: "Avoid eating again; let digestion finish.",
-                tip: "Begin your journey calmly."
-            },
-            {
-                fase_inicio_h: 4, fase_fin_h: 12, keyword: "Shift", color_hex: "#FFD700",
-                description: "The body starts using liver glycogen for energy.",
-                what_to_eat: "Water, black coffee, or mineral water.",
-                symptoms: "Mild hunger, cravings.",
-                recommendations: "Stay busy and drink water every hour.",
-                tip: "Your metabolism begins to shift."
-            },
-            {
-                fase_inicio_h: 12, fase_fin_h: 18, keyword: "Burn", color_hex: "#ADFF2F",
-                description: "Glycogen reserves deplete and fat burning begins.",
-                what_to_eat: "Water with electrolytes or green tea.",
-                symptoms: "Mild headache, feeling of emptiness.",
-                recommendations: "Stay hydrated and avoid excess caffeine.",
-                tip: "Your body starts real fat burning."
-            },
-            {
-                fase_inicio_h: 18, fase_fin_h: 24, keyword: "Switch", color_hex: "#00B050",
-                description: "Ketosis activates: your body uses fat as its main energy source.",
-                what_to_eat: "Water with pink salt or clear broth.",
-                symptoms: "Ketone breath, unstable energy.",
-                recommendations: "Rest or walk lightly.",
-                tip: "You are entering repair mode."
-            },
-            {
-                fase_inicio_h: 24, fase_fin_h: 36, keyword: "Focus", color_hex: "#00B0F0",
-                description: "Ketosis stabilizes; mental clarity increases.",
-                what_to_eat: "Water, herbal teas, or green tea.",
-                symptoms: "Reduced appetite, higher focus.",
-                recommendations: "Avoid intense exercise; listen to your body.",
-                tip: "Your mind becomes sharper."
-            },
-            {
-                fase_inicio_h: 36, fase_fin_h: 48, keyword: "Cleanse", color_hex: "#0070C0",
-                description: "Autophagy begins: cells remove waste and regenerate.",
-                what_to_eat: "Water, herbal tea, electrolytes.",
-                symptoms: "Calm, mild fatigue possible.",
-                recommendations: "Rest and reduce stress.",
-                tip: "Your body is cleansing at the cellular level."
-            },
-            {
-                fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renew", color_hex: "#7030A0",
-                description: "Damaged proteins degrade and cells renew themselves.",
-                what_to_eat: "Water, teas, or fat-free broth.",
-                symptoms: "Mild fatigue, occasional dizziness.",
-                recommendations: "Take breaks and breathe deeply.",
-                tip: "You are renewing your system."
-            },
-            {
-                fase_inicio_h: 60, fase_fin_h: 72, keyword: "Reset", color_hex: "#9966CC",
-                description: "Your immune system strengthens and produces new cells.",
-                what_to_eat: "Water or mild tea.",
-                symptoms: "Light dizziness, mental calm.",
-                recommendations: "Avoid strong caffeine and prioritize rest.",
-                tip: "Your body is rebooting from within."
-            },
-            {
-                fase_inicio_h: 72, fase_fin_h: 96, keyword: "Zen", color_hex: "#708090",
-                description: "Your metabolism becomes efficient and stable in prolonged ketosis.",
-                what_to_eat: "Water, teas, vegetable broths.",
-                symptoms: "Well-being, balanced energy.",
-                recommendations: "Sleep well and stay hydrated.",
-                tip: "You are in full control."
-            },
-            {
-                fase_inicio_h: 96, fase_fin_h: 120, keyword: "Rebirth", color_hex: "#F5F5F5",
-                description: "Maximum cellular regeneration achieved; time to break your fast.",
-                what_to_eat: "Broth, light protein, soft fruits.",
-                symptoms: "Controlled hunger, heightened senses.",
-                recommendations: "Break your fast slowly and with care.",
-                tip: "You have achieved a state of deep renewal."
-            }
+            { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Digest", color_hex: "#FFA500", description: "Your body is processing the last meal and absorbing nutrients.", what_to_eat: "Water, green tea, or black coffee.", symptoms: "Drowsiness or heaviness.", recommendations: "Avoid eating again; let digestion finish.", tip: "Begin your journey calmly." },
+            { fase_inicio_h: 4, fase_fin_h: 12, keyword: "Shift", color_hex: "#FFD700", description: "The body starts using liver glycogen for energy.", what_to_eat: "Water, black coffee, or mineral water.", symptoms: "Mild hunger, cravings.", recommendations: "Stay busy and drink water every hour.", tip: "Your metabolism begins to shift." },
+            { fase_inicio_h: 12, fase_fin_h: 18, keyword: "Burn", color_hex: "#ADFF2F", description: "Glycogen reserves deplete and fat burning begins.", what_to_eat: "Water with electrolytes or green tea.", symptoms: "Mild headache, feeling of emptiness.", recommendations: "Stay hydrated and avoid excess caffeine.", tip: "Your body starts real fat burning." },
+            { fase_inicio_h: 18, fase_fin_h: 24, keyword: "Switch", color_hex: "#00B050", description: "Ketosis activates: your body uses fat as its main energy source.", what_to_eat: "Water with pink salt or clear broth.", symptoms: "Ketone breath, unstable energy.", recommendations: "Rest or walk lightly.", tip: "You are entering repair mode." },
+            { fase_inicio_h: 24, fase_fin_h: 36, keyword: "Focus", color_hex: "#00B0F0", description: "Ketosis stabilizes; mental clarity increases.", what_to_eat: "Water, herbal teas, or green tea.", symptoms: "Reduced appetite, higher focus.", recommendations: "Avoid intense exercise; listen to your body.", tip: "Your mind becomes sharper." },
+            { fase_inicio_h: 36, fase_fin_h: 48, keyword: "Cleanse", color_hex: "#0070C0", description: "Autophagy begins: cells remove waste and regenerate.", what_to_eat: "Water, herbal tea, electrolytes.", symptoms: "Calm, mild fatigue possible.", recommendations: "Rest and reduce stress.", tip: "Your body is cleansing at the cellular level." },
+            { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renew", color_hex: "#7030A0", description: "Damaged proteins degrade and cells renew themselves.", what_to_eat: "Water, teas, or fat-free broth.", symptoms: "Mild fatigue, occasional dizziness.", recommendations: "Take breaks and breathe deeply.", tip: "You are renewing your system." },
+            { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Reset", color_hex: "#9966CC", description: "Your immune system strengthens and produces new cells.", what_to_eat: "Water or mild tea.", symptoms: "Light dizziness, mental calm.", recommendations: "Avoid strong caffeine and prioritize rest.", tip: "Your body is rebooting from within." },
+            { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Zen", color_hex: "#708090", description: "Your metabolism becomes efficient and stable in prolonged ketosis.", what_to_eat: "Water, teas, vegetable broths.", symptoms: "Well-being, balanced energy.", recommendations: "Sleep well and stay hydrated.", tip: "You are in full control." },
+            { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Rebirth", color_hex: "#F5F5F5", description: "Maximum cellular regeneration achieved; time to break your fast.", what_to_eat: "Broth, light protein, soft fruits.", symptoms: "Controlled hunger, heightened senses.", recommendations: "Break your fast slowly and with care.", tip: "You have achieved a state of deep renewal." }
         ];
 
         // --- STATE MANAGEMENT ---
@@ -231,39 +207,48 @@
         let chatHistory = [];
         let currentTab = 'timer';
         let timerInterval = null;
+        
+        // --- NEW: Firebase & Auth State ---
+        let auth;
+        let db;
+        let currentUser = null;
+        let historyUnsubscribe = null; // Para detener el listener de historial
 
         // --- DOM ELEMENTS ---
         const btnTimer = document.getElementById('btn-timer');
         const btnChat = document.getElementById('btn-chat');
         const timerContent = document.getElementById('timer-content');
         const chatContent = document.getElementById('chat-content');
-        
         const btnStart = document.getElementById('btn-start');
         const btnStop = document.getElementById('btn-stop');
         const progressCircle = document.getElementById('progress-circle');
         const phaseNameEl = document.getElementById('phase-name');
         const chronometerEl = document.getElementById('chronometer');
         const timerMessage = document.getElementById('timer-message');
-
         const chatForm = document.getElementById('chat-form');
         const chatInput = document.getElementById('chat-input');
         const chatSubmit = document.getElementById('chat-submit');
         const chatHistoryEl = document.getElementById('chat-history');
         const chatSpinner = document.getElementById('chat-spinner');
 
+        // --- NEW: Auth & History DOM Elements ---
+        const btnLogin = document.getElementById('btn-login');
+        const btnLogout = document.getElementById('btn-logout');
+        const userEmailEl = document.getElementById('user-email');
+        const btnHistory = document.getElementById('btn-history');
+        const historyContent = document.getElementById('history-content');
+        const historyList = document.getElementById('history-list');
+        const historyLoading = document.getElementById('history-loading');
+        const historyEmpty = document.getElementById('history-empty');
+
+        
         // --- CORE LOGIC (Functions) ---
 
-        /**
-         * Finds the current fasting phase based on elapsed hours.
-         */
         function getPhase(hours) {
             const phase = fastingData.find(p => hours >= p.fase_inicio_h && hours < p.fase_fin_h);
-            return phase || fastingData[fastingData.length - 1]; // Return last phase if over
+            return phase || fastingData[fastingData.length - 1];
         }
 
-        /**
-         * Formats total seconds into HH:MM:SS string.
-         */
         function formatTime(totalSeconds) {
             const h = Math.floor(totalSeconds / 3600);
             const m = Math.floor((totalSeconds % 3600) / 60);
@@ -271,133 +256,126 @@
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
 
-        /**
-         * The main timer loop, runs every second.
-         */
         function updateTimer() {
             if (!running) return;
-
             const elapsedMs = Date.now() - startTime;
             const elapsedSec = Math.floor(elapsedMs / 1000);
             elapsedHours = elapsedMs / (1000 * 3600);
-
             const currentPhase = getPhase(elapsedHours);
-            
-            // Calculate percentage for the *entire* 120-hour fast
-            const maxHours = 120; // Maximum hours from your CSV data
+            const maxHours = 120;
             const pct = Math.min((elapsedHours / maxHours) * 100, 100);
-
-            // Update DOM
             chronometerEl.textContent = formatTime(elapsedSec);
             chronometerEl.style.color = currentPhase.color_hex;
             phaseNameEl.textContent = currentPhase.keyword;
             phaseNameEl.style.color = currentPhase.color_hex;
-            
-            // Update circular progress bar
             progressCircle.style.background = `conic-gradient(${currentPhase.color_hex} ${pct}%, #4A5568 0)`;
-
-            // Update timer message with current phase description
             if (running) {
                  timerMessage.innerHTML = `<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
             }
         }
 
-        /**
-         * Starts the fast.
-         */
         function startTimer() {
             startTime = Date.now();
             running = true;
             elapsedHours = 0;
-            
-            // Clear any old interval
             if (timerInterval) {
                 clearInterval(timerInterval);
             }
-            
-            // Start new interval
             timerInterval = setInterval(updateTimer, 1000);
-            updateTimer(); // Run once immediately
+            updateTimer();
         }
 
         /**
-         * Stops the fast.
+         * MODIFIED: stopTimer
+         * Ahora también guarda en la base de datos si el usuario está logueado.
          */
         function stopTimer() {
+            if (!running) return; // No hacer nada si no estaba corriendo
+            
             running = false;
             if (timerInterval) {
                 clearInterval(timerInterval);
             }
             const finalTime = chronometerEl.textContent;
+            const finalHours = elapsedHours;
+            const finalPhase = getPhase(finalHours);
+            
             timerMessage.innerHTML = `Fast completed! Total time: <strong>${finalTime}</strong>. Press Start to begin again.`;
             
-            // Reset visual to "Not Started"
+            // Guardar en la base de datos si el usuario está logueado
+            if (currentUser) {
+                saveFastToFirestore(finalHours, finalTime, finalPhase);
+            } else {
+                console.log("User not logged in. Fast not saved to history.");
+            }
+
+            // Reset visual
             phaseNameEl.textContent = "Not Started";
             phaseNameEl.style.color = "#E0E0E0";
             chronometerEl.textContent = "00:00:00";
             chronometerEl.style.color = "#E0E0E0";
             progressCircle.style.background = `conic-gradient(#4A5568 0%, #E0E0E0 0)`;
+            elapsedHours = 0;
         }
 
-        /**
-         * Switches between the Timer and Chat tabs.
-         */
         function switchTab(tabName) {
             currentTab = tabName;
+            
+            // Ocultar todos los contenidos
+            timerContent.classList.add('hidden');
+            chatContent.classList.add('hidden');
+            historyContent.classList.add('hidden');
+            
+            // Quitar estilos activos de todos los botones
+            btnTimer.classList.remove('border-blue-500', 'text-white');
+            btnChat.classList.remove('border-blue-500', 'text-white');
+            btnHistory.classList.remove('border-blue-500', 'text-white');
+            btnTimer.classList.add('border-transparent', 'text-gray-400');
+            btnChat.classList.add('border-transparent', 'text-gray-400');
+            
+            // Activar el tab correcto
             if (tabName === 'timer') {
                 timerContent.classList.remove('hidden');
-                chatContent.classList.add('hidden');
                 btnTimer.classList.add('border-blue-500', 'text-white');
                 btnTimer.classList.remove('border-transparent', 'text-gray-400');
-                btnChat.classList.add('border-transparent', 'text-gray-400');
-                btnChat.classList.remove('border-blue-500', 'text-white');
-            } else {
-                timerContent.classList.add('hidden');
+            } else if (tabName === 'chat') {
                 chatContent.classList.remove('hidden');
                 btnChat.classList.add('border-blue-500', 'text-white');
                 btnChat.classList.remove('border-transparent', 'text-gray-400');
-                btnTimer.classList.add('border-transparent', 'text-gray-400');
-                btnTimer.classList.remove('border-blue-500', 'text-white');
-                
-                // Render chat history when switching to chat tab
-                renderChatHistory();
+                renderChatHistory(); // Renderizar historial de chat
+            } else if (tabName === 'history') {
+                historyContent.classList.remove('hidden');
+                btnHistory.classList.add('border-blue-500', 'text-white');
+                // No quitamos 'text-gray-400' si está deshabilitado
+                if (!btnHistory.disabled) {
+                    btnHistory.classList.remove('border-transparent', 'text-gray-400');
+                }
             }
         }
 
-        /**
-         * Renders the chatHistory array to the DOM.
-         */
         function renderChatHistory() {
-            // Clear existing history (except the first welcome message)
             chatHistoryEl.innerHTML = `
                 <div class="p-3 bg-gray-700 rounded-lg">
                     <span class="font-bold text-blue-300">💡 FastMind:</span>
-                    <p class="text-gray-200">Hello! I'm FastMind. Ask me anything about fasting. My advice is independent of your timer.</p>
+                    <p class="text-gray-200">Hello! I'm FastMind. Ask me anything about fasting.</p>
                 </div>`;
-            
-            // Add all messages from history
             for (const [question, answer] of chatHistory) {
-                // User message
                 const qDiv = document.createElement('div');
                 qDiv.className = "p-3 bg-blue-900 rounded-lg text-right";
-                // Sanitize user question text
                 const safeQuestion = question.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 qDiv.innerHTML = `<span class="font-bold text-gray-200">You:</span><p class="text-gray-100">${safeQuestion}</p>`;
                 chatHistoryEl.appendChild(qDiv);
                 
-                // AI message
                 const aDiv = document.createElement('div');
                 aDiv.className = "p-3 bg-gray-700 rounded-lg";
                 
-                // Sanitize and format the answer
                 let formattedAnswer = answer
-                    .replace(/&/g, "&amp;")  // <-- ¡¡¡ARREGLADO!!!
+                    .replace(/&/g, "&amp;") // <-- Corregido
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
-                    .replace(/\n/g, "<br>") // Convert newlines to <br>
-                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"); // Bold
+                    .replace(/\n/g, "<br>")
+                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
                 
-                // Basic link detection for sources
                 formattedAnswer = formattedAnswer.replace(
                     /\[(\d+)\] (.*?): (https?:\/\/[^\s]+)/g,
                     '<br>[<a href="$3" target="_blank" rel="noopener noreferrer" class="text-blue-300 underline">$1</a>] $2'
@@ -406,40 +384,28 @@
                 aDiv.innerHTML = `<span class="font-bold text-blue-300">💡 FastMind:</span><div class="text-gray-200 mt-1">${formattedAnswer}</div>`;
                 chatHistoryEl.appendChild(aDiv);
             }
-            
-            // Scroll to bottom
             chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
         }
 
-        /**
-         * Handles the chat form submission.
-         */
         async function handleChatSubmit(event) {
             event.preventDefault();
             const question = chatInput.value.trim();
             if (!question) return;
 
-            // Disable form and show spinner
             chatInput.value = '';
             chatInput.disabled = true;
             chatSubmit.disabled = true;
             chatSpinner.classList.remove('hidden');
 
             try {
-                // Get AI response
                 const answer = await askFastMind(question);
-                
-                // Add to history and re-render
                 chatHistory.push([question, answer]);
                 renderChatHistory();
-
             } catch (error) {
                 console.error("Error asking FastMind:", error);
-                // Add error message to chat
                 chatHistory.push([question, "⚠️ There was an error contacting the assistant. Please try again."]);
                 renderChatHistory();
             } finally {
-                // Re-enable form
                 chatInput.disabled = false;
                 chatSubmit.disabled = false;
                 chatSpinner.classList.add('hidden');
@@ -447,15 +413,7 @@
             }
         }
 
-        /**
-         * Calls the Gemini API to get a chat response.
-         * This function is now INDEPENDENT of the timer.
-         */
         async function askFastMind(question) {
-            
-            // --- NEW: Local Knowledge Base (from your fasting_guide.pdf) ---
-            // This is a "simulated RAG." We're putting key info from your PDF
-            // directly into the prompt.
             const localKnowledgeBase = `
 - **Primary Document:** fasting_guide.pdf
 - **Key Topic:** The Five Most Common and Beneficial Types of Fasting.
@@ -466,36 +424,23 @@
     - **Benefits:** Physical health and spiritual growth.
     - **Cultural Context:** Practiced in many religions (Ramadan, Yom Kippur, Lent, Navaratri).
 `;
-            // --- END NEW ---
-
-            // --- MODIFIED: System Prompt ---
-            // The chatbot is now independent and uses a hybrid RAG approach.
             const systemPrompt = "You are FastMind, a scientific fasting and wellness coach. You must answer in the language of the user's question. \n\n**Your Process (Hybrid RAG):** \n1. **FIRST,** try to answer the user's question using *only* the 'Local Knowledge Base' provided in the prompt. \n2. **SECOND,** if the answer is *not* in the Local Knowledge Base, *then* use Google Search to find scientific information, data, or guides to answer it.";
-            
-            // --- MODIFIED: User Query (includes the knowledge base) ---
             const userQuery = `**Local KnowledgeBase:**
 ${localKnowledgeBase}
 ---
 **User question:** ${question}`;
-
-            // --- Gemini API Call ---
             
-            // !!!!! IMPORTANTE !!!!!
-            // He insertado la clave de API que me diste.
-            const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; // <-- TU CLAVE ESTÁ AQUÍ
+            // ¡¡¡YA ESTÁ INCLUIDA TU CLAVE de Gemini!!!
+            const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; 
 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
-                // Enable Google Search as the "fallback"
                 tools: [{ "google_search": {} }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
+                systemInstruction: { parts: [{ text: systemPrompt }] },
             };
 
-            // Exponential backoff for retries
             let response;
             let retries = 0;
             const maxRetries = 3;
@@ -508,51 +453,36 @@ ${localKnowledgeBase}
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-
-                    if (response.ok) {
-                        break; // Success
-                    }
-                    
+                    if (response.ok) break;
                     if (response.status === 429 || response.status >= 500) {
-                        // Retry on rate limits or server errors
                         retries++;
                         await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2; // Exponential backoff
+                        delay *= 2;
                     } else {
-                        // Don't retry on other client errors (e.g., 400 Bad Request)
                         const errorBody = await response.text();
                         console.error("API Error Body:", errorBody);
                         throw new Error(`API Error: ${response.status} ${response.statusText}`);
                     }
-
                 } catch (error) {
                     console.error("Fetch attempt " + (retries + 1) + " failed:", error);
-                    if (retries >= maxRetries - 1) {
-                         throw error; // Throw after last retry
-                    }
+                    if (retries >= maxRetries - 1) throw error;
                     retries++;
                     await new Promise(resolve => setTimeout(resolve, delay));
                     delay *= 2;
                 }
             }
 
-
             if (!response.ok) {
                 throw new Error(`Failed to fetch from API after ${maxRetries} retries.`);
             }
 
             const result = await response.json();
-            
-            // --- Extract text and sources ---
             const candidate = result.candidates?.[0];
             let sources = [];
-            let text = "Could not generate a response."; // Default error text
+            let text = "Could not generate a response.";
 
             if (candidate && candidate.content?.parts?.[0]?.text) {
-                // 1. Extract the generated text
                 text = candidate.content.parts[0].text;
-
-                // 2. Extract grounding sources
                 const groundingMetadata = candidate.groundingMetadata;
                 if (groundingMetadata && groundingMetadata.groundingAttributions) {
                     sources = groundingMetadata.groundingAttributions
@@ -560,10 +490,8 @@ ${localKnowledgeBase}
                             uri: attribution.web?.uri,
                             title: attribution.web?.title,
                         }))
-                        .filter(source => source.uri && source.title); // Ensure sources are valid
+                        .filter(source => source.uri && source.title);
                 }
-
-                // 3. Append sources to the text if they exist
                 if (sources.length > 0) {
                     text += "\n\n**Sources:**";
                     sources.forEach((source, index) => {
@@ -574,7 +502,6 @@ ${localKnowledgeBase}
                  console.error("Invalid API response structure:", result);
                  throw new Error("Invalid API response structure.");
             }
-
             return text;
         }
 
@@ -584,10 +511,233 @@ ${localKnowledgeBase}
         btnTimer.addEventListener('click', () => switchTab('timer'));
         btnChat.addEventListener('click', () => switchTab('chat'));
         chatForm.addEventListener('submit', handleChatSubmit);
+        
+        // --- NEW: Auth & History Listeners ---
+        btnLogin.addEventListener('click', signIn);
+        btnLogout.addEventListener('click', logOut);
+        btnHistory.addEventListener('click', () => switchTab('history'));
 
-        // --- INITIALIZATION ---
-        // Set the initial tab state on load
-        switchTab('timer');
+
+        // ---
+        // --- INICIO: LÓGICA DE FIREBASE
+        // ---
+
+        // ==================================================================
+        // --- ¡¡¡HE PEGADO TU CONFIGURACIÓN DE FIREBASE AQUÍ!!! ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyDFD5Ba2Y-rCDcMTxvubsr41LCYGO9_GyU",
+          authDomain: "fastmind-c6603.firebaseapp.com",
+          projectId: "fastmind-c6603",
+          storageBucket: "fastmind-c6603.firebasestorage.app",
+          messagingSenderId: "406678650879",
+          appId: "1:406678650879:web:08e3838f2349bcda4ff1ca",
+          measurementId: "G-MF1G9QB52L"
+        };
+        // ==================================================================
+
+
+        // --- 1. Inicializar Firebase ---
+        try {
+            if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                // --- 2. Escuchar cambios de autenticación ---
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        // Usuario está logueado
+                        console.log("User is logged in:", user.uid);
+                        currentUser = user;
+                        updateUIForLoggedIn(user);
+                        loadFastingHistory(); // Cargar historial cuando el usuario entra
+                    } else {
+                        // Usuario está deslogueado
+                        console.log("User is logged out.");
+                        currentUser = null;
+                        updateUIForLoggedOut();
+                        if (historyUnsubscribe) {
+                            historyUnsubscribe(); // Detener el listener de historial
+                        }
+                    }
+                });
+            } else {
+                console.warn("Firebase config is missing or incomplete. Please add it to index.html.");
+                // Ocultar botones de login y historial si no hay config
+                document.getElementById('auth-container').innerHTML = '<p class="text-red-500 text-center">Firebase config is missing.</p>';
+                btnHistory.classList.add('hidden');
+            }
+        } catch (e) {
+            console.error("Error initializing Firebase:", e);
+            document.getElementById('auth-container').innerHTML = '<p class="text-red-500 text-center">Error initializing Firebase. Check config.</p>';
+        }
+
+
+        // --- 3. Funciones de Autenticación ---
+
+        /**
+         * Inicia sesión con Google
+         */
+        async function signIn() {
+            if (!auth) return;
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                console.log("Signed in with Google:", result.user);
+            } catch (error) {
+                console.error("Error signing in with Google:", error);
+            }
+        }
+
+        /**
+         * Cierra la sesión
+         */
+        async function logOut() {
+            if (!auth) return;
+            try {
+                await signOut(auth);
+                console.log("User signed out.");
+            } catch (error) {
+                console.error("Error signing out:", error);
+            }
+        }
+
+        /**
+         * Actualiza la UI cuando el usuario inicia sesión
+         */
+        function updateUIForLoggedIn(user) {
+            btnLogin.classList.add('hidden');
+            btnLogout.classList.remove('hidden');
+            userEmailEl.textContent = user.email;
+            userEmailEl.classList.remove('hidden');
+            
+            // Activar el botón de historial
+            btnHistory.disabled = false;
+            btnHistory.classList.remove('text-gray-400');
+        }
+
+        /**
+         * Actualiza la UI cuando el usuario cierra sesión
+         */
+        function updateUIForLoggedOut() {
+            btnLogin.classList.remove('hidden');
+            btnLogout.classList.add('hidden');
+            userEmailEl.textContent = '';
+            userEmailEl.classList.add('hidden');
+            
+            // Desactivar y resetear el botón/tab de historial
+            btnHistory.disabled = true;
+            btnHistory.classList.add('text-gray-400');
+            btnHistory.classList.remove('border-blue-500', 'text-white');
+            btnHistory.classList.add('border-transparent');
+            
+            // Limpiar la lista de historial
+            historyList.innerHTML = '';
+            historyEmpty.classList.remove('hidden');
+            historyLoading.classList.add('hidden');
+
+            // Si estaba en el tab de historial, volver al timer
+            if (currentTab === 'history') {
+                switchTab('timer');
+            }
+        }
+
+
+        // --- 4. Funciones de Firestore (Base de Datos) ---
+
+        /**
+         * Guarda el ayuno completado en Firestore
+         */
+        async function saveFastToFirestore(hours, durationString, phase) {
+            if (!currentUser || !db) {
+                console.error("No user or db to save fast for.");
+                return;
+            }
+
+            try {
+                // Crear un nuevo documento en la subcolección 'fasts' del usuario
+                // la ruta será: /users/{userId}/fasts/{newFastId}
+                const docRef = await addDoc(collection(db, "users", currentUser.uid, "fasts"), {
+                    userId: currentUser.uid,
+                    completedAt: serverTimestamp(), // Usa la hora del servidor
+                    durationHours: hours,
+                    durationString: durationString,
+                    finalPhase: phase.keyword,
+                    finalPhaseColor: phase.color_hex
+                });
+                console.log("Fast saved with ID: ", docRef.id);
+                timerMessage.innerHTML += "<br><em>Saved to your history!</em>";
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                timerMessage.innerHTML += "<br><em>Could not save to history.</em>";
+            }
+        }
+
+        /**
+         * Carga el historial de ayunos del usuario logueado
+         */
+        function loadFastingHistory() {
+            if (!currentUser || !db) return;
+
+            console.log("Loading history for user:", currentUser.uid);
+            historyLoading.classList.remove('hidden');
+            historyEmpty.classList.add('hidden');
+            historyList.innerHTML = ''; // Limpiar lista
+
+            // Crear una consulta para la colección de ayunos del usuario, ordenado por fecha
+            const q = query(collection(db, "users", currentUser.uid, "fasts"), orderBy("completedAt", "desc"));
+
+            // Usar onSnapshot para escuchar cambios en tiempo real
+            // (se actualiza solo si guardas un nuevo ayuno)
+            historyUnsubscribe = onSnapshot(q, (querySnapshot) => {
+                historyLoading.classList.add('hidden');
+                const fasts = [];
+                querySnapshot.forEach((doc) => {
+                    fasts.push(doc.data());
+                });
+
+                if (fasts.length === 0) {
+                    historyEmpty.classList.remove('hidden');
+                    historyList.innerHTML = '';
+                } else {
+                    historyEmpty.classList.add('hidden');
+                    renderHistoryList(fasts);
+                }
+            }, (error) => {
+                console.error("Error loading history:", error);
+                historyLoading.classList.add('hidden');
+                historyList.innerHTML = '<p class="text-red-500">Error loading history.</p>';
+            });
+        }
+
+        /**
+         * Renderiza la lista de ayunos en el HTML
+         */
+        function renderHistoryList(fasts) {
+            historyList.innerHTML = ''; // Limpiar lista
+            fasts.forEach(fast => {
+                const div = document.createElement('div');
+                div.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
+                
+                const date = fast.completedAt?.toDate().toLocaleDateString() || 'No date';
+                const time = fast.completedAt?.toDate().toLocaleTimeString() || '';
+                
+                div.innerHTML = `
+                    <div>
+                        <p class="text-lg font-semibold">${date} <span class="text-sm text-gray-400">${time}</span></p>
+                        <p class="text-gray-300">Duration: <span class="font-bold text-white">${fast.durationString}</span></p>
+                    </div>
+                    <span class="font-bold py-1 px-3 rounded-full" style="color: ${fast.finalPhaseColor === '#F5F5F5' ? '#333' : '#FFF'}; background-color: ${fast.finalPhaseColor};">
+                        ${fast.finalPhase}
+                    </span>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        // --- INICIALIZACIÓN DE LA APP ---
+        switchTab('timer'); // Empezar en el tab de timer
+
     </script>
 
 </body>
