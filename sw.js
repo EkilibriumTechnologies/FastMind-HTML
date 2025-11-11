@@ -1,13 +1,12 @@
-const CACHE_NAME = 'fastmind-v1';
+const CACHE_NAME = 'fastmind-v2'; // Incremented cache version
+const NOTIFICATION_TAG = 'fastmind-timer'; // A unique ID for our notification
 
 // Lista de archivos que componen el "app shell" (la app base)
-// Estos son los archivos que se guardarán en caché para que la app cargue sin conexión
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap'
-  // Los SDK de Firebase se cargarán desde la red, ya que necesitan conexión
 ];
 
 // Evento 'install': Se dispara cuando el SW se instala por primera vez.
@@ -41,20 +40,17 @@ self.addEventListener('activate', (event) => {
 });
 
 // Evento 'fetch': Se dispara cada vez que la app hace una petición de red
-// (ej. cargar una imagen, un script, o una llamada a la API).
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
   // --- Estrategia de Red (Network Only) ---
   // NO guardar en caché las llamadas a las APIs de Google/Firebase.
-  // Estas siempre necesitan una conexión a internet.
   if (
     url.includes('generativelanguage.googleapis.com') || // API de Gemini
     url.includes('firebaseapp.com') ||                  // API de Auth de Firebase
     url.includes('googleapis.com/identitytoolkit') ||   // API de Auth de Google
     url.includes('firestore.googleapis.com')            // API de Firestore
   ) {
-    // Dejar que la petición vaya directamente a la red
     event.respondWith(fetch(event.request));
     return;
   }
@@ -63,16 +59,11 @@ self.addEventListener('fetch', (event) => {
   // Para todo lo demás (el App Shell: HTML, CSS, fuentes).
   event.respondWith(
     caches.match(event.request).then((response) => {
-      // 1. Si está en el caché, devolverlo desde el caché
       if (response) {
-        // console.log('[ServiceWorker] Returning from cache:', event.request.url);
-        return response;
+        return response; // From cache
       }
-
-      // 2. Si no está en el caché, ir a la red
-      // console.log('[ServiceWorker] Fetching from network:', event.request.url);
+      // From network, then cache it
       return fetch(event.request).then((networkResponse) => {
-        // 3. Guardar la respuesta de la red en el caché para la próxima vez
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -83,7 +74,67 @@ self.addEventListener('fetch', (event) => {
       });
     }).catch((error) => {
       console.error('[ServiceWorker] Fetch error:', error);
-      // Opcional: Podrías devolver una página "offline" personalizada aquí
     })
+  );
+});
+
+// ---
+// --- INICIO: NUEVA LÓGICA DE NOTIFICACIONES ---
+// ---
+
+/**
+ * Escucha los mensajes ("START_TIMER" o "STOP_TIMER") de la app
+ */
+self.addEventListener('message', (event) => {
+  if (event.data === 'START_TIMER') {
+    console.log('[ServiceWorker] Received START_TIMER command');
+    showTimerNotification();
+  } else if (event.data === 'STOP_TIMER') {
+    console.log('[ServiceWorker] Received STOP_TIMER command');
+    closeTimerNotification();
+  }
+});
+
+/**
+ * Muestra la notificación persistente
+ */
+function showTimerNotification() {
+  const title = 'FastMind: Fast in Progress';
+  const options = {
+    body: 'Your fast is currently running. Tap to open the app.',
+    icon: 'https://placehold.co/192x192/111827/FFFFFF?text=🧠&font=noto', // Icono
+    tag: NOTIFICATION_TAG,    // Un ID para que podamos cerrarla después
+    renotify: false,          // No vibrar si ya existe
+    silent: true              // No hacer sonido
+  };
+  
+  // self.registration.showNotification es la función mágica
+  event.waitUntil(self.registration.showNotification(title, options));
+}
+
+/**
+ * Cierra la notificación
+ */
+function closeTimerNotification() {
+  // Busca todas las notificaciones con nuestro ID
+  self.registration.getNotifications({ tag: NOTIFICATION_TAG }).then(notifications => {
+    notifications.forEach(notification => {
+      notification.close(); // Cierra cada una
+    });
+  });
+}
+
+/**
+ * Se dispara cuando el usuario TOCA la notificación
+ */
+self.addEventListener('notificationclick', (event) => {
+  console.log('[ServiceWorker] Notification click received.');
+  
+  // Cierra la notificación
+  event.notification.close();
+  
+  // Abre la PWA
+  event.waitUntil(
+    clients.openWindow('/') // Abre la página principal de la app
   );
 });
