@@ -140,7 +140,7 @@
 
     <!-- Main JavaScript Logic -->
     <script type="module">
-        // --- DATA (From your uploaded CSV 'fastmind_fasting_phases_en (1).csv') ---
+        // --- DATA (From your uploaded CSV 'fastmind_fasting_phases_en.csv') ---
         const fastingData = [
             {
                 fase_inicio_h: 0, fase_fin_h: 4, keyword: "Digest", color_hex: "#FFA500",
@@ -391,7 +391,7 @@
                 
                 // Sanitize and format the answer
                 let formattedAnswer = answer
-                    .replace(/&/g, "&amp;")
+                    .replace(/&g, "&amp;")
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
                     .replace(/\n/g, "<br>") // Convert newlines to <br>
@@ -481,9 +481,8 @@ ${localKnowledgeBase}
             // --- Gemini API Call ---
             
             // !!!!! IMPORTANTE !!!!!
-            // ¡DEBES PEGAR TU API KEY AQUÍ PARA QUE EL CHATBOT FUNCIONE!
-            // OBTÉN TU CLAVE AQUÍ: https://aistudio.google.com/app/apikey
-            const apiKey = "PEGAR_TU_API_KEY_AQUÍ"; // <-- ¡REEMPLAZA ESTO!
+            // He insertado la clave de API que me diste.
+            const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; // <-- TU CLAVE ESTÁ AQUÍ
 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
@@ -521,10 +520,13 @@ ${localKnowledgeBase}
                         delay *= 2; // Exponential backoff
                     } else {
                         // Don't retry on other client errors (e.g., 400 Bad Request)
+                        const errorBody = await response.text();
+                        console.error("API Error Body:", errorBody);
                         throw new Error(`API Error: ${response.status} ${response.statusText}`);
                     }
 
                 } catch (error) {
+                    console.error("Fetch attempt " + (retries + 1) + " failed:", error);
                     if (retries >= maxRetries - 1) {
                          throw error; // Throw after last retry
                     }
@@ -569,6 +571,7 @@ ${localKnowledgeBase}
                     });
                 }
             } else {
+                 console.error("Invalid API response structure:", result);
                  throw new Error("Invalid API response structure.");
             }
 
