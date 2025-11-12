@@ -3,35 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <!-- Primary Meta Tags -->
-<title>FastMind – AI Fasting Coach</title>
-<meta name="title" content="FastMind – AI Fasting Coach">
-<meta name="description" content="FastMind helps you track your intermittent fasting phases with real-time timers, science-based insights, and an AI assistant that guides your wellness journey.">
 
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://fastmindbody.com/">
-<meta property="og:title" content="FastMind – AI Fasting Coach">
-<meta property="og:description" content="Track your fasting progress, learn your body’s phases, and get personalized AI guidance — all in one clean, intelligent app.">
-<meta property="og:image" content="https://fastmindbody.com/preview.png">
+    <!-- Primary Meta Tags (DE TU CÓDIGO) -->
+    <title>FastMind – AI Fasting Coach</title>
+    <meta name="title" content="FastMind – AI Fasting Coach">
+    <meta name="description" content="FastMind helps you track your intermittent fasting phases with real-time timers, science-based insights, and an AI assistant that guides your wellness journey.">
 
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="https://fastmindbody.com/">
-<meta property="twitter:title" content="FastMind – AI Fasting Coach">
-<meta property="twitter:description" content="Track your fasting progress, learn your body’s phases, and get personalized AI guidance — all in one clean, intelligent app.">
-<meta property="twitter:image" content="https://fastmindbody.com/preview.png">
+    <!-- Open Graph / Facebook (DE TU CÓDIGO) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fastmindbody.com/">
+    <meta property="og:title" content="FastMind – AI Fasting Coach">
+    <meta property="og:description" content="Track your fasting progress, learn your body’s phases, and get personalized AI guidance — all in one clean, intelligent app.">
+    <meta property="og:image" content="https://fastmindbody.com/preview.png">
 
-    
+    <!-- Twitter (DE TU CÓDIGO) -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://fastmindbody.com/">
+    <meta property="twitter:title" content="FastMind – AI Fasting Coach">
+    <meta property="twitter:description" content="Track your fasting progress, learn your body’s phases, and get personalized AI guidance — all in one clean, intelligent app.">
+    <meta property="twitter:image" content="https://fastmindbody.com/preview.png">
+
+    <!-- Favicon (DE TU CÓDIGO) -->
     <link rel="icon" type="image/x-icon" href="fastmind_logo.ico">
 
-    <!-- PWA: Link to Manifest -->
+    <!-- PWA: Link al Manifest -->
     <link rel="manifest" href="/manifest.json">
     
-    <!-- PWA: Theme color for browser UI -->
+    <!-- PWA: Color de la barra de estado del navegador -->
     <meta name="theme-color" content="#111827"/>
     
-    <!-- PWA: Apple Icon -->
+    <!-- PWA: Icono para Apple -->
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/111827/FFFFFF?text=🧠&font=noto">
 
     <!-- Load Tailwind CSS from CDN -->
@@ -65,7 +66,7 @@
             position: absolute;
             text-align: center;
         }
-        /* Hide scrollbar but allow scrolling */
+        /* Ocultar scrollbar pero permitir scroll */
         .scrollbar-hide {
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
@@ -73,9 +74,34 @@
         .scrollbar-hide::-webkit-scrollbar {
             display: none; /* Chrome, Safari, Opera */
         }
+        
+        /* --- NUEVO: Estilos del Calendario --- */
+        .calendar-day {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 40px;
+            width: 100%;
+        }
+        .calendar-day.fasted-day span {
+            /* Estilo para el número del día que se ayunó */
+            font-weight: bold;
+        }
+        .fasted-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #22c55e; /* green-500 */
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen p-4 md:p-8">
+
+    <!-- NEW: Silent audio element for Media Session "hack" -->
+    <audio id="silent-audio" loop preload="auto" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdUaW1lciBvUkdnaHRzLiBjb20AAAAAAAAAAAAAADU2Nzc2NTU0NDEzMjEzMTIAAAAAAID/AAAAAAAAAAAAAABkTEFNRTMuMTAwAIAAAAAAABNpuAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wEAAGRMYXZmNW5zLjEzLjEwMgAAAAAAAAAAAAAA/wOECAAAALEAAAAsAAAAAVAAAAAABAAAAD0AAAAARzAAAAHAAAAEAAABCAAAAGgAAAAAAAAAAAAAAAABOaW5lVGVuAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH">
+    </audio>
 
     <div class="max-w-2xl mx-auto">
         <!-- Header -->
@@ -101,7 +127,7 @@
                 ⏱️ Fasting Timer
             </button>
             <button id="btn-chat" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent">
-                💬 FastMind Coach
+                💬 FastMind Chatbot
             </button>
             <!-- NEW: History Tab Button -->
             <button id="btn-history" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent text-gray-400" disabled>
@@ -165,11 +191,33 @@
                 </div>
             </div>
 
-            <!-- NEW: History Tab Content -->
+            <!-- MODIFIED: History Tab Content -->
             <div id="history-content" class="hidden">
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-semibold text-center mb-6">My Fasting History</h2>
-                    <div id="history-list" class="h-96 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
+                    
+                    <!-- NEW: CALENDAR SECTION -->
+                    <div id="calendar-container" class="mb-8">
+                        <div class="flex justify-between items-center mb-3">
+                            <button id="prev-month" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg leading-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <h3 id="month-year" class="text-xl font-semibold text-white"></h3>
+                            <button id="next-month" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg leading-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                        </div>
+                        <div id="calendar-grid-header" class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2">
+                            <!-- Day headers (S, M, T...) will be injected by JS -->
+                        </div>
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-1">
+                            <!-- Calendar days will be injected by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- MODIFIED: History List Section -->
+                    <h3 class="text-xl font-semibold mb-4 text-white">Completed Fasts</h3>
+                    <div id="history-list" class="h-64 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
                         <!-- History items will be loaded here -->
                         <p id="history-loading" class="text-gray-400 text-center">Loading history...</p>
                         <p id="history-empty" class="text-gray-400 text-center hidden">No fasts recorded yet. Stop a fast to save it here.</p>
@@ -243,6 +291,11 @@
         let db;
         let currentUser = null;
         let historyUnsubscribe = null; // To stop the history listener
+        
+        // --- NEW: Calendar State ---
+        let currentCalendarMonth = new Date().getMonth(); // 0-11
+        let currentCalendarYear = new Date().getFullYear();
+        let allUserFasts = []; // Caches all fasts to avoid re-fetching
 
         // --- DOM ELEMENTS ---
         const btnTimer = document.getElementById('btn-timer');
@@ -270,6 +323,16 @@
         const historyList = document.getElementById('history-list');
         const historyLoading = document.getElementById('history-loading');
         const historyEmpty = document.getElementById('history-empty');
+        
+        // --- NEW: Media Session Audio Element ---
+        const silentAudio = document.getElementById('silent-audio');
+        
+        // --- NEW: Calendar DOM Elements ---
+        const btnPrevMonth = document.getElementById('prev-month');
+        const btnNextMonth = document.getElementById('next-month');
+        const monthYearEl = document.getElementById('month-year');
+        const calendarGridHeaderEl = document.getElementById('calendar-grid-header');
+        const calendarGridEl = document.getElementById('calendar-grid');
 
         
         // --- CORE LOGIC (Functions) ---
@@ -291,13 +354,14 @@
             
             const elapsedMs = Date.now() - startTime;
             const elapsedSec = Math.floor(elapsedMs / 1000);
+            const timeString = formatTime(elapsedSec);
             elapsedHours = elapsedMs / (1000 * 3600);
             
             const currentPhase = getPhase(elapsedHours);
             const maxHours = 120;
             const pct = Math.min((elapsedHours / maxHours) * 100, 100);
             
-            chronometerEl.textContent = formatTime(elapsedSec);
+            chronometerEl.textContent = timeString;
             chronometerEl.style.color = currentPhase.color_hex;
             phaseNameEl.textContent = currentPhase.keyword;
             phaseNameEl.style.color = currentPhase.color_hex;
@@ -305,6 +369,9 @@
             
             if (running) {
                  timerMessage.innerHTML = `<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
+                 
+                 // --- NEW: Update Media Session "hack" ---
+                 updateMediaSession(timeString, currentPhase.keyword);
             }
         }
 
@@ -329,6 +396,9 @@
                     reg.active.postMessage('START_TIMER');
                 });
             }
+            
+            // --- NEW: Play silent audio for Media Session ---
+            silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
         }
 
         function stopTimer() {
@@ -373,6 +443,13 @@
                     reg.active.postMessage('STOP_TIMER');
                 });
             }
+            
+            // --- NEW: Stop silent audio and clear Media Session ---
+            silentAudio.pause();
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = null;
+                navigator.mediaSession.playbackState = "none";
+            }
         }
 
         function switchTab(tabName) {
@@ -408,6 +485,23 @@
                 }
             }
         }
+        
+        // --- NEW: Media Session Update Function ---
+        function updateMediaSession(timeString, phase) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: `Fast in Progress: ${timeString}`,
+                    artist: `Current Phase: ${phase}`,
+                    album: 'FastMind',
+                    artwork: [
+                        { src: 'https://placehold.co/192x192/111827/FFFFFF?text=🧠&font=noto', sizes: '192x192', type: 'image/png' },
+                        { src: 'https://placehold.co/512x512/111827/FFFFFF?text=🧠&font=noto', sizes: '512x512', type: 'image/png' },
+                    ]
+                });
+                navigator.mediaSession.playbackState = "playing";
+            }
+        }
+
 
         function renderChatHistory() {
             chatHistoryEl.innerHTML = `
@@ -572,6 +666,10 @@ ${localKnowledgeBase}
         btnLogin.addEventListener('click', signIn);
         btnLogout.addEventListener('click', logOut);
         btnHistory.addEventListener('click', () => switchTab('history'));
+        
+        // --- NEW: Calendar Listeners ---
+        btnPrevMonth.addEventListener('click', showPrevMonth);
+        btnNextMonth.addEventListener('click', showNextMonth);
 
 
         // ---
@@ -705,6 +803,12 @@ ${localKnowledgeBase}
             historyList.innerHTML = '';
             historyEmpty.classList.remove('hidden');
             historyLoading.classList.add('hidden');
+            
+            // --- NEW: Clear calendar and reset ---
+            allUserFasts = [];
+            currentCalendarMonth = new Date().getMonth();
+            currentCalendarYear = new Date().getFullYear();
+            renderCalendar(currentCalendarMonth, currentCalendarYear, []); // Render empty calendar
 
             // If on history tab, switch back to timer
             if (currentTab === 'history') {
@@ -765,13 +869,19 @@ ${localKnowledgeBase}
                     fasts.push(doc.data());
                 });
 
-                if (fasts.length === 0) {
+                allUserFasts = fasts; // <-- NEW: Store all fasts globally
+
+                if (allUserFasts.length === 0) {
                     historyEmpty.classList.remove('hidden');
                     historyList.innerHTML = '';
                 } else {
                     historyEmpty.classList.add('hidden');
-                    renderHistoryList(fasts);
+                    renderHistoryList(allUserFasts); // Render list
                 }
+                
+                // --- NEW: Render the calendar ---
+                renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts);
+                
             }, (error) => {
                 console.error("Error loading history:", error);
                 historyLoading.classList.add('hidden');
@@ -803,6 +913,99 @@ ${localKnowledgeBase}
                 historyList.appendChild(div);
             });
         }
+        
+        // --- 5. NEW: Calendar Functions ---
+        
+        /**
+         * Renders the calendar grid for the given month, year, and fasts
+         */
+        function renderCalendar(month, year, fasts) {
+            calendarGridEl.innerHTML = '';
+            calendarGridHeaderEl.innerHTML = '';
+            
+            // 1. Set Month/Year Title (using Spanish locale for month names)
+            const monthName = new Date(year, month).toLocaleString('es-ES', { month: 'long' });
+            monthYearEl.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
+            
+            // 2. Create Day Headers (S, M, T...)
+            const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // English days
+            dayHeaders.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.textContent = day;
+                calendarGridHeaderEl.appendChild(dayEl);
+            });
+            
+            // 3. Get calendar grid info (using Sunday as first day of week, locale-agnostic)
+            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 (Sun) - 6 (Sat)
+            const daysInMonth = new Date(year, month + 1, 0).getDate(); // 30, 31, etc.
+            
+            // 4. Create a Set of fasted dates for quick lookup
+            // Formato: "YYYY-MM-DD"
+            const fastDates = new Set(
+                fasts.map(f => {
+                    const d = f.completedAt?.toDate();
+                    if (!d) return null;
+                    // Format to YYYY-MM-DD
+                    const year = d.getFullYear();
+                    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                    const day = d.getDate().toString().padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }).filter(Boolean) // Filtra nulos
+            );
+            
+            // 5. Add empty cells for days before the 1st
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyEl = document.createElement('div');
+                calendarGridEl.appendChild(emptyEl);
+            }
+            
+            // 6. Add all days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day relative text-gray-200';
+                
+                // Formatear la fecha como "YYYY-MM-DD" para comparar
+                const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                
+                let dayContent = `<span>${day}</span>`;
+                
+                // Check if this day was a fast day
+                if (fastDates.has(dateString)) {
+                    dayEl.classList.add('fasted-day');
+                    dayContent += '<div class="fasted-dot"></div>';
+                }
+                
+                dayEl.innerHTML = dayContent;
+                calendarGridEl.appendChild(dayEl);
+            }
+        }
+        
+        /**
+         * Shows the previous month's calendar
+         */
+        function showPrevMonth() {
+            if (currentCalendarMonth === 0) {
+                currentCalendarMonth = 11;
+                currentCalendarYear--;
+            } else {
+                currentCalendarMonth--;
+            }
+            renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts);
+        }
+        
+        /**
+         * Shows the next month's calendar
+         */
+        function showNextMonth() {
+            if (currentCalendarMonth === 11) {
+                currentCalendarMonth = 0;
+                currentCalendarYear++;
+            } else {
+                currentCalendarMonth++;
+            }
+            renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts);
+        }
+
 
         // --- APP INITIALIZATION ---
         
@@ -816,6 +1019,9 @@ ${localKnowledgeBase}
             running = true;
             timerInterval = setInterval(updateTimer, 1000);
             updateTimer(); // Run immediately to show correct time
+            
+            // Also resume the audio "hack"
+            silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
         }
         
         // Start on the timer tab
@@ -836,5 +1042,7 @@ ${localKnowledgeBase}
 
     </script>
 
+</body>
+</html>
 </body>
 </html>
