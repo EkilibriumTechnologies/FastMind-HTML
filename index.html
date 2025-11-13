@@ -715,8 +715,8 @@ ${localKnowledgeBase}
         // --- NEW: Auth & History Listeners ---
         authForm.addEventListener('submit', handleAuthSubmit);
         authToggleLink.addEventListener('click', toggleAuthMode);
-        btnLoginGoogle.addEventListener('click', signInWithGoogle); // Renombrada
-        forgotPasswordLink.addEventListener('click', handleForgotPassword); // <-- ¡¡NUEVO!!
+        btnLoginGoogle.addEventListener('click', signInWithGoogle); // <-- Llama a la nueva función
+        forgotPasswordLink.addEventListener('click', handleForgotPassword);
         btnLogout.addEventListener('click', logOut);
         btnHistory.addEventListener('click', () => switchTab('history'));
         
@@ -890,6 +890,7 @@ ${localKnowledgeBase}
 
         /**
          * ¡¡¡MODIFICADO: Sign in with Google (Pop-up/Redirect)!!!
+         * Esta es la lógica híbrida robusta de tu código.
          */
         async function signInWithGoogle() {
             if (!auth) return;
@@ -901,11 +902,18 @@ ${localKnowledgeBase}
 
             const provider = new GoogleAuthProvider();
             
-            // --- iPhone PWA detection logic ---
-            // 'window.navigator.standalone' is true only on an installed iOS PWA
-            if (window.navigator.standalone === true) {
-                // Is an iPhone PWA. Use Redirect.
-                console.log("iPhone PWA detected. Using signInWithRedirect.");
+            // Función para detectar PWA (de tu código)
+            function isPWA() {
+                return (
+                    window.matchMedia("(display-mode: standalone)").matches ||
+                    window.navigator.standalone === true ||
+                    document.referrer.includes("android-app://")
+                );
+            }
+
+            if (isPWA()) {
+                // Es PWA. Usar Redirección.
+                console.log("PWA detected. Using signInWithRedirect.");
                 try {
                     await signInWithRedirect(auth, provider);
                 } catch (error) {
@@ -915,16 +923,21 @@ ${localKnowledgeBase}
                     authMessageEl.classList.remove('text-green-400');
                 }
             } else {
-                // Is a desktop browser, Android, or normal Safari. Use Pop-up.
-                console.log("Browser or Android/Safari detected. Using signInWithPopup.");
+                // Es un navegador. Intentar Pop-up, y si falla, Redirección.
+                console.log("Browser detected. Trying signInWithPopup.");
                 try {
                     await signInWithPopup(auth, provider);
-                    // onAuthStateChanged will handle the UI update
+                    // onAuthStateChanged se encargará de la UI
                 } catch (error) {
-                    console.error("Error signing in with Google (Popup):", error);
-                    authMessageEl.textContent = "Login failed: " + error.message;
-                    authMessageEl.classList.add('text-red-400');
-                    authMessageEl.classList.remove('text-green-400');
+                    console.warn("Popup failed, retrying with redirect...", error);
+                    try {
+                        await signInWithRedirect(auth, provider);
+                    } catch (redirectError) {
+                        console.error("Error starting redirect sign in:", redirectError);
+                        authMessageEl.textContent = "Login failed: " + redirectError.message;
+                        authMessageEl.classList.add('text-red-400');
+                        authMessageEl.classList.remove('text-green-400');
+                    }
                 }
             }
         }
