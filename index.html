@@ -245,7 +245,9 @@
             onAuthStateChanged,
             signInWithPopup,
             GoogleAuthProvider,
-            signOut
+            signOut,
+            signInWithRedirect, // <-- ¡¡NUEVO!!
+            getRedirectResult   // <-- ¡¡NUEVO!!
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore,
@@ -707,6 +709,18 @@ ${localKnowledgeBase}
                       }
                   });
                 
+                // --- ¡¡¡NUEVO: Manejar el "Regreso" del Redirect!!! ---
+                try {
+                    const result = await getRedirectResult(auth);
+                    if (result) {
+                        // Esto se dispara si el usuario acaba de iniciar sesión por redirección
+                        console.log("Logged in via redirect:", result.user);
+                        // onAuthStateChanged se encargará del resto
+                    }
+                } catch (error) {
+                    console.error("Error handling redirect result:", error);
+                }
+                
                 // --- 2. Authentication State Listener ---
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
@@ -739,21 +753,38 @@ ${localKnowledgeBase}
         // --- 3. Auth Functions ---
 
         /**
-         * Sign in with Google
+         * ¡¡¡MODIFICADO: Sign in with Google!!!
          */
         async function signIn() {
             if (!auth) return;
+            
             // --- NEW: Ask for notification permission on login ---
             if (Notification.permission === 'default') {
                 Notification.requestPermission();
             }
 
             const provider = new GoogleAuthProvider();
-            try {
-                const result = await signInWithPopup(auth, provider);
-                console.log("Signed in with Google:", result.user);
-            } catch (error) {
-                console.error("Error signing in with Google:", error);
+            
+            // --- ¡¡NUEVA LÓGICA!! ---
+            // 'window.navigator.standalone' es un truco que SOLO es 'true'
+            // en un iPhone cuando la PWA está instalada en la pantalla de inicio.
+            if (window.navigator.standalone === true) {
+                // Es un iPhone PWA. Usar Redirección.
+                console.log("iPhone PWA detected. Using signInWithRedirect.");
+                try {
+                    await signInWithRedirect(auth, provider);
+                } catch (error) {
+                    console.error("Error starting redirect sign in:", error);
+                }
+            } else {
+                // Es un navegador de escritorio, Android, o Safari normal. Usar Pop-up.
+                console.log("Browser or Android detected. Using signInWithPopup.");
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    console.log("Signed in with Google (Popup):", result.user);
+                } catch (error) {
+                    console.error("Error signing in with Google (Popup):", error);
+                }
             }
         }
 
@@ -1042,7 +1073,5 @@ ${localKnowledgeBase}
 
     </script>
 
-</body>
-</html>
 </body>
 </html>
