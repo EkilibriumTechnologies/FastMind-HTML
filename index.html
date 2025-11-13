@@ -110,59 +110,22 @@
             <p class="text-lg text-gray-400">Your AI Fasting & Wellness Coach</p>
         </header>
 
-        <!-- 
-            ==================================================================
-            MODIFIED: LOGIN / REGISTER SECTION
-            ==================================================================
-        -->
-        <div id="login-container" class="mb-4 bg-gray-800 p-6 rounded-lg shadow-xl">
-            <h2 id="auth-title" class="text-2xl font-semibold text-center mb-4 text-white">Login</h2>
-            <form id="auth-form" class="space-y-4">
-                <input type="email" id="auth-email" placeholder="Email" required class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="password" id="auth-password" placeholder="Password (min. 6 characters)" required minlength="6" class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                
-                <!-- Contenedor de Error y Mensaje de Éxito -->
-                <p id="auth-message" class="text-sm text-center h-4"></p> 
-                
-                <button type="submit" id="auth-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
-                    Login
-                </button>
-            </form>
-            
-            <!-- ELIMINADO EL BOTÓN DE GOOGLE Y EL DIVISOR "or" -->
-            
-            <div class="flex justify-between mt-4 text-sm">
-                <a href="#" id="auth-toggle" class="text-blue-400 hover:underline">Need an account? Register</a>
-                <a href="#" id="forgot-password" class="text-gray-400 hover:underline">Forgot Password?</a>
-            </div>
-        </div>
-        
-        <!-- Contenedor del usuario (antes #auth-container) -->
-        <div id="user-container" class="hidden flex justify-center items-center mb-4">
-            <p id="user-email" class="text-gray-400 self-center mr-4"></p>
-            <button id="btn-logout" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-200">
-                Logout
-            </button>
-        </div>
-
-
-        <!-- Tab Buttons -->
-        <nav id="app-nav" class="hidden justify-center space-x-4 mb-6 border-b border-gray-700">
+        <!-- Tab Buttons (SIEMPRE VISIBLES) -->
+        <nav id="app-nav" class="flex justify-center space-x-4 mb-6 border-b border-gray-700">
             <button id="btn-timer" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent">
                 ⏱️ Fasting Timer
             </button>
-            <button id="btn-chat" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent">
+            <button id="btn-chat" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent text-gray-400" disabled>
                 💬 FastMind Chatbot
             </button>
-            <!-- NEW: History Tab Button -->
             <button id="btn-history" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent text-gray-400" disabled>
                 📜 My History
             </button>
         </nav>
 
-        <!-- Tab Content -->
-        <main id="app-main" class="hidden">
-            <!-- Timer Tab Content -->
+        <!-- Tab Content (SIEMPRE VISIBLES) -->
+        <main id="app-main">
+            <!-- Timer Tab Content (Visible por defecto) -->
             <div id="timer-content">
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-semibold text-center mb-6">Fasting Tracker</h2>
@@ -194,7 +157,7 @@
                 </div>
             </div>
 
-            <!-- Chat Tab Content -->
+            <!-- Chat Tab Content (Oculto por defecto) -->
             <div id="chat-content" class="hidden">
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-semibold text-center mb-6">FastMind AI Assistant</h2>
@@ -216,12 +179,12 @@
                 </div>
             </div>
 
-            <!-- MODIFIED: History Tab Content -->
+            <!-- History Tab Content (Oculto por defecto) -->
             <div id="history-content" class="hidden">
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-semibold text-center mb-6">My Fasting History</h2>
                     
-                    <!-- NEW: CALENDAR SECTION -->
+                    <!-- CALENDAR SECTION -->
                     <div id="calendar-container" class="mb-8">
                         <div class="flex justify-between items-center mb-3">
                             <button id="prev-month" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg leading-none">
@@ -240,7 +203,7 @@
                         </div>
                     </div>
                     
-                    <!-- MODIFIED: History List Section -->
+                    <!-- History List Section -->
                     <h3 class="text-xl font-semibold mb-4 text-white">Completed Fasts</h3>
                     <div id="history-list" class="h-64 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
                         <!-- History items will be loaded here -->
@@ -251,6 +214,40 @@
             </div>
         </main>
 
+        <!-- 
+            ==================================================================
+            NUEVA SECCIÓN DE LOGIN / REGISTER (MOVIDA AQUÍ ABAJO)
+            ==================================================================
+        -->
+        <div id="login-container" class="mt-8 mb-4 bg-gray-800 p-6 rounded-lg shadow-xl">
+            <h2 id="auth-title" class="text-2xl font-semibold text-center mb-4 text-white">Login to Save History</h2>
+            <p class="text-center text-gray-400 mb-4">Create an account to unlock the AI Chatbot and save your fasting history.</p>
+            <form id="auth-form" class="space-y-4">
+                <input type="email" id="auth-email" placeholder="Email" required class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" id="auth-password" placeholder="Password (min. 6 characters)" required minlength="6" class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                
+                <!-- Contenedor de Error y Mensaje de Éxito -->
+                <p id="auth-message" class="text-sm text-center h-4"></p> 
+                
+                <button type="submit" id="auth-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
+                    Login
+                </button>
+            </form>
+            
+            <div class="flex justify-between mt-4 text-sm">
+                <a href="#" id="auth-toggle" class="text-blue-400 hover:underline">Need an account? Register</a>
+                <a href="#" id="forgot-password" class="text-gray-400 hover:underline">Forgot Password?</a>
+            </div>
+        </div>
+        
+        <!-- Contenedor del usuario (Oculto por defecto) -->
+        <div id="user-container" class="hidden text-center my-8">
+            <p id="user-email" class="text-gray-400 self-center mb-4"></p>
+            <button id="btn-logout" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                Logout
+            </button>
+        </div>
+
         <!-- Footer -->
         <footer class="text-center mt-8 text-gray-500">
             <small>Powered by Ekilibrium Technologies | Built with Gemini</small>
@@ -259,7 +256,7 @@
 
     <!-- 
         ==================================================================
-        NEW: FIREBASE SDKs
+        FIREBASE SDKs
         ==================================================================
     -->
     <script type="module">
@@ -268,7 +265,7 @@
         import { 
             getAuth, 
             onAuthStateChanged,
-            // ELIMINADOS: signInWithPopup, GoogleAuthProvider, signInWithRedirect, getRedirectResult
+            // ELIMINADO: signInWithPopup, GoogleAuthProvider, signInWithRedirect, getRedirectResult
             signOut,
             createUserWithEmailAndPassword, 
             signInWithEmailAndPassword,   
@@ -357,7 +354,7 @@
         const authMessageEl = document.getElementById('auth-message'); // Renombrado de "auth-error"
         const authToggleLink = document.getElementById('auth-toggle');
         const authTitleEl = document.getElementById('auth-title');
-        const btnLoginGoogle = document.getElementById('btn-login-google'); // <-- ELIMINADO
+        // const btnLoginGoogle = document.getElementById('btn-login-google'); // <-- ELIMINADO
         const forgotPasswordLink = document.getElementById('forgot-password'); 
         
         const userContainer = document.getElementById('user-container');
@@ -498,6 +495,16 @@
         }
 
         function switchTab(tabName) {
+            // ¡¡¡NUEVO: Chequeo de seguridad!!!
+            if ((tabName === 'chat' || tabName === 'history') && !currentUser) {
+                console.log("User not logged in. Cannot switch to " + tabName);
+                // Opcional: mostrar un mensaje
+                // authMessageEl.textContent = "Please login to view this tab.";
+                // authMessageEl.classList.add('text-red-400');
+                // authMessageEl.classList.remove('text-green-400');
+                return; // No hacer nada si no está logueado
+            }
+            
             currentTab = tabName;
             
             // Hide all content
@@ -510,7 +517,13 @@
             btnChat.classList.remove('border-blue-500', 'text-white');
             btnHistory.classList.remove('border-blue-500', 'text-white');
             btnTimer.classList.add('border-transparent', 'text-gray-400');
-            btnChat.classList.add('border-transparent', 'text-gray-400');
+            
+            // Solo quitar el gris si no están deshabilitados
+            if (currentUser) {
+                btnChat.classList.add('border-transparent', 'text-gray-400');
+                btnHistory.classList.add('border-transparent', 'text-gray-400');
+            }
+
             
             // Activate the correct one
             if (tabName === 'timer') {
@@ -525,9 +538,7 @@
             } else if (tabName === 'history') {
                 historyContent.classList.remove('hidden');
                 btnHistory.classList.add('border-blue-500', 'text-white');
-                if (!btnHistory.disabled) {
-                    btnHistory.classList.remove('border-transparent', 'text-gray-400');
-                }
+                btnHistory.classList.remove('border-transparent', 'text-gray-400');
             }
         }
         
@@ -920,12 +931,10 @@ ${localKnowledgeBase}
             userContainer.classList.remove('hidden'); // Mostrar info de usuario
             userEmailEl.textContent = user.email;
             
-            appNav.classList.remove('hidden'); // Mostrar navegación
-            appNav.classList.add('flex');
-            appMain.classList.remove('hidden'); // Mostrar contenido principal
-            
-            // Enable history button
+            // Habilitar botones de Chat e Historial
+            btnChat.disabled = false;
             btnHistory.disabled = false;
+            btnChat.classList.remove('text-gray-400');
             btnHistory.classList.remove('text-gray-400');
         }
 
@@ -936,10 +945,6 @@ ${localKnowledgeBase}
             loginContainer.classList.remove('hidden'); // Mostrar formulario de login
             userContainer.classList.add('hidden'); // Ocultar info de usuario
             userEmailEl.textContent = '';
-            
-            appNav.classList.add('hidden'); // Ocultar navegación
-            appNav.classList.remove('flex');
-            appMain.classList.add('hidden'); // Ocultar contenido principal
             
             // Reset form
             authMessageEl.textContent = '';
@@ -957,11 +962,15 @@ ${localKnowledgeBase}
                 forgotPasswordLink.classList.remove('hidden');
             }
             
-            // Disable and reset history button
+            // Disable and reset history/chat button
             btnHistory.disabled = true;
+            btnChat.disabled = true;
             btnHistory.classList.add('text-gray-400');
+            btnChat.classList.add('text-gray-400');
             btnHistory.classList.remove('border-blue-500', 'text-white');
+            btnChat.classList.remove('border-blue-500', 'text-white');
             btnHistory.classList.add('border-transparent');
+            btnChat.classList.add('border-transparent');
             
             // Clear history list
             historyList.innerHTML = '';
@@ -975,7 +984,7 @@ ${localKnowledgeBase}
             renderCalendar(currentCalendarMonth, currentCalendarYear, []); // Render empty calendar
 
             // If on history tab, switch back to timer
-            if (currentTab === 'history') {
+            if (currentTab === 'history' || currentTab === 'chat') {
                 switchTab('timer');
             }
         }
