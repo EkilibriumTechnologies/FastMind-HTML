@@ -778,7 +778,7 @@ ${localKnowledgeBase}
                 }
             } else {
                 // Es un navegador de escritorio, Android, o Safari normal. Usar Pop-up.
-                console.log("Browser or Android detected. Using signInWithPopup.");
+                console.log("Browser or Android/Safari detected. Using signInWithPopup.");
                 try {
                     const result = await signInWithPopup(auth, provider);
                     console.log("Signed in with Google (Popup):", result.user);
