@@ -128,11 +128,9 @@
                     Login
                 </button>
             </form>
-            <div class="text-center my-4 text-gray-500">or</div>
-            <button id="btn-login-google" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 flex items-center justify-center">
-                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="m24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
-                Sign in with Google
-            </button>
+            
+            <!-- ELIMINADO EL BOTÓN DE GOOGLE Y EL DIVISOR "or" -->
+            
             <div class="flex justify-between mt-4 text-sm">
                 <a href="#" id="auth-toggle" class="text-blue-400 hover:underline">Need an account? Register</a>
                 <a href="#" id="forgot-password" class="text-gray-400 hover:underline">Forgot Password?</a>
@@ -270,14 +268,11 @@
         import { 
             getAuth, 
             onAuthStateChanged,
-            signInWithPopup,
-            GoogleAuthProvider,
+            // ELIMINADOS: signInWithPopup, GoogleAuthProvider, signInWithRedirect, getRedirectResult
             signOut,
-            signInWithRedirect, 
-            getRedirectResult,
-            createUserWithEmailAndPassword, // <-- ¡¡NUEVO!!
-            signInWithEmailAndPassword,   // <-- ¡¡NUEVO!!
-            sendPasswordResetEmail      // <-- ¡¡NUEVO!!
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword,   
+            sendPasswordResetEmail      
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore,
@@ -362,8 +357,8 @@
         const authMessageEl = document.getElementById('auth-message'); // Renombrado de "auth-error"
         const authToggleLink = document.getElementById('auth-toggle');
         const authTitleEl = document.getElementById('auth-title');
-        const btnLoginGoogle = document.getElementById('btn-login-google');
-        const forgotPasswordLink = document.getElementById('forgot-password'); // <-- ¡¡NUEVO!!
+        const btnLoginGoogle = document.getElementById('btn-login-google'); // <-- ELIMINADO
+        const forgotPasswordLink = document.getElementById('forgot-password'); 
         
         const userContainer = document.getElementById('user-container');
         const btnLogout = document.getElementById('btn-logout');
@@ -715,8 +710,8 @@ ${localKnowledgeBase}
         // --- NEW: Auth & History Listeners ---
         authForm.addEventListener('submit', handleAuthSubmit);
         authToggleLink.addEventListener('click', toggleAuthMode);
-        btnLoginGoogle.addEventListener('click', signInWithGoogle); // <-- Llama a la nueva función
-        forgotPasswordLink.addEventListener('click', handleForgotPassword);
+        // ELIMINADO: btnLoginGoogle.addEventListener('click', signInWithGoogle);
+        forgotPasswordLink.addEventListener('click', handleForgotPassword); 
         btnLogout.addEventListener('click', logOut);
         btnHistory.addEventListener('click', () => switchTab('history'));
         
@@ -731,13 +726,14 @@ ${localKnowledgeBase}
 
         // ==================================================================
         // --- Your Firebase Config is already here ---
+        // ESTE ES EL CONFIG DE TU ÚLTIMO CÓDIGO (¡CON LA API KEY CORREGIDA!)
         const firebaseConfig = {
-          apiKey: "AIzaSyDFD5Ba2Y-rCDcMTxvubsr41LCYGO9_GyU",
+          apiKey: "AIzaSyDFD5Ba2Y-rCDcMTxvubsr41LCYGO9_GyU", // <-- ESTA ES LA CLAVE CORRECTA
           authDomain: "fastmind-c6603.firebaseapp.com",
           projectId: "fastmind-c6603",
-          storageBucket: "fastmind-c6603.firebasestorage.app",
-          messagingSenderId: "406678650879",
-          appId: "1:406678650879:web:08e3838f2349bcda4ff1ca",
+          storageBucket: "fastmind-c6603.firebasestorage.app", // <-- USÉ EL STORAGE BUCKET ORIGINAL
+          messagingSenderId: "406678650879", // <-- USÉ EL SENDER ID ORIGINAL
+          appId: "1:406678650879:web:08e3838f2349bcda4ff1ca", // <-- USÉ EL APP ID ORIGINAL
           measurementId: "G-MF1G9QB52L"
         };
         // ==================================================================
@@ -760,16 +756,7 @@ ${localKnowledgeBase}
                       }
                   });
                 
-                // --- Handle the Redirect Result on page load ---
-                try {
-                    const result = await getRedirectResult(auth);
-                    if (result) {
-                        // This will only trigger if the user just returned from a Google redirect
-                        console.log("Logged in via redirect:", result.user);
-                    }
-                } catch (error) {
-                    console.error("Error handling redirect result:", error);
-                }
+                // --- ELIMINADO: getRedirectResult() ---
                 
                 // --- 2. Authentication State Listener ---
                 onAuthStateChanged(auth, (user) => {
@@ -889,58 +876,8 @@ ${localKnowledgeBase}
 
 
         /**
-         * ¡¡¡MODIFICADO: Sign in with Google (Pop-up/Redirect)!!!
-         * Esta es la lógica híbrida robusta de tu código.
+         * ¡¡¡ELIMINADO: signInWithGoogle()!!!
          */
-        async function signInWithGoogle() {
-            if (!auth) return;
-            
-            // --- Ask for notification permission on login ---
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-
-            const provider = new GoogleAuthProvider();
-            
-            // Función para detectar PWA (de tu código)
-            function isPWA() {
-                return (
-                    window.matchMedia("(display-mode: standalone)").matches ||
-                    window.navigator.standalone === true ||
-                    document.referrer.includes("android-app://")
-                );
-            }
-
-            if (isPWA()) {
-                // Es PWA. Usar Redirección.
-                console.log("PWA detected. Using signInWithRedirect.");
-                try {
-                    await signInWithRedirect(auth, provider);
-                } catch (error) {
-                    console.error("Error starting redirect sign in:", error);
-                    authMessageEl.textContent = "Login failed: " + error.message;
-                    authMessageEl.classList.add('text-red-400');
-                    authMessageEl.classList.remove('text-green-400');
-                }
-            } else {
-                // Es un navegador. Intentar Pop-up, y si falla, Redirección.
-                console.log("Browser detected. Trying signInWithPopup.");
-                try {
-                    await signInWithPopup(auth, provider);
-                    // onAuthStateChanged se encargará de la UI
-                } catch (error) {
-                    console.warn("Popup failed, retrying with redirect...", error);
-                    try {
-                        await signInWithRedirect(auth, provider);
-                    } catch (redirectError) {
-                        console.error("Error starting redirect sign in:", redirectError);
-                        authMessageEl.textContent = "Login failed: " + redirectError.message;
-                        authMessageEl.classList.add('text-red-400');
-                        authMessageEl.classList.remove('text-green-400');
-                    }
-                }
-            }
-        }
         
         /**
          * ¡¡¡NUEVO: Traduce errores de Firebase!!!
