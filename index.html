@@ -30,7 +30,7 @@
     <link rel="manifest" href="/manifest.json">
     
     <!-- PWA: Color de la barra de estado del navegador -->
-    <meta name="theme-color" content="#ffffff"/> <!-- ¡Cambiado a blanco! -->
+    <meta name="theme-color" content="#111827"/>
     
     <!-- PWA: Icono para Apple -->
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/111827/FFFFFF?text=🧠&font=noto">
@@ -40,29 +40,32 @@
     <!-- Use Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         /* Custom styles for the app */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f9fafb; /* bg-gray-50 */
         }
-        
-        /* --- ESTILOS DEL NUEVO DISEÑO --- */
-        
-        /* SVG Timer Circle */
-        .timer-svg {
-            width: 260px;
-            height: 260px;
+        .progress-circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(#4A5568 0%, #E0E0E0 0);
+            transition: background 0.3s ease-out;
         }
-        .timer-svg-bg {
-            stroke: #e5e7eb; /* gray-200 */
+        .progress-circle::before {
+            content: "";
+            width: 85%;
+            height: 85%;
+            background: #111827;
+            border-radius: 50%;
         }
-        .timer-svg-progress {
-            stroke: #2563eb; /* blue-600 */
-            transition: stroke-dashoffset 0.5s linear;
+        .progress-text {
+            position: absolute;
+            text-align: center;
         }
-
         /* Ocultar scrollbar pero permitir scroll */
         .scrollbar-hide {
             -ms-overflow-style: none;  /* IE and Edge */
@@ -72,7 +75,7 @@
             display: none; /* Chrome, Safari, Opera */
         }
         
-        /* Estilos del Calendario */
+        /* --- NUEVO: Estilos del Calendario --- */
         .calendar-day {
             display: flex;
             flex-direction: column;
@@ -82,6 +85,7 @@
             width: 100%;
         }
         .calendar-day.fasted-day span {
+            /* Estilo para el número del día que se ayunó */
             font-weight: bold;
         }
         .fasted-dot {
@@ -93,111 +97,145 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen">
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 md:p-8">
 
-    <!-- Audio silencioso para el "hack" de Media Session -->
+    <!-- NEW: Silent audio element for Media Session "hack" -->
     <audio id="silent-audio" loop preload="auto" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdUaW1lciBvUkdnaHRzLiBjb20AAAAAAAAAAAAAADU2Nzc2NTU0NDEzMjEzMTIAAAAAAID/AAAAAAAAAAAAAABkTEFNRTMuMTAwAIAAAAAAABNpuAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wEAAGRMYXZmNW5zLjEzLjEwMgAAAAAAAAAAAAAA/wOECAAAALEAAAAsAAAAAVAAAAAABAAAAD0AAAAARzAAAAHAAAAEAAABCAAAAGgAAAAAAAAAAAAAAAABOaW5lVGVuAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH">
     </audio>
 
-    <!-- 
-        El "Mobile Frame" fue eliminado. 
-        El <body> ahora es el fondo de la app.
-        El contenido está centrado con max-w-2xl.
-    -->
-    <div class="max-w-xl mx-auto flex flex-col min-h-screen"> <!-- Contenedor principal -->
-
-        <!-- Header (Nuevo diseño) -->
-        <header class="flex items-center justify-between p-5 pt-12">
-            <div>
-                <h2 class="text-sm font-medium text-gray-500">Welcome,</h2>
-                <h1 id="user-greeting" class="text-2xl font-bold text-gray-900">Guest</h1>
-            </div>
-            <!-- El Logout ahora está en la sección de Login -->
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-white">🧠 FastMind</h1>
+            <p class="text-lg text-gray-400">Your AI Fasting & Wellness Coach</p>
         </header>
 
-        <!-- Contenido principal (Tabs) -->
-        <main class="flex-1 p-5">
+        <!-- 
+            ==================================================================
+            MODIFIED: LOGIN / REGISTER SECTION
+            ==================================================================
+        -->
+        <div id="login-container" class="mb-4 bg-gray-800 p-6 rounded-lg shadow-xl">
+            <h2 id="auth-title" class="text-2xl font-semibold text-center mb-4 text-white">Login</h2>
+            <form id="auth-form" class="space-y-4">
+                <input type="email" id="auth-email" placeholder="Email" required class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" id="auth-password" placeholder="Password (min. 6 characters)" required minlength="6" class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                
+                <!-- Contenedor de Error y Mensaje de Éxito -->
+                <p id="auth-message" class="text-sm text-center h-4"></p> 
+                
+                <button type="submit" id="auth-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
+                    Login
+                </button>
+            </form>
+            <div class="text-center my-4 text-gray-500">or</div>
+            <!-- ESTE ES EL BOTÓN DE GOOGLE QUE AHORA USA LA LÓGICA HÍBRIDA -->
+            <button id="btn-login-google" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="m24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+                Sign in with Google
+            </button>
+            <div class="flex justify-between mt-4 text-sm">
+                <a href="#" id="auth-toggle" class="text-blue-400 hover:underline">Need an account? Register</a>
+                <a href="#" id="forgot-password" class="text-gray-400 hover:underline">Forgot Password?</a>
+            </div>
+        </div>
+        
+        <!-- Contenedor del usuario (antes #auth-container) -->
+        <div id="user-container" class="hidden flex justify-center items-center mb-4">
+            <p id="user-email" class="text-gray-400 self-center mr-4"></p>
+            <button id="btn-logout" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                Logout
+            </button>
+        </div>
 
-            <!-- Tab Content: Timer (Visible por defecto) -->
+
+        <!-- Tab Buttons -->
+        <nav id="app-nav" class="hidden justify-center space-x-4 mb-6 border-b border-gray-700">
+            <button id="btn-timer" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent">
+                ⏱️ Fasting Timer
+            </button>
+            <button id="btn-chat" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent">
+                💬 FastMind Chatbot
+            </button>
+            <!-- NEW: History Tab Button -->
+            <button id="btn-history" class="tab-btn px-6 py-3 font-medium border-b-2 border-transparent text-gray-400" disabled>
+                📜 My History
+            </button>
+        </nav>
+
+        <!-- Tab Content -->
+        <main id="app-main" class="hidden">
+            <!-- Timer Tab Content -->
             <div id="timer-content">
-                <!-- Timer Circle (Nuevo diseño SVG) -->
-                <div class="relative timer-svg mx-auto flex items-center justify-center">
-                    <svg class="w-full h-full" viewBox="0 0 100 100">
-                        <!-- Círculo de fondo -->
-                        <circle
-                            class="timer-svg-bg"
-                            stroke-width="8" stroke="currentColor" fill="transparent"
-                            r="45" cx="50" cy="50"
-                        />
-                        <!-- Círculo de progreso -->
-                        <circle
-                            id="timer-progress-circle"
-                            class="timer-svg-progress"
-                            stroke-width="8"
-                            stroke-dasharray="283"
-                            stroke-dashoffset="283" 
-                            stroke-linecap="round" stroke="currentColor" fill="transparent"
-                            r="45" cx="50" cy="50"
-                            transform="rotate(-90 50 50)"
-                        />
-                    </svg>
-                    <div class="absolute flex flex-col items-center">
-                        <span id="phase-name" class="text-lg font-semibold text-blue-600">Not Started</span>
-                        <span id="chronometer" class="text-5xl font-bold text-gray-900 tracking-tight">00:00:00</span>
-                        <span id="timer-message" class="mt-1 text-sm text-gray-500">Press Start to begin</span>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-semibold text-center mb-6">Fasting Tracker</h2>
+                    
+                    <div class="flex justify-center space-x-4 mb-8">
+                        <button id="btn-start" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-200">
+                            ▶️ Start
+                        </button>
+                        <button id="btn-stop" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-200">
+                            ⏹ Stop
+                        </button>
                     </div>
-                </div>
 
-                <!-- Botones Start/Stop -->
-                <div class="flex justify-center space-x-4 mt-12">
-                    <button id="btn-start" class="w-1/2 py-4 px-6 bg-blue-600 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-blue-700 transition duration-300">
-                        Start Fast
-                    </button>
-                    <button id="btn-stop" class="w-1/2 py-4 px-6 bg-gray-200 text-gray-800 text-lg font-semibold rounded-full shadow-lg hover:bg-gray-300 transition duration-300">
-                        Stop Fast
-                    </button>
+                    <div id="timer-display" class="relative flex justify-center items-center mb-6">
+                        <div id="progress-circle" class="progress-circle"></div>
+                        <div class="progress-text">
+                            <div id="phase-name" class="text-3xl font-bold" style="color: #E0E0E0;">
+                                Not Started
+                            </div>
+                            <div id="chronometer" class="text-5xl font-bold tabular-nums tracking-wider" style="color: #E0E0E0;">
+                                00:00:00
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="timer-message" class="text-center text-gray-400 text-lg p-4 bg-gray-700 rounded-lg">
+                        Press ▶️ <strong>Start</strong> to begin your fast.
+                    </div>
                 </div>
             </div>
 
-            <!-- Tab Content: Chat (Oculto) -->
+            <!-- Chat Tab Content -->
             <div id="chat-content" class="hidden">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-900">FastMind AI Assistant</h2>
-                    <div id="chat-history" class="h-96 overflow-y-auto mb-4 p-4 bg-gray-100 rounded-lg space-y-4 scrollbar-hide">
-                        <div class="p-3 bg-gray-200 rounded-lg">
-                            <span class="font-bold text-blue-600">💡 FastMind:</span>
-                            <p class="text-gray-800">Hello! I'm FastMind. Ask me anything about fasting.</p>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-semibold text-center mb-6">FastMind AI Assistant</h2>
+                    <div id="chat-history" class="h-96 overflow-y-auto mb-4 p-4 bg-gray-900 rounded-lg space-y-4 scrollbar-hide">
+                        <div class="p-3 bg-gray-700 rounded-lg">
+                            <span class="font-bold text-blue-300">💡 FastMind:</span>
+                            <p class="text-gray-200">Hello! I'm FastMind. Ask me anything about fasting.</p>
                         </div>
                     </div>
                     <form id="chat-form" class="flex space-x-2">
-                        <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-3 bg-gray-100 text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="chat-input" placeholder="Ask a question about fasting..." class="flex-1 p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <button type="submit" id="chat-submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
                             Ask
                         </button>
                     </form>
                     <div id="chat-spinner" class="hidden text-center mt-4">
-                        <p class="text-gray-500">Thinking...</p>
+                        <p class="text-gray-400">Thinking...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Tab Content: History (Oculto) -->
+            <!-- MODIFIED: History Tab Content -->
             <div id="history-content" class="hidden">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-900">My Fasting History</h2>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-semibold text-center mb-6">My Fasting History</h2>
                     
-                    <!-- CALENDAR SECTION -->
+                    <!-- NEW: CALENDAR SECTION -->
                     <div id="calendar-container" class="mb-8">
                         <div class="flex justify-between items-center mb-3">
-                            <button id="prev-month" class="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg leading-none">
+                            <button id="prev-month" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg leading-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                             </button>
-                            <h3 id="month-year" class="text-xl font-semibold text-gray-900"></h3>
-                            <button id="next-month" class="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg leading-none">
+                            <h3 id="month-year" class="text-xl font-semibold text-white"></h3>
+                            <button id="next-month" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg leading-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                             </button>
                         </div>
-                        <div id="calendar-grid-header" class="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
+                        <div id="calendar-grid-header" class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2">
                             <!-- Day headers (S, M, T...) will be injected by JS -->
                         </div>
                         <div id="calendar-grid" class="grid grid-cols-7 gap-1">
@@ -205,78 +243,26 @@
                         </div>
                     </div>
                     
-                    <!-- History List Section -->
-                    <h3 class="text-xl font-semibold mb-4 text-gray-900">Completed Fasts</h3>
+                    <!-- MODIFIED: History List Section -->
+                    <h3 class="text-xl font-semibold mb-4 text-white">Completed Fasts</h3>
                     <div id="history-list" class="h-64 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
-                        <p id="history-loading" class="text-gray-500 text-center">Loading history...</p>
-                        <p id="history-empty" class="text-gray-500 text-center hidden">No fasts recorded yet.</p>
+                        <!-- History items will be loaded here -->
+                        <p id="history-loading" class="text-gray-400 text-center">Loading history...</p>
+                        <p id="history-empty" class="text-gray-400 text-center hidden">No fasts recorded yet. Stop a fast to save it here.</p>
                     </div>
                 </div>
             </div>
-            
         </main>
 
-        <!-- 
-            ==================================================================
-            NUEVA SECCIÓN DE LOGIN (siempre visible HASTA el login)
-            ==================================================================
-        -->
-        <div id="login-container" class="p-5">
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <h2 id="auth-title" class="text-2xl font-semibold text-center mb-4 text-gray-900">Login to Save History</h2>
-                <p class="text-center text-gray-500 mb-4 text-sm">Create an account to unlock the AI Chatbot and save your fasting history.</p>
-                <form id="auth-form" class="space-y-4">
-                    <input type="email" id="auth-email" placeholder="Email" required class="w-full p-3 bg-gray-100 text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <input type="password" id="auth-password" placeholder="Password (min. 6 characters)" required minlength="6" class="w-full p-3 bg-gray-100 text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    
-                    <!-- Contenedor de Error y Mensaje de Éxito -->
-                    <p id="auth-message" class="text-sm text-center h-4"></p> 
-                    
-                    <button type="submit" id="auth-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
-                        Login
-                    </button>
-                </form>
-                
-                <div class="flex justify-between mt-4 text-sm">
-                    <a href="#" id="auth-toggle" class="text-blue-600 hover:underline">Need an account? Register</a>
-                    <a href="#" id="forgot-password" class="text-gray-500 hover:underline">Forgot Password?</a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Contenedor del usuario (Oculto por defecto, reemplaza el login) -->
-        <div id="user-container" class="hidden text-center p-5">
-            <p class="text-gray-500 text-sm">Logged in as:</p>
-            <p id="user-email" class="text-gray-900 self-center mb-4"></p>
-            <button id="btn-logout" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg shadow-md transition duration-200">
-                Logout
-            </button>
-        </div>
-
-        <!-- 
-            ==================================================================
-            NUEVA NAVEGACIÓN INFERIOR
-            ==================================================================
-        -->
-        <nav class="sticky bottom-0 left-0 right-0 h-20 bg-white border-t border-gray-200 flex justify-around items-center" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
-            <button id="nav-btn-timer" class="flex flex-col items-center text-blue-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span class="text-xs font-medium">Timer</span>
-            </button>
-            <button id="nav-btn-chat" class="flex flex-col items-center text-gray-500 hover:text-blue-600" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span class="text-xs font-medium">AI Chat</span>
-            </button>
-            <button id="nav-btn-history" class="flex flex-col items-center text-gray-500 hover:text-blue-600" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m18 12-5 5-4-4-3 3"></path></svg>
-                <span class="text-xs font-medium">History</span>
-            </button>
-        </nav>
+        <!-- Footer -->
+        <footer class="text-center mt-8 text-gray-500">
+            <small>Powered by Ekilibrium Technologies | Built with Gemini</small>
+        </footer>
     </div>
 
     <!-- 
         ==================================================================
-        FIREBASE SDKs (Usando tu config más reciente)
+        NEW: FIREBASE SDKs
         ==================================================================
     -->
     <script type="module">
@@ -290,7 +276,7 @@
             signOut,
             signInWithRedirect, 
             getRedirectResult,
-            createUserWithEmailAndPassword,
+            createUserWithEmailAndPassword, 
             signInWithEmailAndPassword,   
             sendPasswordResetEmail      
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -305,941 +291,4 @@
             serverTimestamp,
             orderBy,
             enableIndexedDbPersistence // <-- Offline Persistence!
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-
-        // Nivel de log para depuración
-        setLogLevel('Debug');
-
-        // --- DATA (From your uploaded CSV 'fastmind_fasting_phases_en.csv') ---
-        const fastingData = [
-            { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Digest", color_hex: "#FFA500", description: "Your body is processing the last meal and absorbing nutrients.", what_to_eat: "Water, green tea, or black coffee.", symptoms: "Drowsiness or heaviness.", recommendations: "Avoid eating again; let digestion finish.", tip: "Begin your journey calmly." },
-            { fase_inicio_h: 4, fase_fin_h: 12, keyword: "Shift", color_hex: "#FFD700", description: "The body starts using liver glycogen for energy.", what_to_eat: "Water, black coffee, or mineral water.", symptoms: "Mild hunger, cravings.", recommendations: "Stay busy and drink water every hour.", tip: "Your metabolism begins to shift." },
-            { fase_inicio_h: 12, fase_fin_h: 18, keyword: "Burn", color_hex: "#ADFF2F", description: "Glycogen reserves deplete and fat burning begins.", what_to_eat: "Water with electrolytes or green tea.", symptoms: "Mild headache, feeling of emptiness.", recommendations: "Stay hydrated and avoid excess caffeine.", tip: "Your body starts real fat burning." },
-            { fase_inicio_h: 18, fase_fin_h: 24, keyword: "Switch", color_hex: "#00B050", description: "Ketosis activates: your body uses fat as its main energy source.", what_to_eat: "Water with pink salt or clear broth.", symptoms: "Ketone breath, unstable energy.", recommendations: "Rest or walk lightly.", tip: "You are entering repair mode." },
-            { fase_inicio_h: 24, fase_fin_h: 36, keyword: "Focus", color_hex: "#00B0F0", description: "Ketosis stabilizes; mental clarity increases.", what_to_eat: "Water, herbal teas, or green tea.", symptoms: "Reduced appetite, higher focus.", recommendations: "Avoid intense exercise; listen to your body.", tip: "Your mind becomes sharper." },
-            { fase_inicio_h: 36, fase_fin_h: 48, keyword: "Cleanse", color_hex: "#0070C0", description: "Autophagy begins: cells remove waste and regenerate.", what_to_eat: "Water, herbal tea, electrolytes.", symptoms: "Calm, mild fatigue possible.", recommendations: "Rest and reduce stress.", tip: "Your body is cleansing at the cellular level." },
-            { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renew", color_hex: "#7030A0", description: "Damaged proteins degrade and cells renew themselves.", what_to_eat: "Water, teas, or fat-free broth.", symptoms: "Mild fatigue, occasional dizziness.", recommendations: "Take breaks and breathe deeply.", tip: "You are renewing your system." },
-            { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Reset", color_hex: "#9966CC", description: "Your immune system strengthens and produces new cells.", what_to_eat: "Water or mild tea.", symptoms: "Light dizziness, mental calm.", recommendations: "Avoid strong caffeine and prioritize rest.", tip: "Your body is rebooting from within." },
-            { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Zen", color_hex: "#708090", description: "Your metabolism becomes efficient and stable in prolonged ketosis.", what_to_eat: "Water, teas, vegetable broths.", symptoms: "Well-being, balanced energy.", recommendations: "Sleep well and stay hydrated.", tip: "You are in full control." },
-            { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Rebirth", color_hex: "#F5F5F5", description: "Maximum cellular regeneration achieved; time to break your fast.", what_to_eat: "Broth, light protein, soft fruits.", symptoms: "Controlled hunger, heightened senses.", recommendations: "Break your fast slowly and with care.", tip: "You have achieved a state of deep renewal." }
-        ];
-
-        // --- STATE MANAGEMENT ---
-        let startTime = null; // This will be set from localStorage if a fast is running
-        let running = false;
-        let elapsedHours = 0;
-        let chatHistory = [];
-        let currentTab = 'timer';
-        let timerInterval = null;
-        
-        // --- NEW: Firebase & Auth State ---
-        let auth;
-        let db;
-        let currentUser = null;
-        let historyUnsubscribe = null; // To stop the history listener
-        
-        // --- NEW: Calendar State ---
-        let currentCalendarMonth = new Date().getMonth(); // 0-11
-        let currentCalendarYear = new Date().getFullYear();
-        let allUserFasts = []; // Caches all fasts to avoid re-fetching
-        
-        // --- NEW: Auth UI State ---
-        let isRegisterMode = false;
-
-        // --- DOM ELEMENTS (NUEVOS IDs) ---
-        const timerContent = document.getElementById('timer-content');
-        const chatContent = document.getElementById('chat-content');
-        const historyContent = document.getElementById('history-content');
-        
-        const btnStart = document.getElementById('btn-start');
-        const btnStop = document.getElementById('btn-stop');
-        const progressCircle = document.getElementById('timer-progress-circle'); // <-- ID de SVG
-        const phaseNameEl = document.getElementById('phase-name');
-        const chronometerEl = document.getElementById('chronometer');
-        const timerMessage = document.getElementById('timer-message');
-        
-        const chatForm = document.getElementById('chat-form');
-        const chatInput = document.getElementById('chat-input');
-        const chatSubmit = document.getElementById('chat-submit');
-        const chatHistoryEl = document.getElementById('chat-history');
-        const chatSpinner = document.getElementById('chat-spinner');
-        
-        // --- NEW: App Shell Elements ---
-        const appNav = document.getElementById('app-nav');
-        const appMain = document.getElementById('app-main');
-        const navBtnTimer = document.getElementById('nav-btn-timer');
-        const navBtnChat = document.getElementById('nav-btn-chat');
-        const navBtnHistory = document.getElementById('nav-btn-history');
-
-        // --- NEW: Auth & History DOM Elements ---
-        const loginContainer = document.getElementById('login-container');
-        const authForm = document.getElementById('auth-form');
-        const authEmailEl = document.getElementById('auth-email');
-        const authPasswordEl = document.getElementById('auth-password');
-        const authSubmitBtn = document.getElementById('auth-submit');
-        const authMessageEl = document.getElementById('auth-message'); 
-        const authToggleLink = document.getElementById('auth-toggle');
-        const authTitleEl = document.getElementById('auth-title');
-        // const btnLoginGoogle = document.getElementById('btn-login-google'); // <-- ELIMINADO
-        const forgotPasswordLink = document.getElementById('forgot-password'); 
-        
-        const userContainer = document.getElementById('user-container');
-        const btnLogout = document.getElementById('btn-logout');
-        const userEmailEl = document.getElementById('user-email');
-        const userGreetingEl = document.getElementById('user-greeting'); // <-- NUEVO
-        
-        const historyList = document.getElementById('history-list');
-        const historyLoading = document.getElementById('history-loading');
-        const historyEmpty = document.getElementById('history-empty');
-        
-        // --- NEW: Media Session Audio Element ---
-        const silentAudio = document.getElementById('silent-audio');
-        
-        // --- NEW: Calendar DOM Elements ---
-        const btnPrevMonth = document.getElementById('prev-month');
-        const btnNextMonth = document.getElementById('next-month');
-        const monthYearEl = document.getElementById('month-year');
-        const calendarGridHeaderEl = document.getElementById('calendar-grid-header');
-        const calendarGridEl = document.getElementById('calendar-grid');
-
-        
-        // --- CORE LOGIC (Functions) ---
-
-        function getPhase(hours) {
-            const phase = fastingData.find(p => hours >= p.fase_inicio_h && hours < p.fase_fin_h);
-            return phase || fastingData[fastingData.length - 1];
-        }
-
-        function formatTime(totalSeconds) {
-            const h = Math.floor(totalSeconds / 3600);
-            const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = totalSeconds % 60;
-            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
-
-        /**
-         * ¡¡¡MODIFICADO: updateTimer() para el SVG!!!
-         */
-        function updateTimer() {
-            if (!running || !startTime) return; // Need startTime to be set
-            
-            const elapsedMs = Date.now() - startTime;
-            const elapsedSec = Math.floor(elapsedMs / 1000);
-            const timeString = formatTime(elapsedSec);
-            elapsedHours = elapsedMs / (1000 * 3600);
-            
-            const currentPhase = getPhase(elapsedHours);
-            const maxHours = 120; // 120 horas es el 100%
-            
-            // Lógica del SVG
-            const radius = 45;
-            const circumference = 2 * Math.PI * radius; // 282.74
-            const pct = Math.min(elapsedHours / maxHours, 1.0);
-            const offset = circumference - (pct * circumference);
-            
-            progressCircle.style.strokeDashoffset = offset;
-            
-            // Lógica de color (del CSV)
-            progressCircle.style.stroke = currentPhase.color_hex;
-
-            // Actualizar texto
-            chronometerEl.textContent = timeString;
-            phaseNameEl.textContent = currentPhase.keyword;
-            phaseNameEl.style.color = currentPhase.color_hex;
-            
-            if (running) {
-                 timerMessage.textContent = currentPhase.tip;
-                 updateMediaSession(timeString, currentPhase.keyword);
-            }
-        }
-
-        function startTimer() {
-            startTime = Date.now();
-            running = true;
-            elapsedHours = 0;
-
-            localStorage.setItem('fastStartTime', startTime.toString());
-            localStorage.setItem('fastRunning', 'true');
-
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-            timerInterval = setInterval(updateTimer, 1000);
-            updateTimer();
-
-            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.active.postMessage('START_TIMER');
-                });
-            }
-            
-            silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
-        }
-
-        function stopTimer() {
-            if (!running) return; 
-            
-            running = false;
-            
-            localStorage.removeItem('fastStartTime');
-            localStorage.removeItem('fastRunning');
-            
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-            
-            const finalTime = chronometerEl.textContent;
-            const finalHours = elapsedHours;
-            const finalPhase = getPhase(finalHours);
-            
-            timerMessage.textContent = `Fast completed! Total time: ${finalTime}`;
-            
-            if (currentUser) {
-                saveFastToFirestore(finalHours, finalTime, finalPhase);
-                timerMessage.innerHTML += "<br><em>Saved to your history!</em>";
-            } else {
-                console.log("User not logged in. Fast not saved to history.");
-                timerMessage.innerHTML += "<br><em>Login to save your fast to history!</em>";
-            }
-
-            // Reset visual
-            phaseNameEl.textContent = "Not Started";
-            phaseNameEl.style.color = "#2563eb"; // blue-600
-            chronometerEl.textContent = "00:00:00";
-            progressCircle.style.strokeDashoffset = 283; // Círculo vacío
-            progressCircle.style.stroke = "#2563eb"; // blue-600
-            elapsedHours = 0;
-            startTime = null; 
-
-            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.active.postMessage('STOP_TIMER');
-                });
-            }
-            
-            silentAudio.pause();
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = null;
-                navigator.mediaSession.playbackState = "none";
-            }
-        }
-
-        /**
-         * ¡¡¡MODIFICADO: switchTab() para la nueva barra de navegación!!!
-         */
-        function switchTab(tabName) {
-            // Chequeo de seguridad
-            if ((tabName === 'chat' || tabName === 'history') && !currentUser) {
-                console.log("User not logged in. Cannot switch to " + tabName);
-                authMessageEl.textContent = "Please login to view this tab.";
-                authMessageEl.classList.add('text-red-400');
-                authMessageEl.classList.remove('text-green-400');
-                return; 
-            }
-            
-            currentTab = tabName;
-            
-            // Ocultar todos los contenidos
-            timerContent.classList.add('hidden');
-            chatContent.classList.add('hidden');
-            historyContent.classList.add('hidden');
-            
-            // Quitar estilos activos de todos los botones de navegación
-            navBtnTimer.classList.remove('text-blue-600');
-            navBtnChat.classList.remove('text-blue-600');
-            navBtnHistory.classList.remove('text-blue-600');
-            navBtnTimer.classList.add('text-gray-500');
-            if (currentUser) { // Solo cambiar si están activos
-                navBtnChat.classList.add('text-gray-500');
-                navBtnHistory.classList.add('text-gray-500');
-            }
-            
-            // Activar el tab correcto
-            if (tabName === 'timer') {
-                timerContent.classList.remove('hidden');
-                navBtnTimer.classList.add('text-blue-600');
-                navBtnTimer.classList.remove('text-gray-500');
-            } else if (tabName === 'chat') {
-                chatContent.classList.remove('hidden');
-                navBtnChat.classList.add('text-blue-600');
-                navBtnChat.classList.remove('text-gray-500');
-                renderChatHistory(); // Render chat
-            } else if (tabName === 'history') {
-                historyContent.classList.remove('hidden');
-                navBtnHistory.classList.add('text-blue-600');
-                navBtnHistory.classList.remove('text-gray-500');
-            }
-        }
-        
-        function updateMediaSession(timeString, phase) {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: `Fast in Progress: ${timeString}`,
-                    artist: `Current Phase: ${phase}`,
-                    album: 'FastMind',
-                    artwork: [
-                        { src: 'https://placehold.co/192x192/111827/FFFFFF?text=🧠&font=noto', sizes: '192x192', type: 'image/png' },
-                        { src: 'https://placehold.co/512x512/111827/FFFFFF?text=🧠&font=noto', sizes: '512x512', type: 'image/png' },
-                    ]
-                });
-                navigator.mediaSession.playbackState = "playing";
-            }
-        }
-
-        function renderChatHistory() {
-            chatHistoryEl.innerHTML = `
-                <div class="p-3 bg-gray-200 rounded-lg">
-                    <span class="font-bold text-blue-600">💡 FastMind:</span>
-                    <p class="text-gray-800">Hello! I'm FastMind. Ask me anything about fasting.</p>
-                </div>`;
-            for (const [question, answer] of chatHistory) {
-                const qDiv = document.createElement('div');
-                qDiv.className = "p-3 bg-blue-100 rounded-lg text-right"; // Fondo azul claro
-                const safeQuestion = question.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                qDiv.innerHTML = `<span class="font-bold text-gray-800">You:</span><p class="text-gray-900">${safeQuestion}</p>`;
-                chatHistoryEl.appendChild(qDiv);
-                
-                const aDiv = document.createElement('div');
-                aDiv.className = "p-3 bg-gray-200 rounded-lg";
-                
-                let formattedAnswer = answer
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/\n/g, "<br>")
-                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-                
-                formattedAnswer = formattedAnswer.replace(
-                    /\[(\d+)\] (.*?): (https?:\/\/[^\s]+)/g,
-                    '<br>[<a href="$3" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">$1</a>] $2'
-                );
-
-                aDiv.innerHTML = `<span class="font-bold text-blue-600">💡 FastMind:</span><div class="text-gray-800 mt-1">${formattedAnswer}</div>`;
-                chatHistoryEl.appendChild(aDiv);
-            }
-            chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
-        }
-
-        async function handleChatSubmit(event) {
-            event.preventDefault();
-            const question = chatInput.value.trim();
-            if (!question) return;
-
-            chatInput.value = '';
-            chatInput.disabled = true;
-            chatSubmit.disabled = true;
-            chatSpinner.classList.remove('hidden');
-
-            try {
-                const answer = await askFastMind(question);
-                chatHistory.push([question, answer]);
-                renderChatHistory();
-            } catch (error) {
-                console.error("Error asking FastMind:", error);
-                chatHistory.push([question, "⚠️ There was an error contacting the assistant. Please try again."]);
-                renderChatHistory();
-            } finally {
-                chatInput.disabled = false;
-                chatSubmit.disabled = false;
-                chatSpinner.classList.add('hidden');
-                chatInput.focus();
-            }
-        }
-
-        async function askFastMind(question) {
-            const localKnowledgeBase = `
-- **Primary Document:** fasting_guide.pdf
-- **Key Topic:** The Five Most Common and Beneficial Types of Fasting.
-- **1. Intermittent Fasting (IF) / Time-Restricted Eating (TRE):**
-    - **Method:** Alternating between eating and fasting periods.
-    - **Example (16/8):** Fast for 16 hours, eat within an 8-hour window (e.g., 12pm-8pm).
-    - **Example (TRF):** Confine eating to a window of < 12 hours.
-    - **Benefits:** Physical health and spiritual growth.
-    - **Cultural Context:** Practiced in many religions (Ramadan, Yom Kippur, Lent, Navaratri).
-`;
-            const systemPrompt = "You are FastMind, a scientific fasting and wellness coach. You must answer in the language of the user's question. \n\n**Your Process (Hybrid RAG):** \n1. **FIRST,** try to answer the user's question using *only* the 'Local Knowledge Base' provided in the prompt. \n2. **SECOND,** if the answer is *not* in the Local Knowledge Base, *then* use Google Search to find scientific information, data, or guides to answer it.";
-            const userQuery = `**Local KnowledgeBase:**
-${localKnowledgeBase}
----
-**User question:** ${question}`;
-            
-            // Your Gemini API Key is already here
-            const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; 
-
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                tools: [{ "google_search": {} }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-            };
-
-            let response;
-            let retries = 0;
-            const maxRetries = 3;
-            let delay = 1000;
-            
-            while (retries < maxRetries) {
-                try {
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (response.ok) break;
-                    if (response.status === 429 || response.status >= 500) {
-                        retries++;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2;
-                    } else {
-                        const errorBody = await response.text();
-                        console.error("API Error Body:", errorBody);
-                        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-                    }
-                } catch (error) {
-                    console.error("Fetch attempt " + (retries + 1) + " failed:", error);
-                    if (retries >= maxRetries - 1) throw error;
-                    retries++;
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2;
-                }
-            }
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch from API after ${maxRetries} retries.`);
-            }
-
-            const result = await response.json();
-            const candidate = result.candidates?.[0];
-            let sources = [];
-            let text = "Could not generate a response.";
-
-            if (candidate && candidate.content?.parts?.[0]?.text) {
-                text = candidate.content.parts[0].text;
-                const groundingMetadata = candidate.groundingMetadata;
-                if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                    sources = groundingMetadata.groundingAttributions
-                        .map(attribution => ({
-                            uri: attribution.web?.uri,
-                            title: attribution.web?.title,
-                        }))
-                        .filter(source => source.uri && source.title);
-                }
-                if (sources.length > 0) {
-                    text += "\n\n**Sources:**";
-                    sources.forEach((source, index) => {
-                        text += `\n[${index + 1}] ${source.title}: ${source.uri}`;
-                    });
-                }
-            } else {
-                 console.error("Invalid API response structure:", result);
-                 throw new Error("Invalid API response structure.");
-            }
-            return text;
-        }
-
-        // --- EVENT LISTENERS (NUEVA NAVEGACIÓN) ---
-        btnStart.addEventListener('click', startTimer);
-        btnStop.addEventListener('click', stopTimer);
-        navBtnTimer.addEventListener('click', () => switchTab('timer'));
-        navBtnChat.addEventListener('click', () => switchTab('chat'));
-        navBtnHistory.addEventListener('click', () => switchTab('history'));
-        chatForm.addEventListener('submit', handleChatSubmit);
-        
-        // --- Auth & History Listeners ---
-        authForm.addEventListener('submit', handleAuthSubmit);
-        authToggleLink.addEventListener('click', toggleAuthMode);
-        // btnLoginGoogle.addEventListener('click', signInWithGoogle); // <-- ELIMINADO
-        forgotPasswordLink.addEventListener('click', handleForgotPassword); 
-        btnLogout.addEventListener('click', logOut);
-        
-        // --- Calendar Listeners ---
-        btnPrevMonth.addEventListener('click', showPrevMonth);
-        btnNextMonth.addEventListener('click', showNextMonth);
-
-
-        // ---
-        // --- START: FIREBASE LOGIC
-        // ---
-
-        // ==================================================================
-        // --- Your Firebase Config (de tu código nuevo) ---
-        const firebaseConfig = {
-          apiKey: "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8",
-          authDomain: "fastmind-c6603.firebaseapp.com",
-          projectId: "fastmind-c6603",
-          storageBucket: "fastmind-c6603.appspot.com",
-          messagingSenderId: "544305484742",
-          appId: "1:544305484742:web:b94f07f5d456da8d4817b8"
-        };
-        // ==================================================================
-
-
-        // --- 1. Initialize Firebase ---
-        try {
-            if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                // --- NEW: Enable Offline Persistence ---
-                enableIndexedDbPersistence(db)
-                  .catch((err) => {
-                      if (err.code == 'failed-precondition') {
-                          console.warn("Firebase persistence failed. Multiple tabs open?");
-                      } else if (err.code == 'unimplemented') {
-                          console.log("Firebase persistence is not available in this browser.");
-                      }
-                  });
-                
-                // --- ELIMINADO: getRedirectResult() ---
-                
-                // --- 2. Authentication State Listener ---
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        // User is logged in
-                        console.log("User is logged in:", user.uid);
-                        currentUser = user;
-                        updateUIForLoggedIn(user);
-                        loadFastingHistory(); // Load user's history
-                    } else {
-                        // User is logged out
-                        console.log("User is logged out.");
-                        currentUser = null;
-                        updateUIForLoggedOut();
-                        if (historyUnsubscribe) {
-                            historyUnsubscribe(); // Stop listening to history
-                        }
-                    }
-                });
-            } else {
-                console.warn("Firebase config is missing or incomplete. Please add it to index.html.");
-                loginContainer.innerHTML = '<p class="text-red-500 text-center">Firebase config is missing.</p>';
-            }
-        } catch (e) {
-            console.error("Error initializing Firebase:", e);
-            loginContainer.innerHTML = '<p class="text-red-500 text-center">Error initializing Firebase. Check config.</p>';
-        }
-
-
-        // --- 3. Auth Functions ---
-        
-        /**
-         * ¡¡¡NUEVO: Manejador del formulario de Email/Password!!!
-         */
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-            if (!auth) return;
-
-            const email = authEmailEl.value;
-            const password = authPasswordEl.value;
-            authMessageEl.textContent = ''; // Limpiar errores
-            authSubmitBtn.disabled = true;
-            authSubmitBtn.textContent = 'Processing...';
-
-            try {
-                if (isRegisterMode) {
-                    // --- MODO REGISTRO ---
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    console.log("User created and signed in!");
-                    // onAuthStateChanged se encargará de actualizar la UI
-                } else {
-                    // --- MODO LOGIN ---
-                    await signInWithEmailAndPassword(auth, email, password);
-                    console.log("User signed in!");
-                    // onAuthStateChanged se encargará de actualizar la UI
-                }
-            } catch (error) {
-                console.error("Auth Error:", error.code, error.message);
-                authMessageEl.textContent = getFriendlyAuthError(error);
-                authMessageEl.classList.add('text-red-400');
-                authMessageEl.classList.remove('text-green-400');
-                authSubmitBtn.disabled = false;
-                authSubmitBtn.textContent = isRegisterMode ? 'Register' : 'Login';
-            }
-        }
-
-        /**
-         * ¡¡¡NUEVO: Cambia entre modo Login y Registro!!!
-         */
-        function toggleAuthMode(e) {
-            e.preventDefault();
-            isRegisterMode = !isRegisterMode;
-            authMessageEl.textContent = ''; // Limpiar errores
-            authMessageEl.classList.add('text-red-400');
-            authMessageEl.classList.remove('text-green-400');
-            authPasswordEl.classList.remove('hidden'); // Asegurarse de que el password sea visible
-            
-            if (isRegisterMode) {
-                authTitleEl.textContent = 'Register Account';
-                authSubmitBtn.textContent = 'Register';
-                authToggleLink.textContent = 'Already have an account? Login';
-                forgotPasswordLink.classList.add('hidden'); // Ocultar en modo registro
-            } else {
-                authTitleEl.textContent = 'Login to Save History';
-                authSubmitBtn.textContent = 'Login';
-                authToggleLink.textContent = 'Need an account? Register';
-                forgotPasswordLink.classList.remove('hidden'); // Mostrar en modo login
-            }
-        }
-        
-        /**
-         * ¡¡¡NUEVO: Manejador de "Forgot Password"!!!
-         */
-        async function handleForgotPassword(e) {
-            e.preventDefault();
-            const email = authEmailEl.value;
-            if (!email) {
-                authMessageEl.textContent = 'Please enter your email first.';
-                authMessageEl.classList.add('text-red-400');
-                authMessageEl.classList.remove('text-green-400');
-                return;
-            }
-            
-            try {
-                await sendPasswordResetEmail(auth, email);
-                authMessageEl.textContent = 'Password reset email sent! Check your inbox.';
-                authMessageEl.classList.add('text-green-400');
-                authMessageEl.classList.remove('text-red-400');
-            } catch (error) {
-                console.error("Password reset error:", error);
-                authMessageEl.textContent = getFriendlyAuthError(error);
-                authMessageEl.classList.add('text-red-400');
-                authMessageEl.classList.remove('text-green-400');
-            }
-        }
-
-
-        /**
-         * ¡¡¡ELIMINADO: signInWithGoogle()!!!
-         */
-        
-        /**
-         * ¡¡¡NUEVO: Traduce errores de Firebase!!!
-         */
-        function getFriendlyAuthError(error) {
-            switch (error.code) {
-                case 'auth/invalid-email':
-                    return 'Please enter a valid email.';
-                case 'auth/user-not-found':
-                case 'auth/wrong-password':
-                    return 'Invalid email or password.';
-                case 'auth/email-already-in-use':
-                    return 'An account with this email already exists.';
-                case 'auth/weak-password':
-                    return 'Password must be at least 6 characters long.';
-                default:
-                    return 'An unknown error occurred. Please try again.';
-            }
-        }
-
-
-        /**
-         * Sign out
-         */
-        async function logOut() {
-            if (!auth) return;
-            try {
-                await signOut(auth);
-                console.log("User signed out.");
-            } catch (error) {
-                console.error("Error signing out:", error);
-            }
-        }
-
-        /**
-         * Update UI for logged-in user
-         */
-        function updateUIForLoggedIn(user) {
-            loginContainer.classList.add('hidden'); // Ocultar formulario de login
-            userContainer.classList.remove('hidden'); // Mostrar info de usuario
-            userEmailEl.textContent = user.email;
-            userGreetingEl.textContent = user.email.split('@')[0]; // Saludo
-            
-            // Habilitar botones de Chat e Historial
-            navBtnChat.disabled = false;
-            navBtnHistory.disabled = false;
-            navBtnChat.classList.remove('text-gray-500');
-            navBtnHistory.classList.remove('text-gray-500');
-        }
-
-        /**
-         * Update UI for logged-out user
-         */
-        function updateUIForLoggedOut() {
-            loginContainer.classList.remove('hidden'); // Mostrar formulario de login
-            userContainer.classList.add('hidden'); // Ocultar info de usuario
-            userEmailEl.textContent = '';
-            userGreetingEl.textContent = 'Guest'; // Saludo
-            
-            // Reset form
-            authMessageEl.textContent = '';
-            authMessageEl.classList.add('text-red-400');
-            authMessageEl.classList.remove('text-green-400');
-            authEmailEl.value = '';
-            authPasswordEl.value = '';
-            authSubmitBtn.disabled = false;
-            if (isRegisterMode) {
-                // Forzar de vuelta a modo login
-                isRegisterMode = false; 
-                authTitleEl.textContent = 'Login to Save History';
-                authSubmitBtn.textContent = 'Login';
-                authToggleLink.textContent = 'Need an account? Register';
-                forgotPasswordLink.classList.remove('hidden');
-            }
-            
-            // Disable and reset history/chat button
-            navBtnHistory.disabled = true;
-            navBtnChat.disabled = true;
-            navBtnHistory.classList.add('text-gray-500');
-            navBtnChat.classList.add('text-gray-500');
-            navBtnHistory.classList.remove('text-blue-600');
-            navBtnChat.classList.remove('text-blue-600');
-            
-            // Clear history list
-            historyList.innerHTML = '';
-            historyEmpty.classList.remove('hidden');
-            historyLoading.classList.add('hidden');
-            
-            // --- NEW: Clear calendar and reset ---
-            allUserFasts = [];
-            currentCalendarMonth = new Date().getMonth();
-            currentCalendarYear = new Date().getFullYear();
-            renderCalendar(currentCalendarMonth, currentCalendarYear, []); // Render empty calendar
-
-            // If on history tab, switch back to timer
-            if (currentTab === 'history' || currentTab === 'chat') {
-                switchTab('timer');
-            }
-        }
-
-
-        // --- 4. Firestore (Database) Functions ---
-
-        /**
-         * Save completed fast to Firestore
-         */
-        async function saveFastToFirestore(hours, durationString, phase) {
-            if (!currentUser || !db) {
-                console.error("No user or db to save fast for.");
-                return;
-            }
-
-            try {
-                // This will now work offline!
-                const docRef = await addDoc(collection(db, "users", currentUser.uid, "fasts"), {
-                    userId: currentUser.uid,
-                    completedAt: serverTimestamp(), // Use server time
-                    durationHours: hours,
-                    durationString: durationString,
-                    finalPhase: phase.keyword,
-                    finalPhaseColor: phase.color_hex
-                });
-                console.log("Fast saved with ID: ", docRef.id);
-                timerMessage.innerHTML += "<br><em>Saved to your history!</em>";
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                // This message will show if offline
-                timerMessage.innerHTML += "<br><em>Saved offline. Will sync when online.</em>";
-            }
-        }
-
-        /**
-         * Load fasting history for current user
-         */
-        function loadFastingHistory() {
-            if (!currentUser || !db) return;
-
-            console.log("Loading history for user:", currentUser.uid);
-            historyLoading.classList.remove('hidden');
-            historyEmpty.classList.add('hidden');
-            historyList.innerHTML = ''; // Clear list
-
-            // Query the user's 'fasts' collection, order by date
-            const q = query(collection(db, "users", currentUser.uid, "fasts"), orderBy("completedAt", "desc"));
-
-            // onSnapshot listens for real-time updates (and works offline)
-            historyUnsubscribe = onSnapshot(q, (querySnapshot) => {
-                historyLoading.classList.add('hidden');
-                const fasts = [];
-                querySnapshot.forEach((doc) => {
-                    fasts.push(doc.data());
-                });
-
-                allUserFasts = fasts; // <-- NEW: Store all fasts globally
-
-                if (allUserFasts.length === 0) {
-                    historyEmpty.classList.remove('hidden');
-                    historyList.innerHTML = '';
-                } else {
-                    historyEmpty.classList.add('hidden');
-                    renderHistoryList(allUserFasts); // Render list
-                }
-                
-                // --- NEW: Render the calendar ---
-                renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts);
-                
-            }, (error) => {
-                console.error("Error loading history:", error);
-                historyLoading.classList.add('hidden');
-                historyList.innerHTML = '<p class="text-red-500">Error loading history.</p>';
-            });
-        }
-
-        /**
-         * Render the list of fasts to the HTML
-         */
-        function renderHistoryList(fasts) {
-            historyList.innerHTML = ''; // Clear list
-            fasts.forEach(fast => {
-                const div = document.createElement('div');
-                div.className = "bg-gray-100 p-4 rounded-lg flex justify-between items-center"; // Fondo claro
-                
-                const date = fast.completedAt?.toDate().toLocaleDateString() || 'No date';
-                const time = fast.completedAt?.toDate().toLocaleTimeString() || '';
-                
-                div.innerHTML = `
-                    <div>
-                        <p class="text-lg font-semibold text-gray-900">${date} <span class="text-sm text-gray-500">${time}</span></p>
-                        <p class="text-gray-600">Duration: <span class="font-bold text-gray-900">${fast.durationString}</span></p>
-                    </div>
-                    <span class="font-bold py-1 px-3 rounded-full" style="color: ${fast.finalPhaseColor === '#F5F5F5' ? '#333' : '#FFF'}; background-color: ${fast.finalPhaseColor};">
-                        ${fast.finalPhase}
-                    </span>
-                `;
-                historyList.appendChild(div);
-            });
-        }
-        
-        // --- 5. NEW: Calendar Functions ---
-        
-        /**
-         * Renders the calendar grid for the given month, year, and fasts
-         */
-        function renderCalendar(month, year, fasts) {
-            calendarGridEl.innerHTML = '';
-            calendarGridHeaderEl.innerHTML = '';
-            
-            // 1. Set Month/Year Title (using Spanish locale for month names)
-            const monthName = new Date(year, month).toLocaleString('es-ES', { month: 'long' });
-            monthYearEl.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
-            
-            // 2. Create Day Headers (S, M, T...)
-            const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // English days
-            dayHeaders.forEach(day => {
-                const dayEl = document.createElement('div');
-                dayEl.textContent = day;
-                calendarGridHeaderEl.appendChild(dayEl);
-            });
-            
-            // 3. Get calendar grid info (using Sunday as first day of week, locale-agnostic)
-            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 (Sun) - 6 (Sat)
-            const daysInMonth = new Date(year, month + 1, 0).getDate(); // 30, 31, etc.
-            
-            // 4. Create a Set of fasted dates for quick lookup
-            // Formato: "YYYY-MM-DD"
-            const fastDates = new Set(
-                fasts.map(f => {
-                    const d = f.completedAt?.toDate();
-                    if (!d) return null;
-                    // Format to YYYY-MM-DD
-                    const year = d.getFullYear();
-                    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-                    const day = d.getDate().toString().padStart(2, '0');
-                    return `${year}-${month}-${day}`;
-                }).filter(Boolean) // Filtra nulos
-            );
-            
-            // 5. Add empty cells for days before the 1st
-            for (let i = 0; i < firstDayOfMonth; i++) {
-                const emptyEl = document.createElement('div');
-                calendarGridEl.appendChild(emptyEl);
-            }
-            
-            // 6. Add all days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayEl = document.createElement('div');
-                dayEl.className = 'calendar-day relative text-gray-800'; // Texto oscuro
-                
-                // Formatear la fecha como "YYYY-MM-DD" para comparar
-                const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                
-                let dayContent = `<span>${day}</span>`;
-                
-                // Check if this day was a fast day
-                if (fastDates.has(dateString)) {
-                    dayEl.classList.add('fasted-day');
-                    dayContent += '<div class="fasted-dot"></div>';
-                }
-                
-                dayEl.innerHTML = dayContent;
-                calendarGridEl.appendChild(dayEl);
-            }
-        }
-        
-        /**
-         * Shows the previous month's calendar
-         */
-        function showPrevMonth() {
-            if (currentCalendarMonth === 0) {
-                currentCalendarMonth = 11;
-                currentCalendarYear--;
-            } else {
-                currentCalendarMonth--;
-            }
-            renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts);
-        }
-        
-        /**
-         * Shows the next month's calendar
-         */
-        function showNextMonth() {
-            if (currentCalendarMonth === 11) {
-                currentCalendarMonth = 0;
-                currentCalendarYear++;
-            } else {
-                currentCalendarMonth++;
-            }
-            renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts);
-        }
-
-
-        // --- APP INITIALIZATION ---
-        
-        // --- NEW: Check for running fast on app load ---
-        const savedStartTime = localStorage.getItem('fastStartTime');
-        const savedRunning = localStorage.getItem('fastRunning');
-
-        if (savedStartTime && savedRunning === 'true') {
-            console.log('Found a running fast in localStorage.');
-            startTime = parseInt(savedStartTime, 10);
-            running = true;
-            timerInterval = setInterval(updateTimer, 1000);
-            updateTimer(); // Run immediately to show correct time
-            
-            // Also resume the audio "hack"
-            silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
-        }
-        
-        // Start on the timer tab
-        switchTab('timer'); 
-
-        // --- PWA: REGISTER THE SERVICE WORKER ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(err => {
-                        console.error('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-
-    </script>
-
-</body>
-</html>
-</html>
+        } from "https"
