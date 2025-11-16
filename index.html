@@ -6,6 +6,10 @@
 
     <!-- Primary Meta Tags -->
     <title>FastMind – AI Fasting Coach</title>
+    
+    <!-- *** ¡FAVICON AÑADIDO! *** -->
+    <link rel="icon" type="image/x-icon" href="./fastmind_logo.ico">
+
     <meta name="title" content="FastMind – AI Fasting Coach">
     <meta name="description" content="FastMind helps you track your intermittent fasting phases with real-time timers, science-based insights, and an AI assistant that guides your wellness journey.">
 
@@ -214,7 +218,9 @@
         
         <!-- Header -->
         <header class="relative text-center mb-6">
-            <h1 class="text-4xl font-bold text-slate-900">🧠 FastMind</h1>
+            <!-- *** LOGO CAMBIADO A IMAGEN *** -->
+            <img src="./logo.png" alt="FastMind Logo" class="h-20 w-auto mx-auto"
+                 onerror="this.onerror=null; this.src='https://placehold.co/200x80/F8FAFC/334155?text=FastMind&font=inter';">
             <p class="text-lg text-slate-500" data-key="headerSubtitle">Your AI Fasting & Wellness Coach</p>
             
             <!-- Settings Button -->
@@ -257,7 +263,7 @@
                 </div>
             </div>
 
-            <!-- *** NEW: Fasting Goal Toggle *** -->
+            <!-- Fasting Goal Toggle -->
             <div class="mb-6">
                 <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsGoal">Fast Goal</label>
                 <div class="grid grid-cols-2 gap-2">
@@ -309,7 +315,7 @@
             <div id="timer-content" class="mb-6">
                 <div class="bg-white p-6 rounded-xl shadow-lg">
 
-                    <!-- *** NEW: Goal Display (Hidden by default) *** -->
+                    <!-- Goal Display (Hidden by default) -->
                     <div id="goal-display" class="hidden text-center mb-4">
                         <p class="text-lg font-semibold text-slate-600" data-key="goalTitle">16:8 Goal</p>
                         <p id="time-remaining" class="text-3xl font-bold text-sky-500 tabular-nums">00:00:00</p>
@@ -719,13 +725,13 @@
         
         // --- Sound State ---
         let phaseSynth = null;
-        let goalSynth = null; // *** NEW: Synth for goal sound ***
+        let goalSynth = null; 
         let lastPhaseKeyword = null;
         let isMuted = true; // Muted by default
         
         // --- Goal State ---
         let currentGoalHours = 0; // 0 = No goal
-        let goalTargetTime = 0; // The Date.now() + goalHours
+        let goalTargetTime = 0; 
         let goalReached = false;
         
         // --- PWA State ---
@@ -794,7 +800,7 @@
         const settingsPanel = document.getElementById('settings-panel');
         const langRadios = document.querySelectorAll('input[name="language"]');
         const modeRadios = document.querySelectorAll('input[name="mode"]');
-        const goalRadios = document.querySelectorAll('input[name="goal"]'); // *** NEW ***
+        const goalRadios = document.querySelectorAll('input[name="goal"]'); 
         const muteToggle = document.getElementById('mute-toggle');
         
         // --- PWA Install Elements ---
@@ -808,12 +814,9 @@
         
         // --- CORE LOGIC ---
 
-        /**
-         * Function to apply translations to the UI
-         */
         function applyTranslations(lang) {
             const langStrings = translations[lang] || translations.en;
-            document.documentElement.lang = lang; // Set document language
+            document.documentElement.lang = lang; 
 
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.dataset.key;
@@ -827,16 +830,14 @@
                 }
             });
 
-            // Special cases that need logic
-            updateTimerVisuals(); // Update timer text
-            renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts); // Redraw calendar headers
-            renderChatHistory(); // Redraw chat welcome
-            updateGoalDisplay(); // Update goal text
+            updateTimerVisuals(); 
+            renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts); 
+            renderChatHistory(); 
+            updateGoalDisplay(); 
             
-            // Update auth form state (if visible)
             if (!currentUser) {
-                toggleAuthMode(new Event('click'), true); // Force-refresh auth text
-                toggleAuthMode(new Event('click'), true); // (call twice to reset to original state)
+                toggleAuthMode(new Event('click'), true); 
+                toggleAuthMode(new Event('click'), true); 
             }
 
             const muteLabel = document.getElementById('mute-label');
@@ -846,9 +847,6 @@
             }
         }
 
-        /**
-         * Function to set the language
-         */
         function setLanguage(lang) {
             if (lang === currentLanguage) return;
             currentLanguage = lang;
@@ -859,9 +857,6 @@
             applyTranslations(lang);
         }
 
-        /**
-         * Function to set the fasting mode
-         */
         function setMode(mode) {
             if (mode === currentMode) return;
             currentMode = mode;
@@ -873,16 +868,12 @@
             updateTimer(); 
         }
 
-        /**
-         * *** NEW: Function to set the fasting goal ***
-         */
         function setGoal(goalHours) {
             goalHours = parseInt(goalHours, 10);
             if (goalHours === currentGoalHours) return;
             currentGoalHours = goalHours;
-            // If a fast is running, update the goal logic immediately
             if (running) {
-                goalReached = false; // Reset goal reached status
+                goalReached = false; 
                 if (currentGoalHours > 0) {
                     goalTargetTime = startTime + (currentGoalHours * 3600 * 1000);
                     goalDisplay.classList.remove('hidden');
@@ -892,12 +883,9 @@
                 }
             }
             updateGoalDisplay();
-            updateTimer(); // Force redraw of gradient
+            updateTimer(); 
         }
 
-        /**
-         * *** NEW: Function to update goal display text ***
-         */
         function updateGoalDisplay() {
             if (currentGoalHours > 0) {
                 const goalText = document.querySelector(`label[for="goal-${currentGoalHours}"]`).textContent;
@@ -907,16 +895,10 @@
             }
         }
         
-        /**
-         * Toggle Settings Panel
-         */
         function toggleSettingsPanel() {
             settingsPanel.classList.toggle('hidden');
         }
 
-        /**
-         * Play sound function
-         */
         function playPhaseSound() {
             if (isMuted) return;
             if (!phaseSynth) {
@@ -928,9 +910,6 @@
             phaseSynth.triggerAttackRelease("C5", "8n");
         }
         
-        /**
-         * *** NEW: Play goal sound function ***
-         */
         function playGoalSound() {
             if (isMuted) return;
             if (!goalSynth) {
@@ -939,14 +918,9 @@
             if (Tone.context.state !== 'running') {
                 Tone.start();
             }
-            // Play a simple C major chord
             goalSynth.triggerAttackRelease(["C4", "E4", "G4"], "4n");
         }
 
-
-        /**
-         * Get phase from the correct data set
-         */
         function getPhase(hours) {
             const data = fastingDataSets[currentMode][currentLanguage];
             const phase = data.find(p => hours >= p.fase_inicio_h && hours < p.fase_fin_h);
@@ -957,13 +931,10 @@
             if (totalSeconds < 0) totalSeconds = 0;
             const h = Math.floor(totalSeconds / 3600);
             const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = Math.floor(totalSeconds % 60); // Use floor to avoid decimals
+            const s = Math.floor(totalSeconds % 60); 
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
         
-        /**
-         * Helper to update timer text (called by updateTimer and language/mode setters)
-         */
         function updateTimerVisuals() {
             if (running) {
                 const currentPhase = getPhase(elapsedHours);
@@ -971,26 +942,20 @@
                 phaseNameEl.textContent = currentPhase.keyword;
                 phaseNameEl.style.color = currentPhase.color_hex;
                 
-                // Don't let "Goal Reached" message overwrite phase tip
                 if (!goalReached) {
                     timerMessage.innerHTML = `<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
                 }
             } else {
-                // Set to default "Not Started"
                 phaseNameEl.textContent = "Not Started"; 
                 phaseNameEl.style.color = "#475569";
                 chronometerEl.textContent = "00:00:00";
                 chronometerEl.style.color = "#1E293B";
-                // Check if a message is being displayed (like "Completed")
                 if (timerMessage.dataset.key !== "timerMessageCompleted") {
                      timerMessage.innerHTML = translations[currentLanguage].timerMessageNotStarted;
                 }
             }
         }
 
-        /**
-         * updateTimer now implements rainbow gradient and phase change sound
-         */
         function updateTimer() {
             if (!running) {
                 updateTimerVisuals();
@@ -1006,15 +971,12 @@
             
             const currentPhase = getPhase(elapsedHours);
             
-            // --- Sound on Phase Change ---
             if (lastPhaseKeyword !== null && lastPhaseKeyword !== currentPhase.keyword) {
                 playPhaseSound();
             }
             lastPhaseKeyword = currentPhase.keyword;
 
-            // --- *** MODIFIED: Rainbow Gradient & Goal Logic *** ---
             const allPhases = fastingDataSets[currentMode][currentLanguage];
-            // Use goal hours as max if set, otherwise 120
             const maxHours = (currentGoalHours > 0) ? currentGoalHours : allPhases[allPhases.length - 1].fase_fin_h; 
             
             let gradientParts = [];
@@ -1027,16 +989,13 @@
                     const phaseEndPct = (phase.fase_fin_h / maxHours) * 100;
 
                     if (elapsedHours >= phase.fase_fin_h) {
-                        // This phase is 100% complete.
                         gradientParts.push(`${phase.color_hex} ${phaseStartPct}% ${phaseEndPct}%`);
                     } else if (elapsedHours >= phase.fase_inicio_h && elapsedHours < phase.fase_fin_h) {
-                        // This is the CURRENT, active phase.
                         const currentProgressPct = (elapsedHours / maxHours) * 100;
                         gradientParts.push(`${phase.color_hex} ${phaseStartPct}% ${currentProgressPct}%`);
                         gradientParts.push(`#E2E8F0 ${currentProgressPct}% 100%`);
                         break; 
                     }
-                    // If currentGoalHours is less than phase.fase_inicio_h, we'll break
                     if (currentGoalHours > 0 && elapsedHours >= currentGoalHours) {
                         const currentProgressPct = (elapsedHours / maxHours) * 100;
                          gradientParts.push(`${phase.color_hex} ${phaseStartPct}% ${currentProgressPct}%`);
@@ -1044,17 +1003,13 @@
                     }
                 }
                 
-                // Handle case where elapsedHours > 120 (or maxHours)
                 if (elapsedHours >= maxHours) {
                     const lastPhase = allPhases[allPhases.length-1];
-                    // If rainbow logic didn't complete, just show full last color
                     if(gradientParts.length === 0) { 
                          gradientParts.push(`${lastPhase.color_hex} 0% 100%`);
                     }
-                    // Ensure the last part of the gradient goes to 100%
                     let lastPart = gradientParts.pop() || '';
                     if (lastPart && !lastPart.endsWith('100%')) {
-                        // e.g. "#color 80% 90%" becomes "#color 80% 100%"
                         lastPart = lastPart.substring(0, lastPart.lastIndexOf('%')) + " 100%";
                         gradientParts.push(lastPart);
                     }
@@ -1063,39 +1018,32 @@
                 progressCircle.style.background = `conic-gradient(${gradientParts.join(', ')})`;
             }
 
-            // --- *** NEW: Goal Timer Logic *** ---
             if (currentGoalHours > 0 && !goalReached) {
                 const remainingMs = goalTargetTime - now;
                 if (remainingMs <= 0) {
-                    // Goal Reached!
                     timeRemainingEl.textContent = formatTime(0);
                     goalReached = true;
                     playGoalSound();
                     timerMessage.innerHTML = translations[currentLanguage].goalReachedMsg;
                     
-                    // Send notification
                     if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                         navigator.serviceWorker.ready.then(reg => {
                             reg.active.postMessage('GOAL_REACHED');
                         });
                     }
                 } else {
-                    // Goal still in progress
                     timeRemainingEl.textContent = formatTime(remainingMs / 1000);
                 }
             }
             
             chronometerEl.textContent = timeString;
-            updateTimerVisuals(); // Update text
+            updateTimerVisuals(); 
             
             if (running) {
                 updateMediaSession(timeString, currentPhase.keyword);
             }
         }
 
-        /**
-         * startTimer now initiates audio context and sets initial phase
-         */
         function startTimer() {
             if (Tone.context.state !== 'running') {
                 Tone.start().then(() => {
@@ -1112,7 +1060,6 @@
             
             lastPhaseKeyword = getPhase(0).keyword;
 
-            // --- NEW: Set Goal ---
             goalReached = false;
             if (currentGoalHours > 0) {
                 goalTargetTime = startTime + (currentGoalHours * 3600 * 1000);
@@ -1125,7 +1072,6 @@
 
             localStorage.setItem('fastStartTime', startTime.toString());
             localStorage.setItem('fastRunning', 'true');
-            // *** NEW: Save goal in local storage ***
             localStorage.setItem('fastGoalHours', currentGoalHours.toString());
 
 
@@ -1142,9 +1088,6 @@
             }
         }
 
-        /**
-         * stopTimer now uses translation keys and resets sound
-         */
         function stopTimer() {
             if (!running) return; 
             
@@ -1152,7 +1095,7 @@
             
             localStorage.removeItem('fastStartTime');
             localStorage.removeItem('fastRunning');
-            localStorage.removeItem('fastGoalHours'); // *** NEW ***
+            localStorage.removeItem('fastGoalHours'); 
             
             if (timerInterval) clearInterval(timerInterval);
             
@@ -1174,12 +1117,10 @@
             
             lastPhaseKeyword = null;
 
-            // --- NEW: Hide goal display ---
             goalDisplay.classList.add('hidden');
             goalReached = false;
             goalTargetTime = 0;
 
-            // Reset visual
             updateTimerVisuals(); 
             progressCircle.style.background = `conic-gradient(#CBD5E1 0%, #E2E8F0 0)`;
             elapsedHours = 0;
@@ -1198,7 +1139,6 @@
             }
         }
 
-        // --- switchTab (Unchanged) ---
         function switchTab(tabName) {
             if ((tabName === 'chat' || tabName === 'history') && !currentUser) {
                 console.log("User not logged in. Cannot switch to " + tabName);
@@ -1226,7 +1166,6 @@
             }
         }
         
-        // --- Media Session Update (Unchanged) ---
         function updateMediaSession(timeString, phase) {
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.metadata = new MediaMetadata({
@@ -1242,9 +1181,6 @@
             }
         }
 
-        /**
-         * renderChatHistory uses translations
-         */
         function renderChatHistory() {
             const t = translations[currentLanguage];
             chatHistoryEl.innerHTML = `
@@ -1281,9 +1217,6 @@
             chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
         }
 
-        /**
-         * handleChatSubmit uses translations
-         */
         async function handleChatSubmit(event) {
             event.preventDefault();
             const question = chatInput.value.trim();
@@ -1295,7 +1228,6 @@
             chatSpinner.classList.remove('hidden');
 
             try {
-                // The AI prompt/query stays in English for consistency
                 const answer = await askFastMind(question); 
                 chatHistory.push([question, answer]);
             } catch (error) {
@@ -1310,7 +1242,6 @@
             }
         }
 
-        // --- askFastMind (Gemini API Call) (Unchanged) ---
         async function askFastMind(question) {
             const localKnowledgeBase = `
 - **Primary Document:** fasting_guide.pdf
@@ -1408,20 +1339,17 @@ ${localKnowledgeBase}
         btnChat.addEventListener('click', () => switchTab('chat'));
         chatForm.addEventListener('submit', handleChatSubmit);
         
-        // --- Auth & History Listeners ---
         authForm.addEventListener('submit', handleAuthSubmit);
         authToggleLink.addEventListener('click', (e) => toggleAuthMode(e, false));
         forgotPasswordLink.addEventListener('click', handleForgotPassword); 
         btnLogout.addEventListener('click', logOut);
         btnHistory.addEventListener('click', () => switchTab('history'));
         
-        // --- Settings Listeners ---
         btnSettings.addEventListener('click', toggleSettingsPanel);
         langRadios.forEach(radio => radio.addEventListener('change', (e) => setLanguage(e.target.value)));
         modeRadios.forEach(radio => radio.addEventListener('change', (e) => setMode(e.target.value)));
-        goalRadios.forEach(radio => radio.addEventListener('change', (e) => setGoal(e.target.value))); // *** NEW ***
+        goalRadios.forEach(radio => radio.addEventListener('change', (e) => setGoal(e.target.value))); 
         
-        // --- Mute Toggle Listener ---
         muteToggle.addEventListener('change', (e) => {
             isMuted = !e.target.checked; 
             
@@ -1436,7 +1364,6 @@ ${localKnowledgeBase}
             }
         });
 
-        // --- Calendar Listeners (Unchanged) ---
         btnPrevMonth.addEventListener('click', showPrevMonth);
         btnNextMonth.addEventListener('click', showNextMonth);
 
@@ -1445,7 +1372,6 @@ ${localKnowledgeBase}
         // --- START: FIREBASE LOGIC
         // ---
 
-        // --- Firebase Config (Unchanged from your code) ---
         const firebaseConfig = {
           apiKey: "AIzaSyDFD5Ba2Y-rCDcMTxvubsr41LCYGO9_GyU",
           authDomain: "fastmind-c6603.firebaseapp.com",
@@ -1457,7 +1383,6 @@ ${localKnowledgeBase}
         };
 
 
-        // --- 1. Initialize Firebase (Unchanged) ---
         try {
             if (firebaseConfig.apiKey && firebaseConfig.projectId) {
                 const app = initializeApp(firebaseConfig);
@@ -1473,7 +1398,6 @@ ${localKnowledgeBase}
                       }
                   });
                 
-                // --- 2. Authentication State Listener (Unchanged) ---
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         console.log("User is logged in:", user.uid);
@@ -1617,7 +1541,6 @@ ${localKnowledgeBase}
             userContainer.classList.add('hidden');
             userEmailEl.textContent = '';
             
-            // Reset auth form
             authMessageEl.textContent = '';
             authMessageEl.classList.remove('text-green-400', 'text-red-400');
             authEmailEl.value = '';
@@ -1652,9 +1575,6 @@ ${localKnowledgeBase}
 
         // --- 4. Firestore (Database) Functions ---
 
-        /**
-         * *** MODIFIED: saveFastToFirestore now includes goal ***
-         */
         async function saveFastToFirestore(hours, durationString, phase, goalHours) {
             if (!currentUser || !db) {
                 console.error("No user or db to save fast for.");
@@ -1669,8 +1589,8 @@ ${localKnowledgeBase}
                     durationString: durationString,
                     finalPhase: phase.keyword,
                     finalPhaseColor: phase.color_hex,
-                    goalHours: goalHours, // *** NEW: Save the goal ***
-                    goalReached: (goalHours > 0 && hours >= goalHours) // *** NEW: Save if goal was hit ***
+                    goalHours: goalHours, 
+                    goalReached: (goalHours > 0 && hours >= goalHours) 
                 });
                 console.log("Fast saved with ID: ", docRef.id);
             } catch (e) {
@@ -1715,9 +1635,6 @@ ${localKnowledgeBase}
             });
         }
 
-        /**
-         * *** MODIFIED: renderHistoryList now shows goal checkmark ***
-         */
         function renderHistoryList(fasts) {
             historyList.innerHTML = '';
             const t = translations[currentLanguage];
@@ -1728,7 +1645,6 @@ ${localKnowledgeBase}
                 const date = fast.completedAt?.toDate().toLocaleDateString(currentLanguage.split('-')[0]) || t.historyNoDate;
                 const time = fast.completedAt?.toDate().toLocaleTimeString(currentLanguage.split('-')[0], { hour: '2-digit', minute: '2-digit' }) || '';
                 
-                // *** NEW: Add goal checkmark ***
                 let goalHTML = '';
                 if (fast.goalHours && fast.goalHours > 0) {
                     if (fast.goalReached) {
@@ -1828,20 +1744,17 @@ ${localKnowledgeBase}
 
         // --- APP INITIALIZATION ---
         
-        // Set mute toggle to default state (default is muted, so toggle is OFF)
         muteToggle.checked = !isMuted;
         
-        // Check for running fast on app load
         const savedStartTime = localStorage.getItem('fastStartTime');
         const savedRunning = localStorage.getItem('fastRunning');
-        const savedGoalHours = localStorage.getItem('fastGoalHours'); // *** NEW ***
+        const savedGoalHours = localStorage.getItem('fastGoalHours'); 
 
         if (savedStartTime && savedRunning === 'true') {
             console.log('Found a running fast in localStorage.');
             startTime = parseInt(savedStartTime, 10);
             running = true;
             
-            // --- NEW: Restore goal ---
             if (savedGoalHours) {
                 currentGoalHours = parseInt(savedGoalHours, 10);
                 if (currentGoalHours > 0) {
@@ -1849,12 +1762,10 @@ ${localKnowledgeBase}
                     goalReached = (Date.now() >= goalTargetTime);
                     updateGoalDisplay();
                     goalDisplay.classList.remove('hidden');
-                    // Update settings radio
                     document.getElementById(`goal-${currentGoalHours}`).checked = true;
                 }
             }
 
-            // Set initial phase keyword
             elapsedHours = (Date.now() - startTime) / (1000 * 3600);
             lastPhaseKeyword = getPhase(elapsedHours).keyword;
 
@@ -1864,10 +1775,8 @@ ${localKnowledgeBase}
             silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
         }
         
-        // Start on the timer tab
         switchTab('timer'); 
 
-        // Apply default language on load
         applyTranslations(currentLanguage);
 
         
@@ -1875,7 +1784,6 @@ ${localKnowledgeBase}
         // --- PWA (Añadir a Pantalla de Inicio) LÓGICA (ACTIVADA)
         // ---
         
-        // 1. Registrar el Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -1888,7 +1796,6 @@ ${localKnowledgeBase}
             });
         }
         
-        // 2. Escuchar el evento "beforeinstallprompt"
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -1896,7 +1803,6 @@ ${localKnowledgeBase}
             installContainer.classList.remove('hidden');
         });
         
-        // 3. Disparar el pop-up cuando el usuario haga clic en nuestro botón
         btnInstall.addEventListener('click', async () => {
             if (!deferredPrompt) {
                 console.log('Install prompt not available');
@@ -1910,7 +1816,6 @@ ${localKnowledgeBase}
             deferredPrompt = null;
         });
         
-        // 4. Escuchar si la app ya fue instalada
         window.addEventListener('appinstalled', () => {
             console.log('FastMind was installed.');
             installContainer.classList.add('hidden');
