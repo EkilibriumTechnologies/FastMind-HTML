@@ -1,5 +1,6 @@
-const CACHE_NAME = 'fastmind-v3'; // Versión incrementada
-const NOTIFICATION_TAG = 'fastmind-timer'; // ID único para la notificación
+const CACHE_NAME = 'fastmind-v4'; // Versión incrementada
+const NOTIFICATION_TAG = 'fastmind-timer';
+const GOAL_NOTIFICATION_TAG = 'fastmind-goal'; // *** NEW: ID para notificación de meta ***
 
 // Lista de archivos actualizada para incluir todos los assets
 const APP_SHELL_URLS = [
@@ -49,25 +50,22 @@ self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
   // Estrategia de Red (Network Only)
-  // NO guardar en caché las llamadas a las APIs de Google/Firebase.
   if (
-    url.includes('generativelanguage.googleapis.com') || // API de Gemini
-    url.includes('firebaseapp.com') ||                   // API de Auth de Firebase
-    url.includes('googleapis.com/identitytoolkit') ||   // API de Auth de Google
-    url.includes('firestore.googleapis.com')             // API de Firestore
+    url.includes('generativelanguage.googleapis.com') || 
+    url.includes('firebaseapp.com') ||                   
+    url.includes('googleapis.com/identitytoolkit') ||   
+    url.includes('firestore.googleapis.com')             
   ) {
     event.respondWith(fetch(event.request));
     return;
   }
 
   // Estrategia de Caché (Cache, falling back to Network)
-  // Para todo lo demás (el App Shell: HTML, CSS, fuentes).
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) {
         return response; // Desde el caché
       }
-      // Desde la red, y luego lo guardamos en caché
       return fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
@@ -88,48 +86,77 @@ self.addEventListener('fetch', (event) => {
 // ---
 
 /**
- * Escucha los mensajes ("START_TIMER" o "STOP_TIMER") de la app
- * *** ¡ERROR CORREGIDO AQUÍ! ***
+ * Escucha los mensajes de la app
+ * *** ¡NUEVO: Añadido GOAL_REACHED! ***
  */
 self.addEventListener('message', (event) => {
-  if (event.data === 'START_TIMER') { // <-- Corregido de 'START_TRAMER'
+  if (event.data === 'START_TIMER') {
     console.log('[ServiceWorker] Received START_TIMER command');
     showTimerNotification();
   } else if (event.data === 'STOP_TIMER') {
     console.log('[ServiceWorker] Received STOP_TIMER command');
     closeTimerNotification();
+    closeGoalNotification(); // También cierra la de meta si está abierta
+  } else if (event.data === 'GOAL_REACHED') { // *** NUEVO ***
+    console.log('[ServiceWorker] Received GOAL_REACHED command');
+    showGoalNotification();
   }
 });
 
 /**
- * Muestra la notificación persistente
- * *** ¡ERROR CORREGIDO AQUÍ! ***
+ * Muestra la notificación persistente de AYUNO
  */
 function showTimerNotification() {
   const title = 'FastMind: Fast in Progress';
   const options = {
     body: 'Your fast is currently running. Tap to open the app.',
-    icon: 'https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto', // Icono actualizado
-    tag: NOTIFICATION_TAG,    // ID para que podamos cerrarla
-    renotify: false,          // No vibrar si ya existe
-    silent: true              // No hacer sonido
+    icon: 'https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto', 
+    tag: NOTIFICATION_TAG,    
+    renotify: false,          
+    silent: true              
   };
   
-  // CORRECCIÓN: 'event.waitUntil' no está definido aquí, usamos 'self.waitUntil'
   self.waitUntil(self.registration.showNotification(title, options));
 }
 
 /**
- * Cierra la notificación
+ * Cierra la notificación de AYUNO
  */
 function closeTimerNotification() {
-  // Busca todas las notificaciones con nuestro ID
   self.registration.getNotifications({ tag: NOTIFICATION_TAG }).then(notifications => {
     notifications.forEach(notification => {
-      notification.close(); // Cierra cada una
+      notification.close(); 
     });
   });
 }
+
+/**
+ * *** NUEVO: Muestra la notificación de META CUMPLIDA ***
+ */
+function showGoalNotification() {
+  const title = '🎉 Goal Reached!';
+  const options = {
+    body: "You've completed your fasting goal. Great job!",
+    icon: 'https://placehold.co/192x192/F8FAFC/0F172A?text=🎉&font=noto', 
+    tag: GOAL_NOTIFICATION_TAG,    
+    renotify: true, // Queremos que esta sí notifique
+    silent: false
+  };
+  
+  self.waitUntil(self.registration.showNotification(title, options));
+}
+
+/**
+ * *** NUEVO: Cierra la notificación de META CUMPLIDA ***
+ */
+function closeGoalNotification() {
+    self.registration.getNotifications({ tag: GOAL_NOTIFICATION_TAG }).then(notifications => {
+        notifications.forEach(notification => {
+            notification.close();
+        });
+    });
+}
+
 
 /**
  * Se dispara cuando el usuario TOCA la notificación
@@ -137,7 +164,7 @@ function closeTimerNotification() {
 self.addEventListener('notificationclick', (event) => {
   console.log('[ServiceWorker] Notification click received.');
   
-  // Cierra la notificación
+  // Cierra la notificación que fue tocada
   event.notification.close();
   
   // Abre la PWA
