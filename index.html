@@ -216,27 +216,27 @@
     -->
     <div class="max-w-2xl mx-auto p-4 md:p-8 pb-24"> 
         
-       <!-- Header -->
+ <!-- Header -->
 <header class="relative pt-10 pb-4 mb-2 flex flex-col items-center space-y-2">
-  <!-- Logo + name in one row -->
-  <div class="flex items-center gap-2">
+  <!-- Título principal -->
+  <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-slate-800">
+    Fastmind
+  </h1>
+
+  <!-- Logo + tagline en la misma línea -->
+  <div class="flex items-center gap-2 mt-1">
     <img
       src="./logo.png"
       alt="FastMind logo"
-      class="h-10 w-10"
+      class="h-8 w-8 md:h-10 md:w-10"
       onerror="this.onerror=null; this.src='https://placehold.co/40x40/F8FAFC/334155?text=FM&font=inter';"
     />
-    <span class="text-xl font-semibold tracking-tight text-slate-700">
-      fastmind
-    </span>
+    <p class="text-sm md:text-base text-slate-500 text-center" data-key="headerSubtitle">
+      Your AI Fasting &amp; Wellness Coach
+    </p>
   </div>
 
-  <!-- Tagline (keeps i18n) -->
-  <p class="text-sm text-slate-500 text-center" data-key="headerSubtitle">
-    Your AI Fasting &amp; Wellness Coach
-  </p>
-
-  <!-- Settings Button (needed by JS) -->
+  <!-- Botón de Settings (necesario para el JS) -->
   <button
     id="btn-settings"
     class="absolute top-2 right-2 p-2 text-slate-500 hover:text-sky-500 transition-colors"
@@ -248,6 +248,7 @@
     </svg>
   </button>
 </header>
+
 
 
         <!-- 
