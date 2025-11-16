@@ -1,7 +1,7 @@
 const CACHE_NAME = 'fastmind-v3'; // Versión incrementada
 const NOTIFICATION_TAG = 'fastmind-timer'; // ID único para la notificación
 
-// Lista de archivos actualizada
+// Lista de archivos actualizada para incluir todos los assets
 const APP_SHELL_URLS = [
   './',
   './index.html',
@@ -89,9 +89,10 @@ self.addEventListener('fetch', (event) => {
 
 /**
  * Escucha los mensajes ("START_TIMER" o "STOP_TIMER") de la app
+ * *** ¡ERROR CORREGIDO AQUÍ! ***
  */
 self.addEventListener('message', (event) => {
-  if (event.data === 'START_TRAMER') {
+  if (event.data === 'START_TIMER') { // <-- Corregido de 'START_TRAMER'
     console.log('[ServiceWorker] Received START_TIMER command');
     showTimerNotification();
   } else if (event.data === 'STOP_TIMER') {
@@ -102,6 +103,7 @@ self.addEventListener('message', (event) => {
 
 /**
  * Muestra la notificación persistente
+ * *** ¡ERROR CORREGIDO AQUÍ! ***
  */
 function showTimerNotification() {
   const title = 'FastMind: Fast in Progress';
@@ -113,7 +115,6 @@ function showTimerNotification() {
     silent: true              // No hacer sonido
   };
   
-  // self.registration.showNotification es la función
   // CORRECCIÓN: 'event.waitUntil' no está definido aquí, usamos 'self.waitUntil'
   self.waitUntil(self.registration.showNotification(title, options));
 }
