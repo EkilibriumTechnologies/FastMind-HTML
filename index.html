@@ -257,11 +257,28 @@
                 </div>
             </div>
 
+            <!-- *** NEW: Fasting Goal Toggle *** -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsGoal">Fast Goal</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="radio" name="goal" id="goal-none" value="0" class="settings-toggle-input" checked>
+                    <label for="goal-none" class="settings-toggle-label" data-key="settingsGoalNone">None (Clock)</label>
+                    
+                    <input type="radio" name="goal" id="goal-16" value="16" class="settings-toggle-input">
+                    <label for="goal-16" class="settings-toggle-label" data-key="settingsGoal16">16:8 Fast</label>
+
+                    <input type="radio" name="goal" id="goal-18" value="18" class="settings-toggle-input">
+                    <label for="goal-18" class="settings-toggle-label" data-key="settingsGoal18">18:6 Fast</label>
+
+                    <input type="radio" name="goal" id="goal-23" value="23" class="settings-toggle-input">
+                    <label for="goal-23" class="settings-toggle-label" data-key="settingsGoal23">OMAD (23:1)</label>
+                </div>
+            </div>
+
             <!-- Sound Toggle -->
             <div class="mb-6">
                 <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsSound">Sound</label>
                 <div class="flex items-center justify-between bg-slate-100 p-3 rounded-lg">
-                    <!-- *** This ID prevents the translation error *** -->
                     <span id="mute-label" class="font-medium text-slate-600" data-key="settingsSoundUnmuted">Play sound on new phase</span>
                     <label class="switch">
                         <input type="checkbox" id="mute-toggle">
@@ -291,6 +308,13 @@
             -->
             <div id="timer-content" class="mb-6">
                 <div class="bg-white p-6 rounded-xl shadow-lg">
+
+                    <!-- *** NEW: Goal Display (Hidden by default) *** -->
+                    <div id="goal-display" class="hidden text-center mb-4">
+                        <p class="text-lg font-semibold text-slate-600" data-key="goalTitle">16:8 Goal</p>
+                        <p id="time-remaining" class="text-3xl font-bold text-sky-500 tabular-nums">00:00:00</p>
+                        <p class="text-sm text-slate-500" data-key="goalRemaining">remaining</p>
+                    </div>
                     
                     <div id="timer-display" class="relative flex justify-center items-center mb-6">
                         <div id="progress-circle" class="progress-circle"></div>
@@ -489,7 +513,7 @@
         // Nivel de log para depuración
         setLogLevel('Debug');
 
-        // --- Translations Object (con claves de PWA) ---
+        // --- Translations Object (con claves de PWA y Metas) ---
         const translations = {
             en: {
                 headerSubtitle: "Your AI Fasting & Wellness Coach",
@@ -498,6 +522,11 @@
                 settingsMode: "Fasting Mode",
                 settingsBiological: "Biological",
                 settingsMind: "Mental",
+                settingsGoal: "Fast Goal",
+                settingsGoalNone: "None (Clock)",
+                settingsGoal16: "16:8 Fast",
+                settingsGoal18: "18:6 Fast",
+                settingsGoal23: "OMAD (23:1)",
                 settingsSound: "Sound",
                 settingsSoundUnmuted: "Play sound on new phase",
                 settingsSoundMuted: "Sound is muted",
@@ -510,6 +539,9 @@
                 timerMessageNotSaved: "<br><em>Login to save your fast to history!</em>",
                 timerMessageSaved: "<br><em>Saved to your history!</em>",
                 timerMessageOffline: "<br><em>Saved offline. Will sync when online.</em>",
+                goalTitle: "{goal} Goal", // e.g., "16:8 Goal"
+                goalRemaining: "remaining",
+                goalReachedMsg: "🎉 <strong>Goal Reached!</strong> Keep going or stop to save.",
                 authTitleLogin: "Login to Unlock Features",
                 authTitleRegister: "Register to Unlock Features",
                 authSubtitle: "Create an account to unlock the AI Chatbot and save your history.",
@@ -556,6 +588,11 @@
                 settingsMode: "Modo de Ayuno",
                 settingsBiological: "Biológico",
                 settingsMind: "Mental",
+                settingsGoal: "Meta de Ayuno",
+                settingsGoalNone: "Ninguno (Reloj)",
+                settingsGoal16: "Ayuno 16:8",
+                settingsGoal18: "Ayuno 18:6",
+                settingsGoal23: "OMAD (23:1)",
                 settingsSound: "Sonido",
                 settingsSoundUnmuted: "Sonar al cambiar de fase",
                 settingsSoundMuted: "Sonido desactivado",
@@ -568,6 +605,9 @@
                 timerMessageNotSaved: "<br><em>¡Inicia sesión para guardar tu ayuno!</em>",
                 timerMessageSaved: "<br><em>¡Guardado en tu historial!</em>",
                 timerMessageOffline: "<br><em>Guardado sin conexión. Se sincronizará al conectarte.</em>",
+                goalTitle: "Meta {goal}", // e.g., "Meta 16:8"
+                goalRemaining: "restante",
+                goalReachedMsg: "🎉 <strong>¡Meta Cumplida!</strong> Sigue adelante o detente para guardar.",
                 authTitleLogin: "Inicia Sesión para Desbloquear",
                 authTitleRegister: "Regístrate para Desbloquear",
                 authSubtitle: "Crea una cuenta para desbloquear el Chat AI y guardar tu historial.",
@@ -678,9 +718,15 @@
         let currentMode = 'biological';
         
         // --- Sound State ---
-        let synth = null;
+        let phaseSynth = null;
+        let goalSynth = null; // *** NEW: Synth for goal sound ***
         let lastPhaseKeyword = null;
         let isMuted = true; // Muted by default
+        
+        // --- Goal State ---
+        let currentGoalHours = 0; // 0 = No goal
+        let goalTargetTime = 0; // The Date.now() + goalHours
+        let goalReached = false;
         
         // --- PWA State ---
         let deferredPrompt = null;
@@ -748,11 +794,16 @@
         const settingsPanel = document.getElementById('settings-panel');
         const langRadios = document.querySelectorAll('input[name="language"]');
         const modeRadios = document.querySelectorAll('input[name="mode"]');
+        const goalRadios = document.querySelectorAll('input[name="goal"]'); // *** NEW ***
         const muteToggle = document.getElementById('mute-toggle');
         
         // --- PWA Install Elements ---
         const installContainer = document.getElementById('install-container');
         const btnInstall = document.getElementById('btn-install');
+
+        // --- Goal Display Elements ---
+        const goalDisplay = document.getElementById('goal-display');
+        const timeRemainingEl = document.getElementById('time-remaining');
         
         
         // --- CORE LOGIC ---
@@ -780,6 +831,7 @@
             updateTimerVisuals(); // Update timer text
             renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts); // Redraw calendar headers
             renderChatHistory(); // Redraw chat welcome
+            updateGoalDisplay(); // Update goal text
             
             // Update auth form state (if visible)
             if (!currentUser) {
@@ -787,7 +839,6 @@
                 toggleAuthMode(new Event('click'), true); // (call twice to reset to original state)
             }
 
-            // *** This logic is corrected and finds the ID ***
             const muteLabel = document.getElementById('mute-label');
             if (muteLabel) {
                 muteLabel.dataset.key = isMuted ? 'settingsSoundMuted' : 'settingsSoundUnmuted';
@@ -801,10 +852,9 @@
         function setLanguage(lang) {
             if (lang === currentLanguage) return;
             currentLanguage = lang;
-            // Update phase data in case it's running
             if(running) {
                 const currentPhase = getPhase(elapsedHours);
-                lastPhaseKeyword = currentPhase.keyword; // Update keyword to new language
+                lastPhaseKeyword = currentPhase.keyword; 
             }
             applyTranslations(lang);
         }
@@ -815,13 +865,46 @@
         function setMode(mode) {
             if (mode === currentMode) return;
             currentMode = mode;
-            // Update phase data in case it's running
             if(running) {
                 const currentPhase = getPhase(elapsedHours);
-                lastPhaseKeyword = currentPhase.keyword; // Update keyword to new mode
+                lastPhaseKeyword = currentPhase.keyword; 
             }
-            updateTimerVisuals(); // Update timer text
+            updateTimerVisuals(); 
+            updateTimer(); 
+        }
+
+        /**
+         * *** NEW: Function to set the fasting goal ***
+         */
+        function setGoal(goalHours) {
+            goalHours = parseInt(goalHours, 10);
+            if (goalHours === currentGoalHours) return;
+            currentGoalHours = goalHours;
+            // If a fast is running, update the goal logic immediately
+            if (running) {
+                goalReached = false; // Reset goal reached status
+                if (currentGoalHours > 0) {
+                    goalTargetTime = startTime + (currentGoalHours * 3600 * 1000);
+                    goalDisplay.classList.remove('hidden');
+                } else {
+                    goalTargetTime = 0;
+                    goalDisplay.classList.add('hidden');
+                }
+            }
+            updateGoalDisplay();
             updateTimer(); // Force redraw of gradient
+        }
+
+        /**
+         * *** NEW: Function to update goal display text ***
+         */
+        function updateGoalDisplay() {
+            if (currentGoalHours > 0) {
+                const goalText = document.querySelector(`label[for="goal-${currentGoalHours}"]`).textContent;
+                const titleKey = translations[currentLanguage].goalTitle;
+                goalDisplay.querySelector('[data-key="goalTitle"]').innerHTML = titleKey.replace("{goal}", goalText);
+                goalDisplay.querySelector('[data-key="goalRemaining"]').innerHTML = translations[currentLanguage].goalRemaining;
+            }
         }
         
         /**
@@ -834,22 +917,32 @@
         /**
          * Play sound function
          */
-        function playSound() {
+        function playPhaseSound() {
             if (isMuted) return;
-            
-            // Initialize synth on demand
-            if (!synth) {
-                synth = new Tone.Synth().toDestination();
+            if (!phaseSynth) {
+                phaseSynth = new Tone.Synth().toDestination();
             }
-
-            // Check if audio context is running (required by browsers)
             if (Tone.context.state !== 'running') {
                 Tone.start();
             }
-            
-            // Play a high C note for a short duration
-            synth.triggerAttackRelease("C5", "8n");
+            phaseSynth.triggerAttackRelease("C5", "8n");
         }
+        
+        /**
+         * *** NEW: Play goal sound function ***
+         */
+        function playGoalSound() {
+            if (isMuted) return;
+            if (!goalSynth) {
+                goalSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+            }
+            if (Tone.context.state !== 'running') {
+                Tone.start();
+            }
+            // Play a simple C major chord
+            goalSynth.triggerAttackRelease(["C4", "E4", "G4"], "4n");
+        }
+
 
         /**
          * Get phase from the correct data set
@@ -861,9 +954,10 @@
         }
 
         function formatTime(totalSeconds) {
+            if (totalSeconds < 0) totalSeconds = 0;
             const h = Math.floor(totalSeconds / 3600);
             const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = totalSeconds % 60;
+            const s = Math.floor(totalSeconds % 60); // Use floor to avoid decimals
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
         
@@ -876,10 +970,14 @@
                 chronometerEl.style.color = currentPhase.color_hex;
                 phaseNameEl.textContent = currentPhase.keyword;
                 phaseNameEl.style.color = currentPhase.color_hex;
-                timerMessage.innerHTML = `<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
+                
+                // Don't let "Goal Reached" message overwrite phase tip
+                if (!goalReached) {
+                    timerMessage.innerHTML = `<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
+                }
             } else {
                 // Set to default "Not Started"
-                phaseNameEl.textContent = "Not Started"; // This doesn't need translation, it's a state
+                phaseNameEl.textContent = "Not Started"; 
                 phaseNameEl.style.color = "#475569";
                 chronometerEl.textContent = "00:00:00";
                 chronometerEl.style.color = "#1E293B";
@@ -895,13 +993,13 @@
          */
         function updateTimer() {
             if (!running) {
-                // Ensure visuals are reset if not running
                 updateTimerVisuals();
                 return;
             }
             if (!startTime) return;
             
-            const elapsedMs = Date.now() - startTime;
+            const now = Date.now();
+            const elapsedMs = now - startTime;
             const elapsedSec = Math.floor(elapsedMs / 1000);
             const timeString = formatTime(elapsedSec);
             elapsedHours = elapsedMs / (1000 * 3600);
@@ -910,13 +1008,15 @@
             
             // --- Sound on Phase Change ---
             if (lastPhaseKeyword !== null && lastPhaseKeyword !== currentPhase.keyword) {
-                playSound();
+                playPhaseSound();
             }
             lastPhaseKeyword = currentPhase.keyword;
 
-            // --- Rainbow Gradient Logic ---
+            // --- *** MODIFIED: Rainbow Gradient & Goal Logic *** ---
             const allPhases = fastingDataSets[currentMode][currentLanguage];
-            const maxHours = allPhases[allPhases.length - 1].fase_fin_h;
+            // Use goal hours as max if set, otherwise 120
+            const maxHours = (currentGoalHours > 0) ? currentGoalHours : allPhases[allPhases.length - 1].fase_fin_h; 
+            
             let gradientParts = [];
             
             if (elapsedHours <= 0) {
@@ -927,17 +1027,62 @@
                     const phaseEndPct = (phase.fase_fin_h / maxHours) * 100;
 
                     if (elapsedHours >= phase.fase_fin_h) {
-                        // This phase is 100% complete. Add its full color segment.
+                        // This phase is 100% complete.
                         gradientParts.push(`${phase.color_hex} ${phaseStartPct}% ${phaseEndPct}%`);
                     } else if (elapsedHours >= phase.fase_inicio_h && elapsedHours < phase.fase_fin_h) {
                         // This is the CURRENT, active phase.
                         const currentProgressPct = (elapsedHours / maxHours) * 100;
                         gradientParts.push(`${phase.color_hex} ${phaseStartPct}% ${currentProgressPct}%`);
                         gradientParts.push(`#E2E8F0 ${currentProgressPct}% 100%`);
+                        break; 
+                    }
+                    // If currentGoalHours is less than phase.fase_inicio_h, we'll break
+                    if (currentGoalHours > 0 && elapsedHours >= currentGoalHours) {
+                        const currentProgressPct = (elapsedHours / maxHours) * 100;
+                         gradientParts.push(`${phase.color_hex} ${phaseStartPct}% ${currentProgressPct}%`);
                         break;
                     }
                 }
+                
+                // Handle case where elapsedHours > 120 (or maxHours)
+                if (elapsedHours >= maxHours) {
+                    const lastPhase = allPhases[allPhases.length-1];
+                    // If rainbow logic didn't complete, just show full last color
+                    if(gradientParts.length === 0) { 
+                         gradientParts.push(`${lastPhase.color_hex} 0% 100%`);
+                    }
+                    // Ensure the last part of the gradient goes to 100%
+                    let lastPart = gradientParts.pop() || '';
+                    if (lastPart && !lastPart.endsWith('100%')) {
+                        // e.g. "#color 80% 90%" becomes "#color 80% 100%"
+                        lastPart = lastPart.substring(0, lastPart.lastIndexOf('%')) + " 100%";
+                        gradientParts.push(lastPart);
+                    }
+                }
+                
                 progressCircle.style.background = `conic-gradient(${gradientParts.join(', ')})`;
+            }
+
+            // --- *** NEW: Goal Timer Logic *** ---
+            if (currentGoalHours > 0 && !goalReached) {
+                const remainingMs = goalTargetTime - now;
+                if (remainingMs <= 0) {
+                    // Goal Reached!
+                    timeRemainingEl.textContent = formatTime(0);
+                    goalReached = true;
+                    playGoalSound();
+                    timerMessage.innerHTML = translations[currentLanguage].goalReachedMsg;
+                    
+                    // Send notification
+                    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                        navigator.serviceWorker.ready.then(reg => {
+                            reg.active.postMessage('GOAL_REACHED');
+                        });
+                    }
+                } else {
+                    // Goal still in progress
+                    timeRemainingEl.textContent = formatTime(remainingMs / 1000);
+                }
             }
             
             chronometerEl.textContent = timeString;
@@ -952,7 +1097,6 @@
          * startTimer now initiates audio context and sets initial phase
          */
         function startTimer() {
-            // --- Attempt to start Audio context on user gesture ---
             if (Tone.context.state !== 'running') {
                 Tone.start().then(() => {
                     console.log("Audio context started!");
@@ -964,13 +1108,26 @@
             startTime = Date.now();
             running = true;
             elapsedHours = 0;
-            timerMessage.dataset.key = ""; // Clear completed message key
+            timerMessage.dataset.key = ""; 
             
-            // --- Set initial phase keyword to prevent sound on start ---
             lastPhaseKeyword = getPhase(0).keyword;
+
+            // --- NEW: Set Goal ---
+            goalReached = false;
+            if (currentGoalHours > 0) {
+                goalTargetTime = startTime + (currentGoalHours * 3600 * 1000);
+                updateGoalDisplay();
+                goalDisplay.classList.remove('hidden');
+            } else {
+                goalTargetTime = 0;
+                goalDisplay.classList.add('hidden');
+            }
 
             localStorage.setItem('fastStartTime', startTime.toString());
             localStorage.setItem('fastRunning', 'true');
+            // *** NEW: Save goal in local storage ***
+            localStorage.setItem('fastGoalHours', currentGoalHours.toString());
+
 
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(updateTimer, 1000);
@@ -978,7 +1135,6 @@
             
             silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
             
-            // --- PWA: Tell Service Worker to show notification ---
             if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                 navigator.serviceWorker.ready.then(reg => {
                     reg.active.postMessage('START_TIMER');
@@ -996,19 +1152,19 @@
             
             localStorage.removeItem('fastStartTime');
             localStorage.removeItem('fastRunning');
+            localStorage.removeItem('fastGoalHours'); // *** NEW ***
             
             if (timerInterval) clearInterval(timerInterval);
             
             const finalTime = chronometerEl.textContent;
             const finalHours = elapsedHours;
-            const finalPhase = getPhase(finalHours); // Gets phase in current lang/mode
+            const finalPhase = getPhase(finalHours); 
             
-            // Set message with translation key
             let completedMsg = translations[currentLanguage].timerMessageCompleted.replace("{finalTime}", finalTime);
-            timerMessage.dataset.key = "timerMessageCompleted"; // Store key to prevent overwrite by language change
+            timerMessage.dataset.key = "timerMessageCompleted"; 
             
             if (currentUser) {
-                saveFastToFirestore(finalHours, finalTime, finalPhase);
+                saveFastToFirestore(finalHours, finalTime, finalPhase, currentGoalHours);
                 completedMsg += translations[currentLanguage].timerMessageSaved;
             } else {
                 console.log("User not logged in. Fast not saved to history.");
@@ -1016,11 +1172,15 @@
             }
             timerMessage.innerHTML = completedMsg;
             
-            // --- Reset last phase keyword ---
             lastPhaseKeyword = null;
 
+            // --- NEW: Hide goal display ---
+            goalDisplay.classList.add('hidden');
+            goalReached = false;
+            goalTargetTime = 0;
+
             // Reset visual
-            updateTimerVisuals(); // Resets to "Not Started" state
+            updateTimerVisuals(); 
             progressCircle.style.background = `conic-gradient(#CBD5E1 0%, #E2E8F0 0)`;
             elapsedHours = 0;
             startTime = null; 
@@ -1031,7 +1191,6 @@
                 navigator.mediaSession.playbackState = "none";
             }
             
-            // --- PWA: Tell Service Worker to close notification ---
             if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                 navigator.serviceWorker.ready.then(reg => {
                     reg.active.postMessage('STOP_TIMER');
@@ -1260,21 +1419,20 @@ ${localKnowledgeBase}
         btnSettings.addEventListener('click', toggleSettingsPanel);
         langRadios.forEach(radio => radio.addEventListener('change', (e) => setLanguage(e.target.value)));
         modeRadios.forEach(radio => radio.addEventListener('change', (e) => setMode(e.target.value)));
+        goalRadios.forEach(radio => radio.addEventListener('change', (e) => setGoal(e.target.value))); // *** NEW ***
         
         // --- Mute Toggle Listener ---
         muteToggle.addEventListener('change', (e) => {
-            isMuted = !e.target.checked; // Checkbox is "checked" when ON (unmuted)
+            isMuted = !e.target.checked; 
             
             const muteLabel = document.getElementById('mute-label');
             if (muteLabel) {
-                // Set the new data-key and update the text
                 muteLabel.dataset.key = isMuted ? 'settingsSoundMuted' : 'settingsSoundUnmuted';
                 muteLabel.innerHTML = translations[currentLanguage][muteLabel.dataset.key];
             }
             
-            // Play a sound on unmute to confirm
             if (!isMuted) {
-                playSound();
+                playPhaseSound();
             }
         });
 
@@ -1341,9 +1499,6 @@ ${localKnowledgeBase}
 
         // --- 3. Auth Functions ---
         
-        /**
-         * MODIFIED: handleAuthSubmit uses translations
-         */
         async function handleAuthSubmit(e) {
             e.preventDefault();
             if (!auth) return;
@@ -1372,9 +1527,6 @@ ${localKnowledgeBase}
             }
         }
 
-        /**
-         * MODIFIED: toggleAuthMode uses translations
-         */
         function toggleAuthMode(e, forceRefresh = false) {
             e.preventDefault();
             if (!forceRefresh) {
@@ -1398,9 +1550,6 @@ ${localKnowledgeBase}
             }
         }
         
-        /**
-         * MODIFIED: handleForgotPassword uses translations
-         */
         async function handleForgotPassword(e) {
             e.preventDefault();
             const email = authEmailEl.value;
@@ -1423,9 +1572,6 @@ ${localKnowledgeBase}
             }
         }
 
-        /**
-         * MODIFIED: getFriendlyAuthError uses translations
-         */
         function getFriendlyAuthError(error) {
             const t = translations[currentLanguage];
             switch (error.code) {
@@ -1453,7 +1599,6 @@ ${localKnowledgeBase}
             }
         }
 
-        // --- updateUIForLoggedIn (Unchanged) ---
         function updateUIForLoggedIn(user) {
             loginContainer.classList.add('hidden');
             userContainer.classList.remove('hidden');
@@ -1467,9 +1612,6 @@ ${localKnowledgeBase}
             btnHistory.classList.add('text-slate-500');
         }
 
-        /**
-         * MODIFIED: updateUIForLoggedOut uses translations
-         */
         function updateUIForLoggedOut() {
             loginContainer.classList.remove('hidden');
             userContainer.classList.add('hidden');
@@ -1481,12 +1623,11 @@ ${localKnowledgeBase}
             authEmailEl.value = '';
             authPasswordEl.value = '';
             authSubmitBtn.disabled = false;
-            toggleAuthMode(new Event('click'), true); // Force-refresh auth text
+            toggleAuthMode(new Event('click'), true); 
             if (isRegisterMode) {
-                 toggleAuthMode(new Event('click'), false); // Reset to login mode
+                 toggleAuthMode(new Event('click'), false); 
             }
             
-            // Disable and reset history/chat button
             btnHistory.disabled = true;
             btnChat.disabled = true;
             btnHistory.classList.add('text-slate-400');
@@ -1494,18 +1635,15 @@ ${localKnowledgeBase}
             btnHistory.classList.remove('text-slate-500', 'active');
             btnChat.classList.remove('text-slate-500', 'active');
             
-            // Clear history list
             historyList.innerHTML = '';
             historyEmpty.classList.remove('hidden');
             historyLoading.classList.add('hidden');
             
-            // Clear calendar and reset
             allUserFasts = [];
             currentCalendarMonth = new Date().getMonth();
             currentCalendarYear = new Date().getFullYear();
-            renderCalendar(currentCalendarMonth, currentCalendarYear, []); // Render empty calendar
+            renderCalendar(currentCalendarMonth, currentCalendarYear, []); 
 
-            // If on history tab, switch back to timer
             if (currentTab === 'history' || currentTab === 'chat') {
                 switchTab('timer');
             }
@@ -1515,9 +1653,9 @@ ${localKnowledgeBase}
         // --- 4. Firestore (Database) Functions ---
 
         /**
-         * MODIFIED: saveFastToFirestore uses translations
+         * *** MODIFIED: saveFastToFirestore now includes goal ***
          */
-        async function saveFastToFirestore(hours, durationString, phase) {
+        async function saveFastToFirestore(hours, durationString, phase, goalHours) {
             if (!currentUser || !db) {
                 console.error("No user or db to save fast for.");
                 return;
@@ -1530,20 +1668,17 @@ ${localKnowledgeBase}
                     durationHours: hours,
                     durationString: durationString,
                     finalPhase: phase.keyword,
-                    finalPhaseColor: phase.color_hex
+                    finalPhaseColor: phase.color_hex,
+                    goalHours: goalHours, // *** NEW: Save the goal ***
+                    goalReached: (goalHours > 0 && hours >= goalHours) // *** NEW: Save if goal was hit ***
                 });
                 console.log("Fast saved with ID: ", docRef.id);
-                // Message is already handled by stopTimer
             } catch (e) {
                 console.error("Error adding document: ", e);
-                // Also handled by stopTimer, but we add the specific offline message
                 timerMessage.innerHTML += translations[currentLanguage].timerMessageOffline;
             }
         }
 
-        /**
-         * MODIFIED: loadFastingHistory uses translations
-         */
         function loadFastingHistory() {
             if (!currentUser || !db) return;
 
@@ -1581,10 +1716,10 @@ ${localKnowledgeBase}
         }
 
         /**
-         * MODIFIED: renderHistoryList uses translations
+         * *** MODIFIED: renderHistoryList now shows goal checkmark ***
          */
         function renderHistoryList(fasts) {
-            historyList.innerHTML = ''; // Clear list
+            historyList.innerHTML = '';
             const t = translations[currentLanguage];
             fasts.forEach(fast => {
                 const div = document.createElement('div');
@@ -1593,10 +1728,20 @@ ${localKnowledgeBase}
                 const date = fast.completedAt?.toDate().toLocaleDateString(currentLanguage.split('-')[0]) || t.historyNoDate;
                 const time = fast.completedAt?.toDate().toLocaleTimeString(currentLanguage.split('-')[0], { hour: '2-digit', minute: '2-digit' }) || '';
                 
+                // *** NEW: Add goal checkmark ***
+                let goalHTML = '';
+                if (fast.goalHours && fast.goalHours > 0) {
+                    if (fast.goalReached) {
+                        goalHTML = `<span class="text-xs text-green-500 font-medium ml-2">✓ ${fast.goalHours}h Goal</span>`;
+                    } else {
+                        goalHTML = `<span class="text-xs text-slate-400 font-medium ml-2">(${fast.goalHours}h Goal)</span>`;
+                    }
+                }
+                
                 div.innerHTML = `
                     <div>
                         <p class="text-lg font-semibold text-slate-800">${date} <span class="text-sm text-slate-500">${time}</span></p>
-                        <p class="text-slate-600">${t.historyDuration}: <span class="font-bold text-slate-900">${fast.durationString}</span></p>
+                        <p class="text-slate-600">${t.historyDuration}: <span class="font-bold text-slate-900">${fast.durationString}</span>${goalHTML}</p>
                     </div>
                     <span class="font-bold text-sm py-1 px-3 rounded-full" style="color: ${fast.finalPhaseColor === '#F5F5F5' ? '#333' : '#FFF'}; background-color: ${fast.finalPhaseColor};">
                         ${fast.finalPhase}
@@ -1608,9 +1753,6 @@ ${localKnowledgeBase}
         
         // --- 5. Calendar Functions ---
         
-        /**
-         * MODIFIED: renderCalendar uses translations
-         */
         function renderCalendar(month, year, fasts) {
             calendarGridEl.innerHTML = '';
             calendarGridHeaderEl.innerHTML = '';
@@ -1626,7 +1768,6 @@ ${localKnowledgeBase}
                 calendarGridHeaderEl.appendChild(dayEl);
             });
             
-            // Logic for days in month (locale-independent)
             const firstDayOfMonth = new Date(year, month, 1).getDay(); 
             const daysInMonth = new Date(year, month + 1, 0).getDate(); 
             
@@ -1693,11 +1834,26 @@ ${localKnowledgeBase}
         // Check for running fast on app load
         const savedStartTime = localStorage.getItem('fastStartTime');
         const savedRunning = localStorage.getItem('fastRunning');
+        const savedGoalHours = localStorage.getItem('fastGoalHours'); // *** NEW ***
 
         if (savedStartTime && savedRunning === 'true') {
             console.log('Found a running fast in localStorage.');
             startTime = parseInt(savedStartTime, 10);
             running = true;
+            
+            // --- NEW: Restore goal ---
+            if (savedGoalHours) {
+                currentGoalHours = parseInt(savedGoalHours, 10);
+                if (currentGoalHours > 0) {
+                    goalTargetTime = startTime + (currentGoalHours * 3600 * 1000);
+                    goalReached = (Date.now() >= goalTargetTime);
+                    updateGoalDisplay();
+                    goalDisplay.classList.remove('hidden');
+                    // Update settings radio
+                    document.getElementById(`goal-${currentGoalHours}`).checked = true;
+                }
+            }
+
             // Set initial phase keyword
             elapsedHours = (Date.now() - startTime) / (1000 * 3600);
             lastPhaseKeyword = getPhase(elapsedHours).keyword;
@@ -1734,11 +1890,8 @@ ${localKnowledgeBase}
         
         // 2. Escuchar el evento "beforeinstallprompt"
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevenir que el navegador muestre el pop-up automáticamente
             e.preventDefault();
-            // Guardar el evento para que podamos dispararlo después
             deferredPrompt = e;
-            // Mostrar nuestro propio botón de instalación
             console.log('`beforeinstallprompt` event was fired.');
             installContainer.classList.remove('hidden');
         });
@@ -1750,21 +1903,16 @@ ${localKnowledgeBase}
                 return;
             }
             
-            // Ocultar nuestro botón
             installContainer.classList.add('hidden');
-            // Mostrar el pop-up de instalación del navegador
             deferredPrompt.prompt();
-            // Esperar a que el usuario elija
             const { outcome } = await deferredPrompt.userChoice;
             console.log(`User response to the install prompt: ${outcome}`);
-            // Ya no necesitamos el evento
             deferredPrompt = null;
         });
         
         // 4. Escuchar si la app ya fue instalada
         window.addEventListener('appinstalled', () => {
             console.log('FastMind was installed.');
-            // Ocultar el botón de instalación
             installContainer.classList.add('hidden');
             deferredPrompt = null;
         });
