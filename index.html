@@ -24,7 +24,7 @@
     <meta property="twitter:image" content="https://fastmindbody.com/preview.png">
     
     <!-- Theme Color -->
-    <meta name="theme-color" content="#F8FAFC"/> <!-- NEW: slate-50 -->
+    <meta name="theme-color" content="#F8FAFC"/> 
     
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/F8FAFC/000000?text=🧠&font=noto">
@@ -36,22 +36,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- *** NEW: Minimalist & Light UI/UX Styles *** -->
+    <!-- *** Minimalist & Light UI/UX Styles *** -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F8FAFC; /* NEW: bg-slate-50 */
-            color: #334155; /* NEW: text-slate-700 */
+            background-color: #F8FAFC; 
+            color: #334155; 
         }
         
-        /* --- Redesigned Progress Circle --- */
         .progress-circle {
             width: 280px;
             height: 280px;
             border-radius: 50%;
             display: grid;
             place-items: center;
-            background: conic-gradient(#CBD5E1 0%, #E2E8F0 0); /* NEW: slate-300 to slate-200 */
+            background: conic-gradient(#CBD5E1 0%, #E2E8F0 0); 
             transition: background 0.3s ease-out;
         }
         
@@ -59,21 +58,19 @@
             content: "";
             width: 80%;
             height: 80%;
-            background: #FFFFFF; /* NEW: bg-white */
+            background: #FFFFFF; 
             border-radius: 50%;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
         }
 
-        /* --- Progress Text --- */
         .progress-text {
             position: absolute;
             text-align: center;
         }
         
-        /* --- Redesigned Chat Bubbles --- */
         .chat-bubble-bot {
-            background-color: #E2E8F0; /* NEW: bg-slate-200 */
-            color: #334155; /* NEW: text-slate-700 */
+            background-color: #E2E8F0; 
+            color: #334155; 
             padding: 0.75rem 1rem;
             border-radius: 1rem;
             max-width: 80%;
@@ -81,7 +78,7 @@
             border-bottom-left-radius: 0.25rem;
         }
         .chat-bubble-user {
-            background-color: #0EA5E9; /* NEW: bg-sky-500 */
+            background-color: #0EA5E9; 
             color: white;
             padding: 0.75rem 1rem;
             border-radius: 1rem;
@@ -90,7 +87,6 @@
             border-bottom-right-radius: 0.25rem;
         }
 
-        /* --- Scrollbar Styling --- */
         .scrollbar-hide {
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -99,7 +95,6 @@
             display: none;
         }
         
-        /* --- Calendar Styles --- */
         .calendar-day {
             display: flex;
             flex-direction: column;
@@ -110,19 +105,50 @@
         }
         .calendar-day.fasted-day span {
             font-weight: bold;
-            color: #0F172A; /* slate-900 */
+            color: #0F172A; 
         }
         .fasted-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background-color: #38BDF8; /* NEW: sky-400 */
+            background-color: #38BDF8; 
             margin-top: 2px;
         }
 
-        /* --- Active Nav Button Style --- */
         .nav-btn.active {
-            color: #0EA5E9; /* NEW: sky-500 */
+            color: #0EA5E9; 
+        }
+
+        /* --- NEW: Settings Panel Styles --- */
+        #settings-panel {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #settings-panel.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+        /* Custom radio button styling */
+        .settings-toggle-label {
+            display: block;
+            padding: 0.75rem 1rem;
+            background-color: #F1F5F9; /* slate-100 */
+            border: 1px solid #CBD5E1; /* slate-300 */
+            border-radius: 0.5rem;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            color: #475569; /* slate-600 */
+            transition: all 0.2s ease;
+        }
+        .settings-toggle-input:checked + .settings-toggle-label {
+            background-color: #0EA5E9; /* sky-500 */
+            color: white;
+            border-color: #0EA5E9; /* sky-500 */
+            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2), 0 2px 4px -1px rgba(14, 165, 233, 0.1);
+        }
+        .settings-toggle-input {
+            display: none; /* Hide the actual radio button */
         }
 
     </style>
@@ -137,13 +163,53 @@
       Unified App Layout
       ==================================================================
     -->
-    <div class="max-w-2xl mx-auto p-4 md:p-8 pb-24"> <!-- Added pb-24 for bottom nav -->
+    <div class="max-w-2xl mx-auto p-4 md:p-8 pb-24"> 
         
         <!-- Header -->
-        <header class="text-center mb-6">
+        <header class="relative text-center mb-6">
             <h1 class="text-4xl font-bold text-slate-900">🧠 FastMind</h1>
-            <p class="text-lg text-slate-500">Your AI Fasting & Wellness Coach</p>
+            <p class="text-lg text-slate-500" data-key="headerSubtitle">Your AI Fasting & Wellness Coach</p>
+            
+            <!-- NEW: Settings Button -->
+            <button id="btn-settings" class="absolute top-0 right-0 p-2 text-slate-500 hover:text-sky-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0l-.1.41a1.5 1.5 0 01-2.1 1.44l-.4-.16c-1.5-.6-3.14.79-2.58 2.24l.2.43a1.5 1.5 0 01-1.2 2.03l-.43.09c-1.56.32-1.56 2.6 0 2.92l.43.09a1.5 1.5 0 011.2 2.03l-.2.43c-.56 1.45 1.07 2.84 2.58 2.24l.4-.16a1.5 1.5 0 012.1 1.44l.1.41c.38 1.56 2.6 1.56 2.98 0l.1-.41a1.5 1.5 0 012.1-1.44l.4.16c1.5.6 3.14-.79 2.58-2.24l-.2-.43a1.5 1.5 0 011.2-2.03l.43-.09c1.56-.32 1.56-2.6 0-2.92l-.43-.09a1.5 1.5 0 01-1.2-2.03l.2-.43c.56-1.45-1.07-2.84-2.58-2.24l-.4.16a1.5 1.5 0 01-2.1-1.44l-.1-.41zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                </svg>
+            </button>
         </header>
+
+        <!-- 
+          ==================================================================
+          NEW: Settings Panel (Hidden by default)
+          ==================================================================
+        -->
+        <div id="settings-panel" class="hidden mb-6 bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-semibold text-center mb-6" data-key="settingsTitle">Settings</h2>
+            
+            <!-- Language Toggle -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsLanguage">Language</label>
+                <div class="flex space-x-2">
+                    <input type="radio" name="language" id="lang-en" value="en" class="settings-toggle-input" checked>
+                    <label for="lang-en" class="settings-toggle-label flex-1">English</label>
+                    
+                    <input type="radio" name="language" id="lang-es" value="es" class="settings-toggle-input">
+                    <label for="lang-es" class="settings-toggle-label flex-1">Español</label>
+                </div>
+            </div>
+
+            <!-- Fasting Mode Toggle -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsMode">Fasting Mode</label>
+                <div class="flex space-x-2">
+                    <input type="radio" name="mode" id="mode-biological" value="biological" class="settings-toggle-input" checked>
+                    <label for="mode-biological" class="settings-toggle-label flex-1" data-key="settingsBiological">Biological</label>
+                    
+                    <input type="radio" name="mode" id="mode-mind" value="mind" class="settings-toggle-input">
+                    <label for="mode-mind" class="settings-toggle-label flex-1" data-key="settingsMind">Mental</label>
+                </div>
+            </div>
+        </div>
 
         <!-- Main Content Area -->
         <main id="app-main">
@@ -169,14 +235,14 @@
 
                     <div class="flex justify-center space-x-4 mb-6">
                         <button id="btn-start" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
-                            ▶️ Start
+                            ▶️ <span data-key="btnStart">Start</span>
                         </button>
                         <button id="btn-stop" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
-                            ⏹ Stop
+                            ⏹ <span data-key="btnStop">Stop</span>
                         </button>
                     </div>
 
-                    <div id="timer-message" class="text-center text-slate-500 text-base p-4 bg-slate-100 rounded-lg">
+                    <div id="timer-message" class="text-center text-slate-500 text-base p-4 bg-slate-100 rounded-lg" data-key="timerMessageNotStarted">
                         Press ▶️ <strong>Start</strong> to begin your fast.
                     </div>
                 </div>
@@ -189,22 +255,22 @@
             -->
             <div id="login-container" class="mb-6">
                 <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-                    <h2 id="auth-title" class="text-2xl font-semibold text-center mb-4 text-slate-900">Login to Unlock Features</h2>
-                    <p class="text-center text-slate-500 mb-6 text-sm">Create an account to unlock the AI Chatbot and save your history.</p>
+                    <h2 id="auth-title" class="text-2xl font-semibold text-center mb-4 text-slate-900" data-key="authTitleLogin">Login to Unlock Features</h2>
+                    <p class="text-center text-slate-500 mb-6 text-sm" data-key="authSubtitle">Create an account to unlock the AI Chatbot and save your history.</p>
                     <form id="auth-form" class="space-y-4">
-                        <input type="email" id="auth-email" placeholder="Email" required class="w-full p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        <input type="password" id="auth-password" placeholder="Password (min. 6 characters)" required minlength="6" class="w-full p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <input type="email" id="auth-email" placeholder="Email" required class="w-full p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" data-key="authEmailPlaceholder" data-key-target="placeholder">
+                        <input type="password" id="auth-password" placeholder="Password (min. 6 characters)" required minlength="6" class="w-full p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" data-key="authPasswordPlaceholder" data-key-target="placeholder">
                         
                         <p id="auth-message" class="text-sm text-center h-4"></p> 
                         
-                        <button type="submit" id="auth-submit" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2">
+                        <button type="submit" id="auth-submit" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2" data-key="authSubmitLogin">
                             Login
                         </button>
                     </form>
                     
                     <div class="flex justify-between mt-4 text-sm">
-                        <a href="#" id="auth-toggle" class="text-sky-500 hover:underline">Need an account? Register</a>
-                        <a href="#" id="forgot-password" class="text-slate-500 hover:underline">Forgot Password?</a>
+                        <a href="#" id="auth-toggle" class="text-sky-500 hover:underline" data-key="authToggleRegister">Need an account? Register</a>
+                        <a href="#" id="forgot-password" class="text-slate-500 hover:underline" data-key="authForgotPassword">Forgot Password?</a>
                     </div>
                 </div>
             </div>
@@ -216,7 +282,7 @@
             -->
             <div id="user-container" class="hidden mb-6 text-center">
                 <p id="user-email" class="text-slate-500 self-center mb-4"></p>
-                <button id="btn-logout" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                <button id="btn-logout" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-6 rounded-lg shadow-md transition duration-200" data-key="btnLogout">
                     Logout
                 </button>
             </div>
@@ -230,21 +296,18 @@
             <!-- Chat Tab Content (Oculto por defecto) -->
             <div id="chat-content" class="hidden">
                 <div class="bg-white rounded-xl shadow-lg flex flex-col" style="height: 70vh;">
-                    <h2 class="text-2xl font-semibold text-center p-6 border-b border-slate-200 text-slate-900">FastMind AI Assistant</h2>
+                    <h2 class="text-2xl font-semibold text-center p-6 border-b border-slate-200 text-slate-900" data-key="chatTitle">FastMind AI Assistant</h2>
                     
                     <div id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
-                        <div class="chat-bubble-bot">
-                            <span class="font-bold text-sky-600">💡 FastMind:</span>
-                            <p class="text-slate-700">Hello! I'm FastMind. Ask me anything about fasting.</p>
-                        </div>
+                        <!-- Chat history will be rendered by JS -->
                     </div>
 
                     <div id="chat-spinner" class="hidden text-center p-4">
-                        <p class="text-slate-500">FastMind is thinking...</p>
+                        <p class="text-slate-500" data-key="chatSpinner">FastMind is thinking...</p>
                     </div>
                     
                     <form id="chat-form" class="flex space-x-2 p-4 border-t border-slate-200">
-                        <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" data-key="chatInputPlaceholder" data-key-target="placeholder">
                         <button type="submit" id="chat-submit" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-5 rounded-lg shadow-md transition duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M10.894 2.886l-7.48 8.13a.5.5 0 00.34.876h12.492a.5.5 0 00.34-.876l-7.48-8.13a.5.5 0 00-.684 0z" transform="rotate(90 10 10)"/>
@@ -257,7 +320,7 @@
             <!-- History Tab Content (Oculto por defecto) -->
             <div id="history-content" class="hidden">
                 <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-semibold text-center mb-6 text-slate-900">My Fasting History</h2>
+                    <h2 class="text-2xl font-semibold text-center mb-6 text-slate-900" data-key="historyTitle">My Fasting History</h2>
                     
                     <!-- CALENDAR SECTION -->
                     <div id="calendar-container" class="mb-8">
@@ -279,11 +342,11 @@
                     </div>
                     
                     <!-- History List Section -->
-                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Completed Fasts</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900" data-key="historyCompletedFasts">Completed Fasts</h3>
                     <div id="history-list" class="h-64 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
                         <!-- History items will be loaded here -->
-                        <p id="history-loading" class="text-slate-500 text-center">Loading history...</p>
-                        <p id="history-empty" class="text-slate-500 text-center hidden">No fasts recorded yet.</p>
+                        <p id="history-loading" class="text-slate-500 text-center" data-key="historyLoading">Loading history...</p>
+                        <p id="history-empty" class="text-slate-500 text-center hidden" data-key="historyEmpty">No fasts recorded yet.</p>
                     </div>
                 </div>
             </div>
@@ -305,19 +368,19 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span class="text-xs font-medium">Timer</span>
+            <span class="text-xs font-medium" data-key="navTimer">Timer</span>
         </button>
         <button id="btn-chat" class="nav-btn flex-1 flex flex-col items-center p-3 transition-colors duration-200 text-slate-400" disabled>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <span class="text-xs font-medium">Chat</span>
+            <span class="text-xs font-medium" data-key="navChat">Chat</span>
         </button>
         <button id="btn-history" class="nav-btn flex-1 flex flex-col items-center p-3 transition-colors duration-200 text-slate-400" disabled>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span class="text-xs font-medium">History</span>
+            <span class="text-xs font-medium" data-key="navHistory">History</span>
         </button>
     </nav>
 
@@ -355,21 +418,173 @@
         // Nivel de log para depuración
         setLogLevel('Debug');
 
-        // --- DATA (Unchanged) ---
-        const fastingData = [
-            { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Digest", color_hex: "#FFA500", description: "Your body is processing the last meal and absorbing nutrients.", what_to_eat: "Water, green tea, or black coffee.", symptoms: "Drowsiness or heaviness.", recommendations: "Avoid eating again; let digestion finish.", tip: "Begin your journey calmly." },
-            { fase_inicio_h: 4, fase_fin_h: 12, keyword: "Shift", color_hex: "#FFD700", description: "The body starts using liver glycogen for energy.", what_to_eat: "Water, black coffee, or mineral water.", symptoms: "Mild hunger, cravings.", recommendations: "Stay busy and drink water every hour.", tip: "Your metabolism begins to shift." },
-            { fase_inicio_h: 12, fase_fin_h: 18, keyword: "Burn", color_hex: "#ADFF2F", description: "Glycogen reserves deplete and fat burning begins.", what_to_eat: "Water with electrolytes or green tea.", symptoms: "Mild headache, feeling of emptiness.", recommendations: "Stay hydrated and avoid excess caffeine.", tip: "Your body starts real fat burning." },
-            { fase_inicio_h: 18, fase_fin_h: 24, keyword: "Switch", color_hex: "#00B050", description: "Ketosis activates: your body uses fat as its main energy source.", what_to_eat: "Water with pink salt or clear broth.", symptoms: "Ketone breath, unstable energy.", recommendations: "Rest or walk lightly.", tip: "You are entering repair mode." },
-            { fase_inicio_h: 24, fase_fin_h: 36, keyword: "Focus", color_hex: "#00B0F0", description: "Ketosis stabilizes; mental clarity increases.", what_to_eat: "Water, herbal teas, or green tea.", symptoms: "Reduced appetite, higher focus.", recommendations: "Avoid intense exercise; listen to your body.", tip: "Your mind becomes sharper." },
-            { fase_inicio_h: 36, fase_fin_h: 48, keyword: "Cleanse", color_hex: "#0070C0", description: "Autophagy begins: cells remove waste and regenerate.", what_to_eat: "Water, herbal tea, electrolytes.", symptoms: "Calm, mild fatigue possible.", recommendations: "Rest and reduce stress.", tip: "Your body is cleansing at the cellular level." },
-            { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renew", color_hex: "#7030A0", description: "Damaged proteins degrade and cells renew themselves.", what_to_eat: "Water, teas, or fat-free broth.", symptoms: "Mild fatigue, occasional dizziness.", recommendations: "Take breaks and breathe deeply.", tip: "You are renewing your system." },
-            { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Reset", color_hex: "#9966CC", description: "Your immune system strengthens and produces new cells.", what_to_eat: "Water or mild tea.", symptoms: "Light dizziness, mental calm.", recommendations: "Avoid strong caffeine and prioritize rest.", tip: "Your body is rebooting from within." },
-            { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Zen", color_hex: "#708090", description: "Your metabolism becomes efficient and stable in prolonged ketosis.", what_to_eat: "Water, teas, vegetable broths.", symptoms: "Well-being, balanced energy.", recommendations: "Sleep well and stay hydrated.", tip: "You are in full control." },
-            { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Rebirth", color_hex: "#F5F5F5", description: "Maximum cellular regeneration achieved; time to break your fast.", what_to_eat: "Broth, light protein, soft fruits.", symptoms: "Controlled hunger, heightened senses.", recommendations: "Break your fast slowly and with care.", tip: "You have achieved a state of deep renewal." }
-        ];
+        // --- NEW: Translations Object ---
+        const translations = {
+            en: {
+                headerSubtitle: "Your AI Fasting & Wellness Coach",
+                settingsTitle: "Settings",
+                settingsLanguage: "Language",
+                settingsMode: "Fasting Mode",
+                settingsBiological: "Biological",
+                settingsMind: "Mental",
+                btnStart: "Start",
+                btnStop: "Stop",
+                timerMessageNotStarted: "Press ▶️ <strong>Start</strong> to begin your fast.",
+                timerMessageCompleted: "Fast completed! Total time: <strong>{finalTime}</strong>. Press Start to begin again.",
+                timerMessageNotSaved: "<br><em>Login to save your fast to history!</em>",
+                timerMessageSaved: "<br><em>Saved to your history!</em>",
+                timerMessageOffline: "<br><em>Saved offline. Will sync when online.</em>",
+                authTitleLogin: "Login to Unlock Features",
+                authTitleRegister: "Register to Unlock Features",
+                authSubtitle: "Create an account to unlock the AI Chatbot and save your history.",
+                authEmailPlaceholder: "Email",
+                authPasswordPlaceholder: "Password (min. 6 characters)",
+                authSubmitLogin: "Login",
+                authSubmitRegister: "Register",
+                authSubmitProcessing: "Processing...",
+                authToggleRegister: "Need an account? Register",
+                authToggleLogin: "Already have an account? Login",
+                authForgotPassword: "Forgot Password?",
+                authResetEmailSent: "Password reset email sent! Check your inbox.",
+                authEnterEmailFirst: "Please enter your email first.",
+                btnLogout: "Logout",
+                chatTitle: "FastMind AI Assistant",
+                chatBotName: "FastMind",
+                chatUserName: "You",
+                chatWelcome: "Hello! I'm FastMind. Ask me anything about fasting.",
+                chatSpinner: "FastMind is thinking...",
+                chatInputPlaceholder: "Ask a question...",
+                chatError: "⚠️ There was an error contacting the assistant. Please try again.",
+                historyTitle: "My Fasting History",
+                historyCompletedFasts: "Completed Fasts",
+                historyLoading: "Loading history...",
+                historyEmpty: "No fasts recorded yet.",
+                historyError: '<p class="text-red-500">Error loading history.</p>',
+                historyDuration: "Duration",
+                historyNoDate: "No date",
+                calendarDays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+                calendarMonths: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                navTimer: "Timer",
+                navChat: "Chat",
+                navHistory: "History",
+                errorInvalidEmail: "Please enter a valid email.",
+                errorInvalidPassword: "Invalid email or password.",
+                errorEmailInUse: "An account with this email already exists.",
+                errorWeakPassword: "Password must be at least 6 characters long.",
+                errorUnknown: "An unknown error occurred. Please try again."
+            },
+            es: {
+                headerSubtitle: "Tu Asistente de Ayuno y Bienestar",
+                settingsTitle: "Ajustes",
+                settingsLanguage: "Idioma",
+                settingsMode: "Modo de Ayuno",
+                settingsBiological: "Biológico",
+                settingsMind: "Mental",
+                btnStart: "Iniciar",
+                btnStop: "Detener",
+                timerMessageNotStarted: "Presiona ▶️ <strong>Iniciar</strong> para comenzar tu ayuno.",
+                timerMessageCompleted: "¡Ayuno completado! Tiempo total: <strong>{finalTime}</strong>. Presiona Iniciar para comenzar de nuevo.",
+                timerMessageNotSaved: "<br><em>¡Inicia sesión para guardar tu ayuno!</em>",
+                timerMessageSaved: "<br><em>¡Guardado en tu historial!</em>",
+                timerMessageOffline: "<br><em>Guardado sin conexión. Se sincronizará al conectarte.</em>",
+                authTitleLogin: "Inicia Sesión para Desbloquear",
+                authTitleRegister: "Regístrate para Desbloquear",
+                authSubtitle: "Crea una cuenta para desbloquear el Chat AI y guardar tu historial.",
+                authEmailPlaceholder: "Correo electrónico",
+                authPasswordPlaceholder: "Contraseña (mín. 6 caracteres)",
+                authSubmitLogin: "Iniciar Sesión",
+                authSubmitRegister: "Registrarse",
+                authSubmitProcessing: "Procesando...",
+                authToggleRegister: "¿Necesitas una cuenta? Regístrate",
+                authToggleLogin: "¿Ya tienes cuenta? Inicia sesión",
+                authForgotPassword: "¿Olvidaste tu contraseña?",
+                authResetEmailSent: "¡Correo de reestablecimiento enviado! Revisa tu bandeja de entrada.",
+                authEnterEmailFirst: "Por favor, introduce tu correo primero.",
+                btnLogout: "Cerrar Sesión",
+                chatTitle: "Asistente AI FastMind",
+                chatBotName: "FastMind",
+                chatUserName: "Tú",
+                chatWelcome: "¡Hola! Soy FastMind. Pregúntame lo que sea sobre el ayuno.",
+                chatSpinner: "FastMind está pensando...",
+                chatInputPlaceholder: "Escribe una pregunta...",
+                chatError: "⚠️ Ocurrió un error contactando al asistente. Por favor, intenta de nuevo.",
+                historyTitle: "Mi Historial de Ayunos",
+                historyCompletedFasts: "Ayunos Completados",
+                historyLoading: "Cargando historial...",
+                historyEmpty: "Aún no hay ayunos registrados.",
+                historyError: '<p class="text-red-500">Error al cargar el historial.</p>',
+                historyDuration: "Duración",
+                historyNoDate: "Sin fecha",
+                calendarDays: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
+                calendarMonths: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+                navTimer: "Reloj",
+                navChat: "Chat",
+                navHistory: "Historial",
+                errorInvalidEmail: "Por favor, introduce un correo válido.",
+                errorInvalidPassword: "Correo o contraseña inválidos.",
+                errorEmailInUse: "Ya existe una cuenta con este correo.",
+                errorWeakPassword: "La contraseña debe tener al menos 6 caracteres.",
+                errorUnknown: "Ocurrió un error desconocido. Intenta de nuevo."
+            }
+        };
 
-        // --- STATE MANAGEMENT (Unchanged) ---
+        // --- NEW: Fasting Data Sets ---
+        const fastingDataSets = {
+            biological: {
+                en: [
+                    { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Digest", color_hex: "#FFA500", tip: "Your body is processing the last meal." },
+                    { fase_inicio_h: 4, fase_fin_h: 12, keyword: "Shift", color_hex: "#FFD700", tip: "Your metabolism begins to shift." },
+                    { fase_inicio_h: 12, fase_fin_h: 18, keyword: "Burn", color_hex: "#ADFF2F", tip: "Your body starts real fat burning." },
+                    { fase_inicio_h: 18, fase_fin_h: 24, keyword: "Switch", color_hex: "#00B050", tip: "You are entering repair mode (ketosis)." },
+                    { fase_inicio_h: 24, fase_fin_h: 36, keyword: "Focus", color_hex: "#00B0F0", tip: "Your mind becomes sharper." },
+                    { fase_inicio_h: 36, fase_fin_h: 48, keyword: "Cleanse", color_hex: "#0070C0", tip: "Your body is cleansing at the cellular level." },
+                    { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renew", color_hex: "#7030A0", tip: "You are renewing your system." },
+                    { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Reset", color_hex: "#9966CC", tip: "Your body is rebooting from within." },
+                    { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Zen", color_hex: "#708090", tip: "You are in full control." },
+                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Rebirth", color_hex: "#F5F5F5", tip: "You have achieved a state of deep renewal." }
+                ],
+                es: [
+                    { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Digestión", color_hex: "#FFA500", tip: "Tu cuerpo está procesando la última comida." },
+                    { fase_inicio_h: 4, fase_fin_h: 12, keyword: "Cambio", color_hex: "#FFD700", tip: "Tu metabolismo comienza a cambiar." },
+                    { fase_inicio_h: 12, fase_fin_h: 18, keyword: "Quema", color_hex: "#ADFF2F", tip: "Tu cuerpo inicia la quema real de grasa." },
+                    { fase_inicio_h: 18, fase_fin_h: 24, keyword: "Cetosis", color_hex: "#00B050", tip: "Estás entrando en modo de reparación (cetosis)." },
+                    { fase_inicio_h: 24, fase_fin_h: 36, keyword: "Enfoque", color_hex: "#00B0F0", tip: "Tu mente se vuelve más aguda." },
+                    { fase_inicio_h: 36, fase_fin_h: 48, keyword: "Limpieza", color_hex: "#0070C0", tip: "Tu cuerpo se está limpiando a nivel celular." },
+                    { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renovar", color_hex: "#7030A0", tip: "Estás renovando tu sistema." },
+                    { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Reinicio", color_hex: "#9966CC", tip: "Tu cuerpo se está reiniciando desde adentro." },
+                    { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Zen", color_hex: "#708090", tip: "Estás en control total." },
+                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Renacer", color_hex: "#F5F5F5", tip: "Has alcanzado un estado de renovación profunda." }
+                ]
+            },
+            mind: {
+                en: [
+                    { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Prepare", color_hex: "#FFA500", tip: "Body is processing. Mind is preparing." },
+                    { fase_inicio_h: 4, fase_fin_h: 12, keyword: "Discipline", color_hex: "#FFD700", tip: "A test of mental discipline begins." },
+                    { fase_inicio_h: 12, fase_fin_h: 18, keyword: "Clarity", color_hex: "#ADFF2F", tip: "Brain fog starts to lift. Clarity begins." },
+                    { fase_inicio_h: 18, fase_fin_h: 24, keyword: "Focus", color_hex: "#00B050", tip: "Energy shifts to the mind. Focus sharpens." },
+                    { fase_inicio_h: 24, fase_fin_h: 36, keyword: "Resilience", color_hex: "#00B0F0", tip: "Building mental strength and resilience." },
+                    { fase_inicio_h: 36, fase_fin_h: 48, keyword: "Reflection", color_hex: "#0070C0", tip: "Heightened introspection and calm." },
+                    { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renewal", color_hex: "#7030A0", tip: "Mind & body renewal. Sense of accomplishment." },
+                    { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Insight", color_hex: "#9966CC", tip: "Deep mental calm. Prone to insights." },
+                    { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Alignment", color_hex: "#708090", tip: "Full mental and physical alignment." },
+                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Perspective", color_hex: "#F5F5F5", tip: "Emerge with a new perspective." }
+                ],
+                es: [
+                    { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Preparar", color_hex: "#FFA500", tip: "Cuerpo procesando. Mente preparándose." },
+                    { fase_inicio_h: 4, fase_fin_h: 12, keyword: "Disciplina", color_hex: "#FFD700", tip: "Comienza la prueba de disciplina mental." },
+                    { fase_inicio_h: 12, fase_fin_h: 18, keyword: "Claridad", color_hex: "#ADFF2F", tip: "La niebla mental se disipa. Comienza la claridad." },
+                    { fase_inicio_h: 18, fase_fin_h: 24, keyword: "Enfoque", color_hex: "#00B050", tip: "La energía se dirige a la mente. El enfoque se agudiza." },
+                    { fase_inicio_h: 24, fase_fin_h: 36, keyword: "Resiliencia", color_hex: "#00B0F0", tip: "Construyendo fuerza mental y resiliencia." },
+                    { fase_inicio_h: 36, fase_fin_h: 48, keyword: "Reflexión", color_hex: "#0070C0", tip: "Introspección y calma agudizadas." },
+                    { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renovación", color_hex: "#7030A0", tip: "Renovación de mente y cuerpo. Sentido de logro." },
+                    { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Perspicacia", color_hex: "#9966CC", tip: "Calma mental profunda. Propenso a ideas." },
+                    { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Alineación", color_hex: "#708090", tip: "Alineación mental y física total." },
+                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Perspectiva", color_hex: "#F5F5F5", tip: "Emerge con una nueva perspectiva." }
+                ]
+            }
+        };
+
+        // --- STATE MANAGEMENT ---
         let startTime = null; 
         let running = false;
         let elapsedHours = 0;
@@ -377,21 +592,25 @@
         let currentTab = 'timer';
         let timerInterval = null;
         
-        // --- Firebase & Auth State (Unchanged) ---
+        // --- NEW: App State ---
+        let currentLanguage = 'en';
+        let currentMode = 'biological';
+        
+        // --- Firebase & Auth State ---
         let auth;
         let db;
         let currentUser = null;
         let historyUnsubscribe = null; 
         
-        // --- Calendar State (Unchanged) ---
-        let currentCalendarMonth = new Date().getMonth(); // 0-11
+        // --- Calendar State ---
+        let currentCalendarMonth = new Date().getMonth();
         let currentCalendarYear = new Date().getFullYear();
         let allUserFasts = []; 
         
-        // --- Auth UI State (Unchanged) ---
+        // --- Auth UI State ---
         let isRegisterMode = false;
 
-        // --- DOM ELEMENTS (Unchanged) ---
+        // --- DOM ELEMENTS ---
         const btnTimer = document.getElementById('btn-timer');
         const btnChat = document.getElementById('btn-chat');
         const timerContent = document.getElementById('timer-content');
@@ -435,12 +654,78 @@
         const calendarGridHeaderEl = document.getElementById('calendar-grid-header');
         const calendarGridEl = document.getElementById('calendar-grid');
 
+        // --- NEW: Settings Panel Elements ---
+        const btnSettings = document.getElementById('btn-settings');
+        const settingsPanel = document.getElementById('settings-panel');
+        const langRadios = document.querySelectorAll('input[name="language"]');
+        const modeRadios = document.querySelectorAll('input[name="mode"]');
         
-        // --- CORE LOGIC (Functions - Unchanged) ---
+        
+        // --- CORE LOGIC ---
 
+        /**
+         * NEW: Function to apply translations to the UI
+         */
+        function applyTranslations(lang) {
+            const langStrings = translations[lang] || translations.en;
+            document.documentElement.lang = lang; // Set document language
+
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.dataset.key;
+                const target = el.dataset.keyTarget || 'innerHTML';
+                if (langStrings[key]) {
+                    if (target === 'innerHTML') {
+                        el.innerHTML = langStrings[key];
+                    } else if (target === 'placeholder') {
+                        el.placeholder = langStrings[key];
+                    }
+                }
+            });
+
+            // Special cases that need logic
+            updateTimerVisuals(); // Update timer text
+            renderCalendar(currentCalendarMonth, currentCalendarYear, allUserFasts); // Redraw calendar headers
+            renderChatHistory(); // Redraw chat welcome
+            
+            // Update auth form state (if visible)
+            if (!currentUser) {
+                toggleAuthMode(new Event('click'), true); // Force-refresh auth text
+                toggleAuthMode(new Event('click'), true); // (call twice to reset to original state)
+            }
+        }
+
+        /**
+         * NEW: Function to set the language
+         */
+        function setLanguage(lang) {
+            if (lang === currentLanguage) return;
+            currentLanguage = lang;
+            applyTranslations(lang);
+        }
+
+        /**
+         * NEW: Function to set the fasting mode
+         */
+        function setMode(mode) {
+            if (mode === currentMode) return;
+            currentMode = mode;
+            updateTimerVisuals(); // Update timer text
+        }
+        
+        /**
+         * NEW: Toggle Settings Panel
+         */
+        function toggleSettingsPanel() {
+            settingsPanel.classList.toggle('hidden');
+        }
+
+        /**
+         * MODIFIED: Get phase from the correct data set
+         */
         function getPhase(hours) {
-            const phase = fastingData.find(p => hours >= p.fase_inicio_h && hours < p.fase_fin_h);
-            return phase || fastingData[fastingData.length - 1];
+            const data = fastingDataSets[currentMode][currentLanguage];
+            const phase = data.find(p => hours >= p.fase_inicio_h && hours < p.fase_fin_h);
+            return phase || data[data.length - 1];
         }
 
         function formatTime(totalSeconds) {
@@ -449,7 +734,33 @@
             const s = totalSeconds % 60;
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
+        
+        /**
+         * NEW: Helper to update timer text (called by updateTimer and language/mode setters)
+         */
+        function updateTimerVisuals() {
+            if (running) {
+                const currentPhase = getPhase(elapsedHours);
+                chronometerEl.style.color = currentPhase.color_hex;
+                phaseNameEl.textContent = currentPhase.keyword;
+                phaseNameEl.style.color = currentPhase.color_hex;
+                timerMessage.innerHTML = `<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
+            } else {
+                // Set to default "Not Started"
+                phaseNameEl.textContent = "Not Started"; // This doesn't need translation, it's a state
+                phaseNameEl.style.color = "#475569";
+                chronometerEl.textContent = "00:00:00";
+                chronometerEl.style.color = "#1E293B";
+                // Check if a message is being displayed (like "Completed")
+                if (timerMessage.dataset.key !== "timerMessageCompleted") {
+                     timerMessage.innerHTML = translations[currentLanguage].timerMessageNotStarted;
+                }
+            }
+        }
 
+        /**
+         * MODIFIED: updateTimer now just updates numbers and calls updateTimerVisuals
+         */
         function updateTimer() {
             if (!running || !startTime) return;
             
@@ -463,14 +774,11 @@
             const pct = Math.min((elapsedHours / maxHours) * 100, 100);
             
             chronometerEl.textContent = timeString;
-            chronometerEl.style.color = currentPhase.color_hex;
-            phaseNameEl.textContent = currentPhase.keyword;
-            phaseNameEl.style.color = currentPhase.color_hex;
-            // NEW: Light theme progress
             progressCircle.style.background = `conic-gradient(${currentPhase.color_hex} ${pct}%, #E2E8F0 0)`;
             
+            updateTimerVisuals(); // Update text
+            
             if (running) {
-                timerMessage.innerHTML = `<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
                 updateMediaSession(timeString, currentPhase.keyword);
             }
         }
@@ -479,19 +787,21 @@
             startTime = Date.now();
             running = true;
             elapsedHours = 0;
+            timerMessage.dataset.key = ""; // Clear completed message key
 
             localStorage.setItem('fastStartTime', startTime.toString());
             localStorage.setItem('fastRunning', 'true');
 
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
+            if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(updateTimer, 1000);
             updateTimer();
             
             silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
         }
 
+        /**
+         * MODIFIED: stopTimer now uses translation keys
+         */
         function stopTimer() {
             if (!running) return; 
             
@@ -500,29 +810,27 @@
             localStorage.removeItem('fastStartTime');
             localStorage.removeItem('fastRunning');
             
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
+            if (timerInterval) clearInterval(timerInterval);
             
             const finalTime = chronometerEl.textContent;
             const finalHours = elapsedHours;
-            const finalPhase = getPhase(finalHours);
+            const finalPhase = getPhase(finalHours); // Gets phase in current lang/mode
             
-            timerMessage.innerHTML = `Fast completed! Total time: <strong>${finalTime}</strong>. Press Start to begin again.`;
+            // Set message with translation key
+            let completedMsg = translations[currentLanguage].timerMessageCompleted.replace("{finalTime}", finalTime);
+            timerMessage.dataset.key = "timerMessageCompleted"; // Store key to prevent overwrite by language change
             
             if (currentUser) {
                 saveFastToFirestore(finalHours, finalTime, finalPhase);
+                completedMsg += translations[currentLanguage].timerMessageSaved;
             } else {
                 console.log("User not logged in. Fast not saved to history.");
-                timerMessage.innerHTML += "<br><em>Login to save your fast to history!</em>";
+                completedMsg += translations[currentLanguage].timerMessageNotSaved;
             }
+            timerMessage.innerHTML = completedMsg;
 
             // Reset visual
-            phaseNameEl.textContent = "Not Started";
-            phaseNameEl.style.color = "#475569";
-            chronometerEl.textContent = "00:00:00";
-            chronometerEl.style.color = "#1E293B";
-            // NEW: Light theme reset
+            updateTimerVisuals(); // Resets to "Not Started" state
             progressCircle.style.background = `conic-gradient(#CBD5E1 0%, #E2E8F0 0)`;
             elapsedHours = 0;
             startTime = null; 
@@ -555,7 +863,7 @@
             } else if (tabName === 'chat') {
                 chatContent.classList.remove('hidden');
                 btnChat.classList.add('active');
-                renderChatHistory(); // Render chat
+                renderChatHistory(); 
             } else if (tabName === 'history') {
                 historyContent.classList.remove('hidden');
                 btnHistory.classList.add('active');
@@ -578,19 +886,22 @@
             }
         }
 
-        // --- *** NEW: Redesigned renderChatHistory function *** ---
+        /**
+         * MODIFIED: renderChatHistory uses translations
+         */
         function renderChatHistory() {
+            const t = translations[currentLanguage];
             chatHistoryEl.innerHTML = `
                 <div class="chat-bubble-bot">
-                    <span class="font-bold text-sky-600">💡 FastMind:</span>
-                    <p class="text-slate-700">Hello! I'm FastMind. Ask me anything about fasting.</p>
+                    <span class="font-bold text-sky-600">💡 ${t.chatBotName}:</span>
+                    <p class="text-slate-700">${t.chatWelcome}</p>
                 </div>`;
                 
             for (const [question, answer] of chatHistory) {
                 const qDiv = document.createElement('div');
                 qDiv.className = "chat-bubble-user";
                 const safeQuestion = question.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                qDiv.innerHTML = `<span class="font-bold text-sky-100">You:</span><p>${safeQuestion}</p>`;
+                qDiv.innerHTML = `<span class="font-bold text-sky-100">${t.chatUserName}:</span><p>${safeQuestion}</p>`;
                 chatHistoryEl.appendChild(qDiv);
                 
                 const aDiv = document.createElement('div');
@@ -608,13 +919,15 @@
                     '<br>[<a href="$3" target="_blank" rel="noopener noreferrer" class="text-sky-500 underline">$1</a>] $2'
                 );
 
-                aDiv.innerHTML = `<span class="font-bold text-sky-600">💡 FastMind:</span><div class="text-slate-700 mt-1">${formattedAnswer}</div>`;
+                aDiv.innerHTML = `<span class="font-bold text-sky-600">💡 ${t.chatBotName}:</span><div class="text-slate-700 mt-1">${formattedAnswer}</div>`;
                 chatHistoryEl.appendChild(aDiv);
             }
             chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
         }
 
-        // --- handleChatSubmit (Unchanged) ---
+        /**
+         * MODIFIED: handleChatSubmit uses translations
+         */
         async function handleChatSubmit(event) {
             event.preventDefault();
             const question = chatInput.value.trim();
@@ -626,11 +939,12 @@
             chatSpinner.classList.remove('hidden');
 
             try {
-                const answer = await askFastMind(question);
+                // The AI prompt/query stays in English for consistency
+                const answer = await askFastMind(question); 
                 chatHistory.push([question, answer]);
             } catch (error) {
                 console.error("Error asking FastMind:", error);
-                chatHistory.push([question, "⚠️ There was an error contacting the assistant. Please try again."]);
+                chatHistory.push([question, translations[currentLanguage].chatError]);
             } finally {
                 renderChatHistory();
                 chatInput.disabled = false;
@@ -641,7 +955,9 @@
         }
 
         // --- askFastMind (Gemini API Call) (Unchanged) ---
+        // (The prompt is kept in English as it's a system instruction)
         async function askFastMind(question) {
+            // ... (rest of the function is identical) ...
             const localKnowledgeBase = `
 - **Primary Document:** fasting_guide.pdf
 - **Key Topic:** The Five Most Common and Beneficial Types of Fasting.
@@ -731,19 +1047,24 @@ ${localKnowledgeBase}
             return text;
         }
 
-        // --- EVENT LISTENERS (Unchanged) ---
+        // --- EVENT LISTENERS ---
         btnStart.addEventListener('click', startTimer);
         btnStop.addEventListener('click', stopTimer);
         btnTimer.addEventListener('click', () => switchTab('timer'));
         btnChat.addEventListener('click', () => switchTab('chat'));
         chatForm.addEventListener('submit', handleChatSubmit);
         
-        // --- Auth & History Listeners (Unchanged) ---
+        // --- Auth & History Listeners ---
         authForm.addEventListener('submit', handleAuthSubmit);
-        authToggleLink.addEventListener('click', toggleAuthMode);
+        authToggleLink.addEventListener('click', (e) => toggleAuthMode(e, false));
         forgotPasswordLink.addEventListener('click', handleForgotPassword); 
         btnLogout.addEventListener('click', logOut);
         btnHistory.addEventListener('click', () => switchTab('history'));
+        
+        // --- NEW: Settings Listeners ---
+        btnSettings.addEventListener('click', toggleSettingsPanel);
+        langRadios.forEach(radio => radio.addEventListener('change', (e) => setLanguage(e.target.value)));
+        modeRadios.forEach(radio => radio.addEventListener('change', (e) => setMode(e.target.value)));
         
         // --- Calendar Listeners (Unchanged) ---
         btnPrevMonth.addEventListener('click', showPrevMonth);
@@ -793,23 +1114,24 @@ ${localKnowledgeBase}
                         console.log("User is logged out.");
                         currentUser = null;
                         updateUIForLoggedOut();
-                        if (historyUnsubscribe) {
-                            historyUnsubscribe(); 
-                        }
+                        if (historyUnsubscribe) historyUnsubscribe(); 
                     }
                 });
             } else {
                 console.warn("Firebase config is missing or incomplete.");
-                loginContainer.innerHTML = '<p class="text-red-500 text-center">Firebase config is missing.</p>';
+                loginContainer.innerHTML = `<p class="text-red-500 text-center">${translations[currentLanguage].historyError}</p>`;
             }
         } catch (e) {
             console.error("Error initializing Firebase:", e);
-            loginContainer.innerHTML = '<p class="text-red-500 text-center">Error initializing Firebase. Check config.</p>';
+            loginContainer.innerHTML = `<p class="text-red-500 text-center">Error initializing Firebase. Check config.</p>`;
         }
 
 
-        // --- 3. Auth Functions (Unchanged Logic) ---
+        // --- 3. Auth Functions ---
         
+        /**
+         * MODIFIED: handleAuthSubmit uses translations
+         */
         async function handleAuthSubmit(e) {
             e.preventDefault();
             if (!auth) return;
@@ -819,7 +1141,7 @@ ${localKnowledgeBase}
             authMessageEl.textContent = ''; 
             authMessageEl.classList.remove('text-green-400', 'text-red-400');
             authSubmitBtn.disabled = true;
-            authSubmitBtn.textContent = 'Processing...';
+            authSubmitBtn.textContent = translations[currentLanguage].authSubmitProcessing;
 
             try {
                 if (isRegisterMode) {
@@ -834,43 +1156,53 @@ ${localKnowledgeBase}
                 authMessageEl.textContent = getFriendlyAuthError(error);
                 authMessageEl.classList.add('text-red-400');
                 authSubmitBtn.disabled = false;
-                authSubmitBtn.textContent = isRegisterMode ? 'Register' : 'Login';
+                authSubmitBtn.textContent = isRegisterMode ? translations[currentLanguage].authSubmitRegister : translations[currentLanguage].authSubmitLogin;
             }
         }
 
-        function toggleAuthMode(e) {
+        /**
+         * MODIFIED: toggleAuthMode uses translations
+         */
+        function toggleAuthMode(e, forceRefresh = false) {
             e.preventDefault();
-            isRegisterMode = !isRegisterMode;
+            if (!forceRefresh) {
+                isRegisterMode = !isRegisterMode;
+            }
             authMessageEl.textContent = ''; 
             authMessageEl.classList.remove('text-green-400', 'text-red-400');
             authPasswordEl.classList.remove('hidden'); 
             
+            const t = translations[currentLanguage];
             if (isRegisterMode) {
-                authTitleEl.textContent = 'Register';
-                authSubmitBtn.textContent = 'Register';
-                authToggleLink.textContent = 'Already have an account? Login';
+                authTitleEl.textContent = t.authTitleRegister;
+                authSubmitBtn.textContent = t.authSubmitRegister;
+                authToggleLink.textContent = t.authToggleLogin;
                 forgotPasswordLink.classList.add('hidden'); 
             } else {
-                authTitleEl.textContent = 'Login';
-                authSubmitBtn.textContent = 'Login';
-                authToggleLink.textContent = 'Need an account? Register';
+                authTitleEl.textContent = t.authTitleLogin;
+                authSubmitBtn.textContent = t.authSubmitLogin;
+                authToggleLink.textContent = t.authToggleRegister;
                 forgotPasswordLink.classList.remove('hidden'); 
             }
         }
         
+        /**
+         * MODIFIED: handleForgotPassword uses translations
+         */
         async function handleForgotPassword(e) {
             e.preventDefault();
             const email = authEmailEl.value;
+            const t = translations[currentLanguage];
             authMessageEl.classList.remove('text-green-400', 'text-red-400');
             if (!email) {
-                authMessageEl.textContent = 'Please enter your email first.';
+                authMessageEl.textContent = t.authEnterEmailFirst;
                 authMessageEl.classList.add('text-red-400');
                 return;
             }
             
             try {
                 await sendPasswordResetEmail(auth, email);
-                authMessageEl.textContent = 'Password reset email sent! Check your inbox.';
+                authMessageEl.textContent = t.authResetEmailSent;
                 authMessageEl.classList.add('text-green-400');
             } catch (error) {
                 console.error("Password reset error:", error);
@@ -879,19 +1211,23 @@ ${localKnowledgeBase}
             }
         }
 
+        /**
+         * MODIFIED: getFriendlyAuthError uses translations
+         */
         function getFriendlyAuthError(error) {
+            const t = translations[currentLanguage];
             switch (error.code) {
                 case 'auth/invalid-email':
-                    return 'Please enter a valid email.';
+                    return t.errorInvalidEmail;
                 case 'auth/user-not-found':
                 case 'auth/wrong-password':
-                    return 'Invalid email or password.';
+                    return t.errorInvalidPassword;
                 case 'auth/email-already-in-use':
-                    return 'An account with this email already exists.';
+                    return t.errorEmailInUse;
                 case 'auth/weak-password':
-                    return 'Password must be at least 6 characters long.';
+                    return t.errorWeakPassword;
                 default:
-                    return 'An unknown error occurred. Please try again.';
+                    return t.errorUnknown;
             }
         }
 
@@ -905,25 +1241,22 @@ ${localKnowledgeBase}
             }
         }
 
-        /**
-         * MODIFIED: Update UI for logged-in user
-         */
+        // --- updateUIForLoggedIn (Unchanged) ---
         function updateUIForLoggedIn(user) {
             loginContainer.classList.add('hidden');
             userContainer.classList.remove('hidden');
             userEmailEl.textContent = user.email;
             
-            // Habilitar botones de Chat e Historial
             btnChat.disabled = false;
             btnHistory.disabled = false;
-            btnChat.classList.remove('text-slate-400'); // Use 400 for disabled
+            btnChat.classList.remove('text-slate-400'); 
             btnHistory.classList.remove('text-slate-400');
-            btnChat.classList.add('text-slate-500'); // Use 500 for enabled
+            btnChat.classList.add('text-slate-500'); 
             btnHistory.classList.add('text-slate-500');
         }
 
         /**
-         * MODIFIED: Update UI for logged-out user
+         * MODIFIED: updateUIForLoggedOut uses translations
          */
         function updateUIForLoggedOut() {
             loginContainer.classList.remove('hidden');
@@ -936,8 +1269,9 @@ ${localKnowledgeBase}
             authEmailEl.value = '';
             authPasswordEl.value = '';
             authSubmitBtn.disabled = false;
+            toggleAuthMode(new Event('click'), true); // Force-refresh auth text
             if (isRegisterMode) {
-                toggleAuthMode(new Event('click')); // Reset to login mode
+                 toggleAuthMode(new Event('click'), false); // Reset to login mode
             }
             
             // Disable and reset history/chat button
@@ -966,8 +1300,11 @@ ${localKnowledgeBase}
         }
 
 
-        // --- 4. Firestore (Database) Functions (Unchanged) ---
+        // --- 4. Firestore (Database) Functions ---
 
+        /**
+         * MODIFIED: saveFastToFirestore uses translations
+         */
         async function saveFastToFirestore(hours, durationString, phase) {
             if (!currentUser || !db) {
                 console.error("No user or db to save fast for.");
@@ -984,13 +1321,17 @@ ${localKnowledgeBase}
                     finalPhaseColor: phase.color_hex
                 });
                 console.log("Fast saved with ID: ", docRef.id);
-                timerMessage.innerHTML += "<br><em>Saved to your history!</em>";
+                // Message is already handled by stopTimer
             } catch (e) {
                 console.error("Error adding document: ", e);
-                timerMessage.innerHTML += "<br><em>Saved offline. Will sync when online.</em>";
+                // Also handled by stopTimer, but we add the specific offline message
+                timerMessage.innerHTML += translations[currentLanguage].timerMessageOffline;
             }
         }
 
+        /**
+         * MODIFIED: loadFastingHistory uses translations
+         */
         function loadFastingHistory() {
             if (!currentUser || !db) return;
 
@@ -1023,24 +1364,27 @@ ${localKnowledgeBase}
             }, (error) => {
                 console.error("Error loading history:", error);
                 historyLoading.classList.add('hidden');
-                historyList.innerHTML = '<p class="text-red-500">Error loading history.</p>';
+                historyList.innerHTML = translations[currentLanguage].historyError;
             });
         }
 
-        // --- renderHistoryList (MODIFIED for light theme) ---
+        /**
+         * MODIFIED: renderHistoryList uses translations
+         */
         function renderHistoryList(fasts) {
             historyList.innerHTML = ''; // Clear list
+            const t = translations[currentLanguage];
             fasts.forEach(fast => {
                 const div = document.createElement('div');
                 div.className = "bg-slate-100 p-4 rounded-lg flex justify-between items-center";
                 
-                const date = fast.completedAt?.toDate().toLocaleDateString() || 'No date';
-                const time = fast.completedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || '';
+                const date = fast.completedAt?.toDate().toLocaleDateString(currentLanguage.split('-')[0]) || t.historyNoDate;
+                const time = fast.completedAt?.toDate().toLocaleTimeString(currentLanguage.split('-')[0], { hour: '2-digit', minute: '2-digit' }) || '';
                 
                 div.innerHTML = `
                     <div>
                         <p class="text-lg font-semibold text-slate-800">${date} <span class="text-sm text-slate-500">${time}</span></p>
-                        <p class="text-slate-600">Duration: <span class="font-bold text-slate-900">${fast.durationString}</span></p>
+                        <p class="text-slate-600">${t.historyDuration}: <span class="font-bold text-slate-900">${fast.durationString}</span></p>
                     </div>
                     <span class="font-bold text-sm py-1 px-3 rounded-full" style="color: ${fast.finalPhaseColor === '#F5F5F5' ? '#333' : '#FFF'}; background-color: ${fast.finalPhaseColor};">
                         ${fast.finalPhase}
@@ -1050,24 +1394,29 @@ ${localKnowledgeBase}
             });
         }
         
-        // --- 5. Calendar Functions (MODIFIED for light theme) ---
+        // --- 5. Calendar Functions ---
         
+        /**
+         * MODIFIED: renderCalendar uses translations
+         */
         function renderCalendar(month, year, fasts) {
             calendarGridEl.innerHTML = '';
             calendarGridHeaderEl.innerHTML = '';
             
-            const monthName = new Date(year, month).toLocaleString('es-ES', { month: 'long' });
-            monthYearEl.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
+            const t = translations[currentLanguage];
+            const monthName = t.calendarMonths[month];
+            monthYearEl.textContent = `${monthName} ${year}`;
             
-            const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // English days
+            const dayHeaders = t.calendarDays;
             dayHeaders.forEach(day => {
                 const dayEl = document.createElement('div');
                 dayEl.textContent = day;
                 calendarGridHeaderEl.appendChild(dayEl);
             });
             
-            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 (Sun) - 6 (Sat)
-            const daysInMonth = new Date(year, month + 1, 0).getDate(); // 30, 31, etc.
+            // Logic for days in month (locale-independent)
+            const firstDayOfMonth = new Date(year, month, 1).getDay(); 
+            const daysInMonth = new Date(year, month + 1, 0).getDate(); 
             
             const fastDates = new Set(
                 fasts.map(f => {
@@ -1124,7 +1473,7 @@ ${localKnowledgeBase}
         }
 
 
-        // --- APP INITIALIZATION (Unchanged) ---
+        // --- APP INITIALIZATION ---
         
         // Check for running fast on app load
         const savedStartTime = localStorage.getItem('fastStartTime');
@@ -1135,13 +1484,16 @@ ${localKnowledgeBase}
             startTime = parseInt(savedStartTime, 10);
             running = true;
             timerInterval = setInterval(updateTimer, 1000);
-            updateTimer(); // Run immediately to show correct time
+            updateTimer(); 
             
             silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
         }
         
         // Start on the timer tab
         switchTab('timer'); 
+
+        // --- NEW: Apply default language on load ---
+        applyTranslations(currentLanguage);
 
     </script>
 
