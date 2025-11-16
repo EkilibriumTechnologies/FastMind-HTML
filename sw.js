@@ -1,15 +1,20 @@
-const CACHE_NAME = 'fastmind-v2'; // Incremented cache version
-const NOTIFICATION_TAG = 'fastmind-timer'; // A unique ID for our notification
+const CACHE_NAME = 'fastmind-v3'; // Versión incrementada
+const NOTIFICATION_TAG = 'fastmind-timer'; // ID único para la notificación
 
-// Lista de archivos que componen el "app shell" (la app base)
+// Lista de archivos actualizada
 const APP_SHELL_URLS = [
-  '/',
-  '/index.html',
+  './',
+  './index.html',
+  './manifest.json',
   'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js',
+  'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js',
+  'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js'
 ];
 
-// Evento 'install': Se dispara cuando el SW se instala por primera vez.
+// Evento 'install': Se dispara cuando el SW se instala
 self.addEventListener('install', (event) => {
   console.log('[ServiceWorker] Install');
   event.waitUntil(
@@ -20,7 +25,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Evento 'activate': Se dispara cuando el SW se activa (después de 'install').
+// Evento 'activate': Se dispara cuando el SW se activa.
 // Se usa para limpiar cachés viejos.
 self.addEventListener('activate', (event) => {
   console.log('[ServiceWorker] Activate');
@@ -39,30 +44,30 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// Evento 'fetch': Se dispara cada vez que la app hace una petición de red
+// Evento 'fetch': Se dispara cada vez que la app hace una petición
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
-  // --- Estrategia de Red (Network Only) ---
+  // Estrategia de Red (Network Only)
   // NO guardar en caché las llamadas a las APIs de Google/Firebase.
   if (
     url.includes('generativelanguage.googleapis.com') || // API de Gemini
-    url.includes('firebaseapp.com') ||                  // API de Auth de Firebase
+    url.includes('firebaseapp.com') ||                   // API de Auth de Firebase
     url.includes('googleapis.com/identitytoolkit') ||   // API de Auth de Google
-    url.includes('firestore.googleapis.com')            // API de Firestore
+    url.includes('firestore.googleapis.com')             // API de Firestore
   ) {
     event.respondWith(fetch(event.request));
     return;
   }
 
-  // --- Estrategia de Caché (Cache, falling back to Network) ---
+  // Estrategia de Caché (Cache, falling back to Network)
   // Para todo lo demás (el App Shell: HTML, CSS, fuentes).
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) {
-        return response; // From cache
+        return response; // Desde el caché
       }
-      // From network, then cache it
+      // Desde la red, y luego lo guardamos en caché
       return fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
@@ -79,14 +84,14 @@ self.addEventListener('fetch', (event) => {
 });
 
 // ---
-// --- INICIO: NUEVA LÓGICA DE NOTIFICACIONES ---
+// --- LÓGICA DE NOTIFICACIONES ---
 // ---
 
 /**
  * Escucha los mensajes ("START_TIMER" o "STOP_TIMER") de la app
  */
 self.addEventListener('message', (event) => {
-  if (event.data === 'START_TIMER') {
+  if (event.data === 'START_TRAMER') {
     console.log('[ServiceWorker] Received START_TIMER command');
     showTimerNotification();
   } else if (event.data === 'STOP_TIMER') {
@@ -102,14 +107,15 @@ function showTimerNotification() {
   const title = 'FastMind: Fast in Progress';
   const options = {
     body: 'Your fast is currently running. Tap to open the app.',
-    icon: 'https://placehold.co/192x192/111827/FFFFFF?text=🧠&font=noto', // Icono
-    tag: NOTIFICATION_TAG,    // Un ID para que podamos cerrarla después
+    icon: 'https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto', // Icono actualizado
+    tag: NOTIFICATION_TAG,    // ID para que podamos cerrarla
     renotify: false,          // No vibrar si ya existe
     silent: true              // No hacer sonido
   };
   
-  // self.registration.showNotification es la función mágica
-  event.waitUntil(self.registration.showNotification(title, options));
+  // self.registration.showNotification es la función
+  // CORRECCIÓN: 'event.waitUntil' no está definido aquí, usamos 'self.waitUntil'
+  self.waitUntil(self.registration.showNotification(title, options));
 }
 
 /**
@@ -135,6 +141,6 @@ self.addEventListener('notificationclick', (event) => {
   
   // Abre la PWA
   event.waitUntil(
-    clients.openWindow('/') // Abre la página principal de la app
+    clients.openWindow('./') // Abre la página principal de la app
   );
 });
