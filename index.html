@@ -23,11 +23,14 @@
     <meta property="twitter:description" content="Track your fasting progress, learn your body’s phases, and get personalized AI guidance — all in one clean, intelligent app.">
     <meta property="twitter:image" content="https://fastmindbody.com/preview.png">
     
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#F8FAFC"/> 
+    <!-- PWA: Theme Color (Updated for light theme) -->
+    <meta name="theme-color" content="#F8FAFC"/>
     
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/F8FAFC/000000?text=🧠&font=noto">
+    <!-- PWA: Link to Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- PWA: Apple Touch Icon (Updated for light theme) -->
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto">
 
     <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -36,7 +39,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- NEW: Add Tone.js for sound effects -->
+    <!-- Add Tone.js for sound effects -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     
     <!-- *** Minimalist & Light UI/UX Styles *** -->
@@ -154,7 +157,7 @@
             display: none; /* Hide the actual radio button */
         }
         
-        /* NEW: Simple Checkbox Toggle for Mute */
+        /* Simple Checkbox Toggle for Mute */
         .switch {
             position: relative;
             display: inline-block;
@@ -217,7 +220,7 @@
             <!-- Settings Button -->
             <button id="btn-settings" class="absolute top-0 right-0 p-2 text-slate-500 hover:text-sky-500 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0l-.1.41a1.5 1.5 0 01-2.1 1.44l-.4-.16c-1.5-.6-3.14.79-2.58 2.24l.2.43a1.5 1.5 0 01-1.2 2.03l-.43.09c-1.56.32-1.56 2.6 0 2.92l.43.09a1.5 1.5 0 011.2 2.03l-.2.43c-.56 1.45 1.07 2.84 2.58 2.24l.4-.16a1.5 1.5 0 012.1 1.44l.1.41c.38 1.56 2.6 1.56 2.98 0l.1-.41a1.5 1.5 0 012.1-1.44l.4.16c1.5.6 3.14-.79 2.58-2.24l-.2-.43a1.5 1.5 0 011.2-2.03l.43-.09c1.56-.32 1.56-2.6 0-2.92l-.43-.09a1.5 1.5 0 01-1.2-2.03l.2-.43c.56-1.45-1.07-2.84-2.58-2.24l-.4.16a1.5 1.5 0 01-2.1-1.44l-.1-.41zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0l-.1.41a1.5 1.5 0 01-2.1 1.44l-.4-.16c-1.5-.6-3.14.79-2.58 2.24l.2.43a1.5 1.5 0 01-1.2 2.03l-.43.09c-1.56.32-1.56 2.6 0 2.92l.43.09a1.5 1.5 0 011.2 2.03l-.2.43c-.56 1.45 1.07 2.84 2.58 2.24l.4-.16a1.5 1.5 0 012.1 1.44l.1.41c.38 1.56 2.6 1.56 2.98 0l.1-.41a1.5 1.5 0 012.1-1.44l.4.16c1.5.6 3.14-.79 2.58-2.24l-.2-.43a1.5 1.5 0 011.2-2.03l.43-.09c-1.56-.32 1.56-2.6 0-2.92l-.43-.09a1.5 1.5 0 01-1.2-2.03l.2-.43c.56-1.45-1.07-2.84-2.58-2.24l-.4.16a1.5 1.5 0 01-2.1-1.44l-.1-.41zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                 </svg>
             </button>
         </header>
@@ -254,11 +257,12 @@
                 </div>
             </div>
 
-            <!-- NEW: Sound Toggle -->
-            <div>
+            <!-- Sound Toggle -->
+            <div class="mb-6">
                 <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsSound">Sound</label>
                 <div class="flex items-center justify-between bg-slate-100 p-3 rounded-lg">
-                    <span class="font-medium text-slate-600" data-key="settingsSoundUnmuted">Play sound on new phase</span>
+                    <!-- *** This ID prevents the translation error *** -->
+                    <span id="mute-label" class="font-medium text-slate-600" data-key="settingsSoundUnmuted">Play sound on new phase</span>
                     <label class="switch">
                         <input type="checkbox" id="mute-toggle">
                         <span class="slider"></span>
@@ -266,6 +270,16 @@
                 </div>
             </div>
 
+            <!-- PWA Install Button (hidden by default) -->
+            <div id="install-container" class="hidden">
+                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsInstall">Install App</label>
+                <button id="btn-install" class="w-full flex items-center justify-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span data-key="settingsInstallButton">Add to Home Screen</span>
+                </button>
+            </div>
         </div>
 
         <!-- Main Content Area -->
@@ -475,7 +489,7 @@
         // Nivel de log para depuración
         setLogLevel('Debug');
 
-        // --- Translations Object ---
+        // --- Translations Object (con claves de PWA) ---
         const translations = {
             en: {
                 headerSubtitle: "Your AI Fasting & Wellness Coach",
@@ -487,6 +501,8 @@
                 settingsSound: "Sound",
                 settingsSoundUnmuted: "Play sound on new phase",
                 settingsSoundMuted: "Sound is muted",
+                settingsInstall: "Install App",
+                settingsInstallButton: "Add to Home Screen",
                 btnStart: "Start",
                 btnStop: "Stop",
                 timerMessageNotStarted: "Press ▶️ <strong>Start</strong> to begin your fast.",
@@ -543,6 +559,8 @@
                 settingsSound: "Sonido",
                 settingsSoundUnmuted: "Sonar al cambiar de fase",
                 settingsSoundMuted: "Sonido desactivado",
+                settingsInstall: "Instalar App",
+                settingsInstallButton: "Añadir al Inicio",
                 btnStart: "Iniciar",
                 btnStop: "Detener",
                 timerMessageNotStarted: "Presiona ▶️ <strong>Iniciar</strong> para comenzar tu ayuno.",
@@ -659,10 +677,13 @@
         let currentLanguage = 'en';
         let currentMode = 'biological';
         
-        // --- NEW: Sound State ---
+        // --- Sound State ---
         let synth = null;
         let lastPhaseKeyword = null;
         let isMuted = true; // Muted by default
+        
+        // --- PWA State ---
+        let deferredPrompt = null;
         
         // --- Firebase & Auth State ---
         let auth;
@@ -727,7 +748,11 @@
         const settingsPanel = document.getElementById('settings-panel');
         const langRadios = document.querySelectorAll('input[name="language"]');
         const modeRadios = document.querySelectorAll('input[name="mode"]');
-        const muteToggle = document.getElementById('mute-toggle'); // NEW
+        const muteToggle = document.getElementById('mute-toggle');
+        
+        // --- PWA Install Elements ---
+        const installContainer = document.getElementById('install-container');
+        const btnInstall = document.getElementById('btn-install');
         
         
         // --- CORE LOGIC ---
@@ -762,10 +787,11 @@
                 toggleAuthMode(new Event('click'), true); // (call twice to reset to original state)
             }
 
-            // NEW: Update mute toggle text
-            const muteLabel = muteToggle.nextElementSibling.nextElementSibling; // Find the label
+            // *** This logic is corrected and finds the ID ***
+            const muteLabel = document.getElementById('mute-label');
             if (muteLabel) {
-                muteLabel.innerHTML = translations[currentLanguage][isMuted ? 'settingsSoundMuted' : 'settingsSoundUnmuted'];
+                muteLabel.dataset.key = isMuted ? 'settingsSoundMuted' : 'settingsSoundUnmuted';
+                muteLabel.innerHTML = translations[currentLanguage][muteLabel.dataset.key];
             }
         }
 
@@ -806,7 +832,7 @@
         }
 
         /**
-         * NEW: Play sound function
+         * Play sound function
          */
         function playSound() {
             if (isMuted) return;
@@ -865,7 +891,7 @@
         }
 
         /**
-         * MODIFIED: updateTimer now implements rainbow gradient and phase change sound
+         * updateTimer now implements rainbow gradient and phase change sound
          */
         function updateTimer() {
             if (!running) {
@@ -882,13 +908,13 @@
             
             const currentPhase = getPhase(elapsedHours);
             
-            // --- NEW: Sound on Phase Change ---
+            // --- Sound on Phase Change ---
             if (lastPhaseKeyword !== null && lastPhaseKeyword !== currentPhase.keyword) {
                 playSound();
             }
             lastPhaseKeyword = currentPhase.keyword;
 
-            // --- NEW: Rainbow Gradient Logic ---
+            // --- Rainbow Gradient Logic ---
             const allPhases = fastingDataSets[currentMode][currentLanguage];
             const maxHours = allPhases[allPhases.length - 1].fase_fin_h;
             let gradientParts = [];
@@ -923,10 +949,10 @@
         }
 
         /**
-         * MODIFIED: startTimer now initiates audio context and sets initial phase
+         * startTimer now initiates audio context and sets initial phase
          */
         function startTimer() {
-            // --- NEW: Attempt to start Audio context on user gesture ---
+            // --- Attempt to start Audio context on user gesture ---
             if (Tone.context.state !== 'running') {
                 Tone.start().then(() => {
                     console.log("Audio context started!");
@@ -940,7 +966,7 @@
             elapsedHours = 0;
             timerMessage.dataset.key = ""; // Clear completed message key
             
-            // --- NEW: Set initial phase keyword to prevent sound on start ---
+            // --- Set initial phase keyword to prevent sound on start ---
             lastPhaseKeyword = getPhase(0).keyword;
 
             localStorage.setItem('fastStartTime', startTime.toString());
@@ -951,10 +977,17 @@
             updateTimer();
             
             silentAudio.play().catch(e => console.log("Audio play failed (normal on init):", e));
+            
+            // --- PWA: Tell Service Worker to show notification ---
+            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.active.postMessage('START_TIMER');
+                });
+            }
         }
 
         /**
-         * MODIFIED: stopTimer now uses translation keys and resets sound
+         * stopTimer now uses translation keys and resets sound
          */
         function stopTimer() {
             if (!running) return; 
@@ -983,7 +1016,7 @@
             }
             timerMessage.innerHTML = completedMsg;
             
-            // --- NEW: Reset last phase keyword ---
+            // --- Reset last phase keyword ---
             lastPhaseKeyword = null;
 
             // Reset visual
@@ -996,6 +1029,13 @@
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.metadata = null;
                 navigator.mediaSession.playbackState = "none";
+            }
+            
+            // --- PWA: Tell Service Worker to close notification ---
+            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.active.postMessage('STOP_TIMER');
+                });
             }
         }
 
@@ -1035,8 +1075,8 @@
                     artist: `Current Phase: ${phase}`,
                     album: 'FastMind',
                     artwork: [
-                        { src: 'https://placehold.co/192x192/F8FAFC/000000?text=🧠&font=noto', sizes: '192x192', type: 'image/png' },
-                        { src: 'https://placehold.co/512x512/F8FAFC/000000?text=🧠&font=noto', sizes: '512x512', type: 'image/png' },
+                        { src: 'https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto', sizes: '192x192', type: 'image/png' },
+                        { src: 'https://placehold.co/512x512/F8FAFC/0F172A?text=🧠&font=noto', sizes: '512x512', type: 'image/png' },
                     ]
                 });
                 navigator.mediaSession.playbackState = "playing";
@@ -1044,7 +1084,7 @@
         }
 
         /**
-         * MODIFIED: renderChatHistory uses translations
+         * renderChatHistory uses translations
          */
         function renderChatHistory() {
             const t = translations[currentLanguage];
@@ -1083,7 +1123,7 @@
         }
 
         /**
-         * MODIFIED: handleChatSubmit uses translations
+         * handleChatSubmit uses translations
          */
         async function handleChatSubmit(event) {
             event.preventDefault();
@@ -1112,9 +1152,7 @@
         }
 
         // --- askFastMind (Gemini API Call) (Unchanged) ---
-        // (The prompt is kept in English as it's a system instruction)
         async function askFastMind(question) {
-            // ... (rest of the function is identical) ...
             const localKnowledgeBase = `
 - **Primary Document:** fasting_guide.pdf
 - **Key Topic:** The Five Most Common and Beneficial Types of Fasting.
@@ -1223,11 +1261,17 @@ ${localKnowledgeBase}
         langRadios.forEach(radio => radio.addEventListener('change', (e) => setLanguage(e.target.value)));
         modeRadios.forEach(radio => radio.addEventListener('change', (e) => setMode(e.target.value)));
         
-        // --- NEW: Mute Toggle Listener ---
+        // --- Mute Toggle Listener ---
         muteToggle.addEventListener('change', (e) => {
             isMuted = !e.target.checked; // Checkbox is "checked" when ON (unmuted)
-            // Update text
-            e.target.parentElement.previousElementSibling.innerHTML = translations[currentLanguage][isMuted ? 'settingsSoundMuted' : 'settingsSoundUnmuted'];
+            
+            const muteLabel = document.getElementById('mute-label');
+            if (muteLabel) {
+                // Set the new data-key and update the text
+                muteLabel.dataset.key = isMuted ? 'settingsSoundMuted' : 'settingsSoundUnmuted';
+                muteLabel.innerHTML = translations[currentLanguage][muteLabel.dataset.key];
+            }
+            
             // Play a sound on unmute to confirm
             if (!isMuted) {
                 playSound();
@@ -1643,7 +1687,7 @@ ${localKnowledgeBase}
 
         // --- APP INITIALIZATION ---
         
-        // NEW: Set mute toggle to default state (default is muted, so toggle is OFF)
+        // Set mute toggle to default state (default is muted, so toggle is OFF)
         muteToggle.checked = !isMuted;
         
         // Check for running fast on app load
@@ -1667,8 +1711,63 @@ ${localKnowledgeBase}
         // Start on the timer tab
         switchTab('timer'); 
 
-        // --- Apply default language on load ---
+        // Apply default language on load
         applyTranslations(currentLanguage);
+
+        
+        // ---
+        // --- PWA (Añadir a Pantalla de Inicio) LÓGICA (ACTIVADA)
+        // ---
+        
+        // 1. Registrar el Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.error('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // 2. Escuchar el evento "beforeinstallprompt"
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevenir que el navegador muestre el pop-up automáticamente
+            e.preventDefault();
+            // Guardar el evento para que podamos dispararlo después
+            deferredPrompt = e;
+            // Mostrar nuestro propio botón de instalación
+            console.log('`beforeinstallprompt` event was fired.');
+            installContainer.classList.remove('hidden');
+        });
+        
+        // 3. Disparar el pop-up cuando el usuario haga clic en nuestro botón
+        btnInstall.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                console.log('Install prompt not available');
+                return;
+            }
+            
+            // Ocultar nuestro botón
+            installContainer.classList.add('hidden');
+            // Mostrar el pop-up de instalación del navegador
+            deferredPrompt.prompt();
+            // Esperar a que el usuario elija
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            // Ya no necesitamos el evento
+            deferredPrompt = null;
+        });
+        
+        // 4. Escuchar si la app ya fue instalada
+        window.addEventListener('appinstalled', () => {
+            console.log('FastMind was installed.');
+            // Ocultar el botón de instalación
+            installContainer.classList.add('hidden');
+            deferredPrompt = null;
+        });
 
     </script>
 
