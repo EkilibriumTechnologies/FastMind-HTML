@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport optimizado para móviles modernos (iPhone con notch) -->
+    <!-- Viewport optimizado para móviles con notch -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 
     <!-- Primary Meta Tags -->
@@ -23,19 +23,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     
     <style>
+        /* FIX: Padding superior seguro para iPhone con Isla Dinámica */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F8FAFC;  
             color: #334155;
-            /* Padding para evitar el notch en iOS */
-            padding-top: env(safe-area-inset-top); 
-            /* Evitar rebote en iOS */
+            padding-top: max(env(safe-area-inset-top), 20px); /* Mínimo 20px o lo que diga el sistema */
             overscroll-behavior-y: none;
         }
         
-        /* Círculo de progreso suave */
         .progress-circle {
-            width: 260px; /* Ligeramente más pequeño para móviles */
+            width: 260px;
             height: 260px;
             border-radius: 50%;
             display: grid;
@@ -52,7 +50,7 @@
         
         .progress-circle::before {
             content: "";
-            width: 85%; /* Borde un poco más fino */
+            width: 85%;
             height: 85%;
             background: #FFFFFF;  
             border-radius: 50%;
@@ -227,9 +225,7 @@
         
         <!-- 
           ==================================================================
-          RESPONSIVE HEADER (Layout A - Polished)
-          Uses CSS Grid to ensure perfect centering of the title
-          regardless of side element width.
+          RESPONSIVE HEADER (Layout A - Polished for Mobile)
           ==================================================================
         -->
         <header class="mb-6 w-full">
@@ -253,6 +249,7 @@
                          </div>
                          
                          <div class="flex flex-col justify-center">
+                             <!-- Name truncated to 5 chars as requested -->
                              <span id="user-profile-name" class="text-xs font-bold text-slate-800 max-w-[80px] truncate leading-tight">Guest</span>
                              <span id="user-rank-display" class="text-[9px] font-bold text-sky-600 uppercase tracking-wider leading-tight">Novice</span>
                          </div>
@@ -653,7 +650,7 @@
                 historyEmpty: "No fasts recorded yet.",
                 historyError: '<p class="text-red-500">Error loading history.</p>',
                 historyDuration: "Duration",
-                historyNoDate: "No date",
+                historyNo date: "No date",
                 calendarDays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
                 calendarMonths: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
                 navTimer: "Timer",
@@ -800,7 +797,6 @@
         // --- App State ---
         let currentLanguage = 'en';
         let currentMode = 'biological';
-        let currentLayout = 1; // 1, 2, 3
         
         // --- Sound State ---
         let phaseSynth = null;
@@ -897,23 +893,6 @@
         
         
         // --- CORE LOGIC ---
-
-        // Layout Switching Logic
-        function cycleHeaderLayout() {
-            currentLayout++;
-            if (currentLayout > 3) currentLayout = 1;
-            
-            document.getElementById('header-layout-1').classList.add('hidden');
-            document.getElementById('header-layout-2').classList.add('hidden');
-            document.getElementById('header-layout-3').classList.add('hidden');
-            
-            document.getElementById(`header-layout-${currentLayout}`).classList.remove('hidden');
-            
-            // Update user profile data on the new visible header
-            if (currentUser) {
-                 updateUserProfileUI(currentUser);
-            }
-        }
 
         function applyTranslations(lang) {
             const langStrings = translations[lang] || translations.en;
@@ -1472,12 +1451,6 @@ ${localKnowledgeBase}
                 playPhaseSound();
             }
         });
-        
-        // Layout Switcher Logic
-        const btnLayoutSwitcher = document.getElementById('btn-layout-switcher');
-        if (btnLayoutSwitcher) {
-            btnLayoutSwitcher.addEventListener('click', cycleHeaderLayout);
-        }
 
         btnPrevMonth.addEventListener('click', showPrevMonth);
         btnNextMonth.addEventListener('click', showNextMonth);
@@ -1512,7 +1485,7 @@ ${localKnowledgeBase}
         // --- START: FIREBASE LOGIC
         // ---
 
-        const firebaseConfig = {
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
           apiKey: "AIzaSyDFD5Ba2Y-rCDcMTxvubsr41LCYGO9_GyU",
           authDomain: "fastmind-c6603.firebaseapp.com",
           projectId: "fastmind-c6603",
@@ -1530,6 +1503,17 @@ ${localKnowledgeBase}
                 db = getFirestore(app);
                 
                 logToScreen("Firebase Initialized OK");
+                
+                // Authenticate first using provided token if available
+                const initAuth = async () => {
+                  if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                  } 
+                  // Note: signInAnonymously is not preferred if the user wants to login manually, 
+                  // but in this environment we might need it if no token is provided to read public data initially.
+                  // However, since the app is login-gated for features, we can wait for user login.
+                };
+                initAuth();
 
                 enableIndexedDbPersistence(db)
                   .catch((err) => {
@@ -1591,14 +1575,16 @@ ${localKnowledgeBase}
                     : signInWithEmailAndPassword(auth, email, password);
                 
                 const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Request timed out. Check network or console.")), 15000)
+                    setTimeout(() => reject(new Error("Request timed out. Check network or console.")), 10000)
                 );
 
                 await Promise.race([authPromise, timeoutPromise]);
                 
                 console.log("Auth Action Successful");
-                // Explicitly trigger UI update if listener is slow, but listener handles state better.
-                // We will rely on listener, but if we are here, it worked.
+                // Explicitly trigger UI update if listener is slow
+                if (auth.currentUser) {
+                    updateUIForLoggedIn(auth.currentUser);
+                }
                 
             } catch (error) {
                 console.error("Auth Error:", error.code, error.message);
