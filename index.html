@@ -2,78 +2,61 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- FIX: Añadido viewport-fit=cover para manejar correctamente el notch -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- Viewport optimizado para móviles modernos (iPhone con notch) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 
     <!-- Primary Meta Tags -->
     <title>FastMind – AI Fasting Coach</title>
     
-    <!-- *** ¡FAVICON AÑADIDO! *** -->
     <link rel="icon" type="image/x-icon" href="https://placehold.co/32x32/F8FAFC/0F172A?text=🧠">
 
     <meta name="title" content="FastMind – AI Fasting Coach">
-    <meta name="description" content="FastMind helps you track your intermittent fasting phases with real-time timers, science-based insights, and an AI assistant that guides your wellness journey.">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://fastmindbody.com/">
-    <meta property="og:title" content="FastMind – AI Fasting Coach">
-    <meta property="og:description" content="Track your fasting progress, learn your body’s phases, and get personalized AI guidance — all in one clean, intelligent app.">
-    <meta property="og:image" content="https://fastmindbody.com/preview.png">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://fastmindbody.com/">
-    <meta property="twitter:title" content="FastMind – AI Fasting Coach">
-    <meta property="twitter:description" content="Track your fasting progress, learn your body’s phases, and get personalized AI guidance — all in one clean, intelligent app.">
-    <meta property="twitter:image" content="https://fastmindbody.com/preview.png">
-    
-    <!-- PWA: Theme Color (Updated for light theme) -->
+    <meta name="description" content="FastMind helps you track your intermittent fasting phases with real-time timers.">
     <meta name="theme-color" content="#F8FAFC"/>
-    
-    <!-- PWA: Link to Manifest -->
     <link rel="manifest" href="./manifest.json">
-    
-    <!-- PWA: Apple Touch Icon (Updated for light theme) -->
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto">
 
-    <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Use Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Add Tone.js for sound effects -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     
-    <!-- *** Minimalist & Light UI/UX Styles *** -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F8FAFC;  
             color: #334155;
-            /* FIX: Añadido padding superior para respetar el Notch/Isla Dinámica */
+            /* Padding para evitar el notch en iOS */
             padding-top: env(safe-area-inset-top); 
+            /* Evitar rebote en iOS */
+            overscroll-behavior-y: none;
         }
         
+        /* Círculo de progreso suave */
         .progress-circle {
-            width: 280px;
-            height: 280px;
+            width: 260px; /* Ligeramente más pequeño para móviles */
+            height: 260px;
             border-radius: 50%;
             display: grid;
             place-items: center;
             background: conic-gradient(#CBD5E1 0%, #E2E8F0 0);  
             transition: background 0.3s ease-out;
         }
+        @media (min-width: 768px) {
+            .progress-circle {
+                width: 300px;
+                height: 300px;
+            }
+        }
         
         .progress-circle::before {
             content: "";
-            width: 80%;
-            height: 80%;
+            width: 85%; /* Borde un poco más fino */
+            height: 85%;
             background: #FFFFFF;  
             border-radius: 50%;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
         }
 
         .progress-text {
@@ -81,23 +64,29 @@
             text-align: center;
         }
         
+        /* Chat Bubbles */
         .chat-bubble-bot {
-            background-color: #E2E8F0;  
+            background-color: #F1F5F9;  
             color: #334155;  
             padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            max-width: 80%;
+            border-radius: 1.25rem;
+            border-top-left-radius: 0.25rem;
+            max-width: 85%;
             align-self: flex-start;
-            border-bottom-left-radius: 0.25rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
         .chat-bubble-user {
             background-color: #0EA5E9;  
             color: white;
             padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            max-width: 80%;
+            border-radius: 1.25rem;
+            border-top-right-radius: 0.25rem;
+            max-width: 85%;
             align-self: flex-end;
-            border-bottom-right-radius: 0.25rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 2px 5px rgba(14, 165, 233, 0.3);
         }
 
         .scrollbar-hide {
@@ -108,6 +97,7 @@
             display: none;
         }
         
+        /* Calendar Styles */
         .calendar-day {
             display: flex;
             flex-direction: column;
@@ -115,243 +105,204 @@
             align-items: center;
             height: 40px;
             width: 100%;
+            border-radius: 8px;
         }
         .calendar-day.fasted-day span {
-            font-weight: bold;
+            font-weight: 700;
             color: #0F172A;  
         }
         .fasted-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background-color: #38BDF8;  
-            margin-top: 2px;
+            background-color: #0EA5E9;  
+            margin-top: 4px;
         }
 
         .nav-btn.active {
             color: #0EA5E9;  
         }
         
-        /* FIX: Ajuste para la barra de navegación en móviles con barra inferior */
+        /* Bottom Nav Safe Area */
         #app-nav {
             padding-bottom: env(safe-area-inset-bottom);
-            height: auto; /* Permitir que crezca si hay padding extra */
+            height: auto; 
         }
 
-        /* --- Settings Panel Styles --- */
+        /* Settings Panel Animation */
         #settings-panel {
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
         #settings-panel.hidden {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(10px) scale(0.98);
             pointer-events: none;
         }
-        /* Custom radio button styling */
+
+        /* Toggles */
         .settings-toggle-label {
             display: block;
-            padding: 0.75rem 1rem;
-            background-color: #F1F5F9; /* slate-100 */
-            border: 1px solid #CBD5E1; /* slate-300 */
-            border-radius: 0.5rem;
+            padding: 0.6rem 1rem;
+            background-color: #F8FAFC; 
+            border: 1px solid #E2E8F0; 
+            border-radius: 0.75rem;
             cursor: pointer;
             text-align: center;
-            font-weight: 500;
-            color: #475569; /* slate-600 */
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #64748B; 
             transition: all 0.2s ease;
         }
         .settings-toggle-input:checked + .settings-toggle-label {
-            background-color: #0EA5E9; /* sky-500 */
+            background-color: #0EA5E9; 
             color: white;
-            border-color: #0EA5E9; /* sky-500 */
-            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2), 0 2px 4px -1px rgba(14, 165, 233, 0.1);
+            border-color: #0EA5E9; 
+            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.25);
         }
-        .settings-toggle-input {
-            display: none; /* Hide the actual radio button */
-        }
+        .settings-toggle-input { display: none; }
         
-        /* Simple Checkbox Toggle for Mute */
+        /* Switch */
         .switch {
             position: relative;
             display: inline-block;
-            width: 50px;
-            height: 28px;
+            width: 44px;
+            height: 24px;
         }
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #CBD5E1; /* slate-300 */
-            transition: .4s;
-            border-radius: 28px;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #CBD5E1;
+            transition: .3s;
+            border-radius: 24px;
         }
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
             background-color: white;
-            transition: .4s;
+            transition: .3s;
             border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        input:checked + .slider {
-            background-color: #0EA5E9; /* sky-500 */
-        }
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
+        input:checked + .slider { background-color: #0EA5E9; }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        /* --- DEBUG CONSOLE STYLES --- */
+        /* Debug Overlay */
         #debug-overlay {
             position: fixed;
-            bottom: 80px; /* Above nav bar */
-            left: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.85);
-            color: #00FF00;
+            bottom: 90px; left: 10px; right: 10px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #22C55E;
             font-family: monospace;
-            font-size: 12px;
-            padding: 10px;
+            font-size: 11px;
+            padding: 12px;
             border-radius: 8px;
             z-index: 9999;
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
-            display: none; /* Hidden by default unless error */
-            pointer-events: none; /* Click through */
+            display: none; 
+            pointer-events: none;
+            border: 1px solid #334155;
         }
         #debug-overlay.error-active {
             display: block;
-            border: 2px solid #EF4444;
+            border-color: #EF4444;
             pointer-events: auto;
         }
-        .log-error { color: #FF6B6B; font-weight: bold; border-bottom: 1px solid #555; padding-bottom: 4px; margin-bottom: 4px; }
-        .log-warn { color: #FCD34D; }
-        .log-info { color: #60A5FA; }
-
+        .log-error { color: #F87171; font-weight: bold; margin-bottom: 4px; }
+        .log-warn { color: #FBBF24; }
     </style>
 </head>
-<body class="text-slate-700 min-h-screen">
+<body class="text-slate-700 min-h-screen bg-[#F8FAFC] flex flex-col">
 
-    <!-- Debug Overlay -->
     <div id="debug-overlay"></div>
 
-    <!-- Global Error Handler Script -->
-    <script>
-        const debugOverlay = document.getElementById('debug-overlay');
-        
-        function logToScreen(msg, type = 'info') {
-            const line = document.createElement('div');
-            const timestamp = new Date().toLocaleTimeString();
-            line.textContent = `[${timestamp}] ${msg}`;
-            
-            if (type === 'error') {
-                line.className = 'log-error';
-                debugOverlay.classList.add('error-active'); // Show overlay on error
-                debugOverlay.innerHTML = "<strong>⚠️ DIAGNOSTIC ERROR:</strong><br>" + debugOverlay.innerHTML;
-            } else if (type === 'warn') line.className = 'log-warn';
-            else line.className = 'log-info';
-
-            debugOverlay.appendChild(line);
-            debugOverlay.scrollTop = debugOverlay.scrollHeight;
-        }
-
-        window.onerror = function(message, source, lineno, colno, error) {
-            logToScreen(`System Error: ${message} at line ${lineno}`, 'error');
-            return false;
-        };
-
-        window.addEventListener('unhandledrejection', function(event) {
-            logToScreen(`Uncaught Promise: ${event.reason}`, 'error');
-        });
-
-        console.log("Diagnostics initialized.");
-    </script>
-
-    <!-- Silent audio element (Unchanged) -->
-    <audio id="silent-audio" loop preload="auto" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdUaW1lciBvUkdnaHRzLiBjb20AAAAAAAAAAAAAADU2Nzc2NTU0NDEzMjEzMTIAAAAAAID/AAAAAAAAAAAAAABkTEFNRTMuMTAwAIAAAAAAABNpuAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wEAAGRMYXZmNW5zLjEzLjE0MgAAAAAAAAAAAAAA/wOECAAAALEAAAAsAAAAAVAAAAAABAAAAD0AAAAARzAAAAHAAAAEAAABCAAAAGgAAAAAAAAAAAAAAAABOaW5lVGVuAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/88B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH"></audio>
-
-    <!-- 
-      ==================================================================
-      Unified App Layout
-      ==================================================================
-    -->
-    <div class="max-w-2xl mx-auto p-4 md:p-8 pb-24"> 
+    <!-- Main Container with padding adjustments for mobile -->
+    <div class="flex-1 w-full max-w-md mx-auto p-4 pb-28 flex flex-col"> 
         
         <!-- 
           ==================================================================
-          Header (GAMIFIED PROFILE WITH DROPDOWN)
+          RESPONSIVE HEADER (Layout A - Polished)
+          Uses CSS Grid to ensure perfect centering of the title
+          regardless of side element width.
           ==================================================================
         -->
-        <header class="relative text-center mb-6">
-            
-            <!-- User Profile (Left) - Clickable for Dropdown -->
-            <div id="user-profile-header" class="absolute top-2 left-0 flex items-center justify-center cursor-pointer z-50 select-none">
-                 <!-- Avatar Container -->
-                 <div class="relative mr-2">
-                     <!-- SVG de Persona Meditando (Estilo Zen) -->
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="6" r="4" />
-                        <path d="M9 14a6 6 0 0 0-6 6v1h18v-1a6 6 0 0 0-6-6" />
-                        <path d="M12 14v3" />
-                        <path d="M12 20v.01" />
-                     </svg>
-                     <!-- XP / Level Badge -->
-                     <span id="user-level-badge" class="absolute -bottom-1 -right-1 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white">Lvl 1</span>
-                 </div>
-                 
-                 <!-- Name & Rank Info (Ajustes de alineación y espaciado aquí) -->
-                 <div class="flex flex-col items-start justify-center leading-tight">
-                     <span id="user-profile-name" class="text-xs font-bold text-slate-700 max-w-[80px] truncate">Guest</span>
-                     <span id="user-rank-display" class="text-[10px] font-semibold text-sky-600 uppercase tracking-wide">Novice</span>
-                 </div>
+        <header class="mb-6 w-full">
+            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                
+                <!-- Left: Profile & Rank -->
+                <div class="flex justify-start">
+                    <div class="flex items-center user-profile-trigger cursor-pointer select-none group active:scale-95 transition-transform">
+                         <div class="relative mr-2.5">
+                             <!-- Zen Icon -->
+                             <div class="p-1.5 bg-white rounded-full shadow-sm border border-slate-100">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="6" r="4" />
+                                    <path d="M9 14a6 6 0 0 0-6 6v1h18v-1a6 6 0 0 0-6-6" />
+                                    <path d="M12 14v3" />
+                                    <path d="M12 20v.01" />
+                                 </svg>
+                             </div>
+                             <!-- XP Badge -->
+                             <span id="user-level-badge" class="absolute -bottom-1 -right-1 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-[#F8FAFC] shadow-sm">1</span>
+                         </div>
+                         
+                         <div class="flex flex-col justify-center">
+                             <span id="user-profile-name" class="text-xs font-bold text-slate-800 max-w-[80px] truncate leading-tight">Guest</span>
+                             <span id="user-rank-display" class="text-[9px] font-bold text-sky-600 uppercase tracking-wider leading-tight">Novice</span>
+                         </div>
+                    </div>
+                </div>
 
-                 <!-- DROPDOWN MENU (Hidden by default) -->
-                 <div id="profile-dropdown" class="hidden absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-100 p-4 flex-col items-start text-left transition-all transform origin-top-left z-50">
-                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Signed in as</p>
-                     <p id="dropdown-email" class="text-xs text-slate-600 mb-4 font-medium break-all">guest@fastmind.app</p>
-                     <div class="w-full border-t border-slate-100 my-2"></div>
-                     <button id="btn-logout-dropdown" class="w-full flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold py-2 px-4 rounded transition-colors">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                         </svg>
-                         Logout
-                     </button>
-                 </div>
+                <!-- Center: Title -->
+                <div class="flex flex-col items-center justify-center">
+                    <h1 class="text-2xl font-extrabold text-slate-900 flex items-center tracking-tight">
+                        <!-- Logo Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-1.5 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 0 0 12 22a4 4 0 0 0 7.969-1.517 4 4 0 0 0 .556-6.588 4 4 0 0 0-2.526-5.77A3 3 0 1 0 12 5z"/>
+                            <path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+                            <path d="M12 22a4 4 0 0 0 4-4"/>
+                            <path d="M12 22a4 4 0 0 1-4-4"/>
+                            <path d="M12 13a4 4 0 0 0 4-4"/>
+                            <path d="M12 13a4 4 0 0 1-4-4"/>
+                        </svg>
+                        FastMind
+                    </h1>
+                </div>
+
+                <!-- Right: Settings -->
+                <div class="flex justify-end">
+                    <button id="btn-settings" class="p-2 bg-white rounded-full shadow-sm border border-slate-100 text-slate-400 hover:text-sky-500 active:scale-95 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-5 w-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.212 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
-
-            <!-- Título: Reducido ligeramente en móviles para evitar superposición -->
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 flex justify-center items-center mt-1">
-                <!-- Ícono SVG genérico de un cerebro -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 md:h-9 md:w-9 mr-2 text-sky-500">
-                    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 0 0 12 22a4 4 0 0 0 7.969-1.517 4 4 0 0 0 .556-6.588 4 4 0 0 0-2.526-5.77A3 3 0 1 0 12 5z"/>
-                    <path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
-                    <path d="M12 22a4 4 0 0 0 4-4"/>
-                    <path d="M12 22a4 4 0 0 1-4-4"/>
-                    <path d="M12 13a4 4 0 0 0 4-4"/>
-                    <path d="M12 13a4 4 0 0 1-4-4"/>
-                </svg>
-                <!-- Texto del Título -->
-                <span>FastMind</span>
-            </h1>
-            <p class="text-lg text-slate-500" data-key="headerSubtitle">Your AI Fasting & Wellness Coach</p>
             
-            <!-- Settings Button (New Outline Icon) -->
-            <button id="btn-settings" class="absolute top-2 right-0 p-2 text-slate-500 hover:text-sky-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-8 w-8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.212 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            </button>
+            <!-- Profile Dropdown (Absolute) -->
+            <div id="profile-dropdown" class="hidden absolute top-14 left-0 mt-1 w-52 bg-white rounded-xl shadow-xl border border-slate-100 p-4 flex-col items-start text-left z-50 animate-fade-in-down">
+                 <div class="flex items-center mb-3">
+                    <div class="h-8 w-8 bg-slate-100 rounded-full flex items-center justify-center mr-2 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Account</p>
+                        <p id="dropdown-email" class="text-xs text-slate-700 font-semibold break-all">guest@fastmind.app</p>
+                    </div>
+                 </div>
+                 <div class="w-full border-t border-slate-100 mb-3"></div>
+                 <button id="btn-logout-dropdown" class="w-full flex items-center justify-start bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold py-2.5 px-4 rounded-lg transition-colors">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                     </svg>
+                     Logout
+                 </button>
+            </div>
         </header>
 
         <!-- 
@@ -359,13 +310,16 @@
           Settings Panel (Hidden by default)
           ==================================================================
         -->
-        <div id="settings-panel" class="hidden mb-6 bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-semibold text-center mb-6" data-key="settingsTitle">Settings</h2>
+        <div id="settings-panel" class="hidden mb-6 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <h2 class="text-lg font-bold text-center mb-5 text-slate-800 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <span data-key="settingsTitle">Settings</span>
+            </h2>
             
             <!-- Language Toggle -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsLanguage">Language</label>
-                <div class="flex space-x-2">
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1" data-key="settingsLanguage">Language</label>
+                <div class="flex space-x-2 bg-slate-50 p-1 rounded-xl">
                     <input type="radio" name="language" id="lang-en" value="en" class="settings-toggle-input" checked>
                     <label for="lang-en" class="settings-toggle-label flex-1">English</label>
                     
@@ -375,9 +329,9 @@
             </div>
 
             <!-- Fasting Mode Toggle -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsMode">Fasting Mode</label>
-                <div class="flex space-x-2">
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1" data-key="settingsMode">Fasting Mode</label>
+                <div class="flex space-x-2 bg-slate-50 p-1 rounded-xl">
                     <input type="radio" name="mode" id="mode-biological" value="biological" class="settings-toggle-input" checked>
                     <label for="mode-biological" class="settings-toggle-label flex-1" data-key="settingsBiological">Biological</label>
                     
@@ -387,8 +341,8 @@
             </div>
 
             <!-- Fasting Goal Toggle -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsGoal">Fast Goal</label>
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1" data-key="settingsGoal">Fast Goal</label>
                 <div class="grid grid-cols-2 gap-2">
                     <input type="radio" name="goal" id="goal-none" value="0" class="settings-toggle-input" checked>
                     <label for="goal-none" class="settings-toggle-label" data-key="settingsGoalNone">None (Clock)</label>
@@ -400,15 +354,15 @@
                     <label for="goal-18" class="settings-toggle-label" data-key="settingsGoal18">18:6 Fast</label>
 
                     <input type="radio" name="goal" id="goal-23" value="23" class="settings-toggle-input">
-                    <label for="goal-23" class="settings-toggle-label" data-key="settingsGoal23">OMAD (23:1)</label>
+                    <label for="goal-23" class="settings-toggle-label" data-key="settingsGoal23">OMAD</label>
                 </div>
             </div>
 
             <!-- Sound Toggle -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsSound">Sound</label>
-                <div class="flex items-center justify-between bg-slate-100 p-3 rounded-lg">
-                    <span id="mute-label" class="font-medium text-slate-600" data-key="settingsSoundUnmuted">Play sound on new phase</span>
+            <div class="mb-2">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1" data-key="settingsSound">Sound</label>
+                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span id="mute-label" class="font-medium text-sm text-slate-600" data-key="settingsSoundUnmuted">Play sounds</span>
                     <label class="switch">
                         <input type="checkbox" id="mute-toggle">
                         <span class="slider"></span>
@@ -417,10 +371,9 @@
             </div>
 
             <!-- PWA Install Button (hidden by default) -->
-            <div id="install-container" class="hidden">
-                <label class="block text-sm font-medium text-slate-700 mb-2" data-key="settingsInstall">Install App</label>
-                <button id="btn-install" class="w-full flex items-center justify-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div id="install-container" class="hidden mt-5 pt-5 border-t border-slate-100">
+                <button id="btn-install" class="w-full flex items-center justify-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-xl shadow-md shadow-sky-200 transition duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                     <span data-key="settingsInstallButton">Add to Home Screen</span>
@@ -429,45 +382,49 @@
         </div>
 
         <!-- Main Content Area -->
-        <main id="app-main">
+        <main id="app-main" class="flex-1 flex flex-col">
             <!-- 
               ==================================================================
               TIMER: Always visible
               ==================================================================
             -->
-            <div id="timer-content" class="mb-6">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
+            <div id="timer-content" class="flex-1 flex flex-col justify-center">
+                <div class="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mb-4">
 
                     <!-- Goal Display (Hidden by default) -->
-                    <div id="goal-display" class="hidden text-center mb-4">
-                        <p class="text-lg font-semibold text-slate-600" data-key="goalTitle">16:8 Goal</p>
-                        <p id="time-remaining" class="text-3xl font-bold text-sky-500 tabular-nums">00:00:00</p>
-                        <p class="text-sm text-slate-500" data-key="goalRemaining">remaining</p>
+                    <div id="goal-display" class="hidden text-center mb-6">
+                        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1" data-key="goalTitle">TARGET</p>
+                        <div class="flex justify-center items-baseline">
+                            <p id="time-remaining" class="text-4xl font-black text-sky-500 tabular-nums tracking-tight">00:00:00</p>
+                        </div>
+                        <p class="text-xs text-slate-400 font-medium" data-key="goalRemaining">remaining</p>
                     </div>
                     
-                    <div id="timer-display" class="relative flex justify-center items-center mb-6">
+                    <div id="timer-display" class="relative flex justify-center items-center mb-8 mt-2">
                         <div id="progress-circle" class="progress-circle"></div>
-                        <div class="progress-text">
-                            <div id="phase-name" class="text-3xl font-bold" style="color: #475569;">
+                        <div class="progress-text flex flex-col items-center">
+                            <div id="phase-name" class="text-2xl font-bold text-slate-600 mb-1">
                                 Not Started
                             </div>
-                            <div id="chronometer" class="text-5xl font-bold tabular-nums tracking-wider" style="color: #1E293B;">
+                            <div id="chronometer" class="text-5xl font-black tabular-nums tracking-tight text-slate-900">
                                 00:00:00
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex justify-center space-x-4 mb-6">
-                        <button id="btn-start" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
-                            ▶️ <span data-key="btnStart">Start</span>
+                    <div class="flex justify-center gap-4 mb-4">
+                        <button id="btn-start" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-green-200 transition transform active:scale-95 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
+                            <span data-key="btnStart">Start</span>
                         </button>
-                        <button id="btn-stop" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
-                            ⏹ <span data-key="btnStop">Stop</span>
+                        <button id="btn-stop" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-red-200 transition transform active:scale-95 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" /></svg>
+                            <span data-key="btnStop">Stop</span>
                         </button>
                     </div>
 
-                    <div id="timer-message" class="text-center text-slate-500 text-base p-4 bg-slate-100 rounded-lg" data-key="timerMessageNotStarted">
-                        Press ▶️ <strong>Start</strong> to begin your fast.
+                    <div id="timer-message" class="text-center text-slate-500 text-sm font-medium p-3 bg-slate-50 rounded-xl border border-slate-100" data-key="timerMessageNotStarted">
+                        Press <strong class="text-green-600">Start</strong> to begin your fast.
                     </div>
                 </div>
             </div>
@@ -478,61 +435,64 @@
               ==================================================================
             -->
             <div id="login-container" class="mb-6">
-                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-                    <h2 id="auth-title" class="text-2xl font-semibold text-center mb-4 text-slate-900" data-key="authTitleLogin">Login to Unlock Features</h2>
-                    <p class="text-center text-slate-500 mb-6 text-sm" data-key="authSubtitle">Create an account to unlock the AI Chatbot and save your history.</p>
-                    <form id="auth-form" class="space-y-4">
-                        <input type="email" id="auth-email" placeholder="Email" required class="w-full p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" data-key="authEmailPlaceholder" data-key-target="placeholder">
-                        <input type="password" id="auth-password" placeholder="Password (min. 6 characters)" required minlength="6" class="w-full p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" data-key="authPasswordPlaceholder" data-key-target="placeholder">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                    <div class="text-center mb-6">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sky-100 text-sky-500 mb-3">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        </div>
+                        <h2 id="auth-title" class="text-xl font-bold text-slate-900" data-key="authTitleLogin">Login</h2>
+                        <p class="text-sm text-slate-500 mt-1" data-key="authSubtitle">Save history & chat with AI.</p>
+                    </div>
+                    
+                    <form id="auth-form" class="space-y-3">
+                        <input type="email" id="auth-email" placeholder="Email" required class="w-full p-3.5 bg-slate-50 text-slate-800 rounded-xl border border-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all" data-key="authEmailPlaceholder" data-key-target="placeholder">
+                        <input type="password" id="auth-password" placeholder="Password" required minlength="6" class="w-full p-3.5 bg-slate-50 text-slate-800 rounded-xl border border-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all" data-key="authPasswordPlaceholder" data-key-target="placeholder">
                         
-                        <p id="auth-message" class="text-sm text-center h-4"></p> 
+                        <p id="auth-message" class="text-xs text-center h-4 font-medium"></p> 
                         
-                        <button type="submit" id="auth-submit" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2" data-key="authSubmitLogin">
+                        <button type="submit" id="auth-submit" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-md shadow-sky-200 transition active:scale-95" data-key="authSubmitLogin">
                             Login
                         </button>
                     </form>
                     
-                    <div class="flex justify-between mt-4 text-sm">
-                        <a href="#" id="auth-toggle" class="text-sky-500 hover:underline" data-key="authToggleRegister">Need an account? Register</a>
-                        <a href="#" id="forgot-password" class="text-slate-500 hover:underline" data-key="authForgotPassword">Forgot Password?</a>
+                    <div class="mt-6 flex flex-col items-center space-y-3 text-sm">
+                        <a href="#" id="auth-toggle" class="text-sky-600 font-semibold hover:text-sky-700" data-key="authToggleRegister">Create Account</a>
+                        <a href="#" id="forgot-password" class="text-slate-400 hover:text-slate-600" data-key="authForgotPassword">Forgot Password?</a>
                     </div>
                 </div>
             </div>
 
             <!-- 
               ==================================================================
-              USER INFO: Shown when logged in
-              ==================================================================
-            -->
-            <div id="user-container" class="hidden mb-6 text-center">
-                <p id="user-email" class="text-slate-500 self-center mb-4"></p>
-                <button id="btn-logout" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-6 rounded-lg shadow-md transition duration-200" data-key="btnLogout">
-                    Logout
-                </button>
-            </div>
-
-            <!-- 
-              ==================================================================
-              TAB CONTENT: Shown by bottom nav
+              TAB CONTENT: Chat & History
               ==================================================================
             -->
 
-            <!-- Chat Tab Content (Oculto por defecto) -->
-            <div id="chat-content" class="hidden">
-                <div class="bg-white rounded-xl shadow-lg flex flex-col" style="height: 70vh;">
-                    <h2 class="text-2xl font-semibold text-center p-6 border-b border-slate-200 text-slate-900" data-key="chatTitle">FastMind AI Assistant</h2>
+            <!-- Chat Tab Content -->
+            <div id="chat-content" class="hidden h-full flex flex-col">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[65vh]">
+                    <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center">
+                            <span class="text-2xl mr-2">🤖</span> FastMind AI
+                        </h2>
+                        <span class="text-[10px] font-bold bg-sky-100 text-sky-600 px-2 py-1 rounded-full">BETA</span>
+                    </div>
                     
-                    <div id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
-                        <!-- Chat history will be rendered by JS -->
+                    <div id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-slate-50/50">
+                        <!-- History -->
                     </div>
 
-                    <div id="chat-spinner" class="hidden text-center p-4">
-                        <p class="text-slate-500" data-key="chatSpinner">FastMind is thinking...</p>
+                    <div id="chat-spinner" class="hidden p-2 text-center">
+                         <div class="inline-flex space-x-1">
+                             <div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce"></div>
+                             <div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                             <div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                         </div>
                     </div>
                     
-                    <form id="chat-form" class="flex space-x-2 p-4 border-t border-slate-200">
-                        <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-3 bg-slate-100 text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" data-key="chatInputPlaceholder" data-key-target="placeholder">
-                        <button type="submit" id="chat-submit" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-5 rounded-lg shadow-md transition duration-200">
+                    <form id="chat-form" class="p-3 border-t border-slate-100 bg-white rounded-b-3xl flex items-center space-x-2">
+                        <input type="text" id="chat-input" placeholder="Ask about fasting..." class="flex-1 p-3 bg-slate-100 text-slate-800 rounded-xl border-0 focus:ring-2 focus:ring-sky-100 transition-all" data-key="chatInputPlaceholder" data-key-target="placeholder">
+                        <button type="submit" id="chat-submit" class="bg-sky-500 hover:bg-sky-600 text-white p-3 rounded-xl shadow-md transition active:scale-95">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M10.894 2.886l-7.48 8.13a.5.5 0 00.34.876h12.492a.5.5 0 00.34-.876l-7.48-8.13a.5.5 0 00-.684 0z" transform="rotate(90 10 10)"/>
                             </svg>
@@ -541,70 +501,60 @@
                 </div>
             </div>
 
-            <!-- History Tab Content (Oculto por defecto) -->
+            <!-- History Tab Content -->
             <div id="history-content" class="hidden">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-semibold text-center mb-6 text-slate-900" data-key="historyTitle">My Fasting History</h2>
-                    
-                    <!-- CALENDAR SECTION -->
-                    <div id="calendar-container" class="mb-8">
-                        <div class="flex justify-between items-center mb-3">
-                            <button id="prev-month" class="p-2 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg leading-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                            </button>
-                            <h3 id="month-year" class="text-xl font-semibold text-slate-800"></h3>
-                            <button id="next-month" class="p-2 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg leading-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                            </button>
-                        </div>
-                        <div id="calendar-grid-header" class="grid grid-cols-7 gap-1 text-center text-xs text-slate-500 mb-2">
-                            <!-- Day headers (S, M, T...) will be injected by JS -->
-                        </div>
-                        <div id="calendar-grid" class="grid grid-cols-7 gap-1">
-                            <!-- Calendar days will be injected by JS -->
-                        </div>
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-slate-900" data-key="historyTitle">History</h2>
+                        <div class="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded-lg" id="month-year"></div>
                     </div>
                     
-                    <!-- History List Section -->
-                    <h3 class="text-xl font-semibold mb-4 text-slate-900" data-key="historyCompletedFasts">Completed Fasts</h3>
-                    <div id="history-list" class="h-64 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
-                        <!-- History items will be loaded here -->
-                        <p id="history-loading" class="text-slate-500 text-center" data-key="historyLoading">Loading history...</p>
-                        <p id="history-empty" class="text-slate-500 text-center hidden" data-key="historyEmpty">No fasts recorded yet.</p>
+                    <!-- CALENDAR -->
+                    <div id="calendar-container" class="mb-6">
+                        <div class="flex justify-between items-center mb-2 px-2">
+                             <button id="prev-month" class="text-slate-400 hover:text-sky-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
+                             <span class="text-xs font-bold text-slate-500 tracking-widest uppercase">Calendar</span>
+                             <button id="next-month" class="text-slate-400 hover:text-sky-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+                        </div>
+                        <div id="calendar-grid-header" class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-2"></div>
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-sm"></div>
+                    </div>
+                    
+                    <!-- LIST -->
+                    <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center"><span class="w-1 h-4 bg-sky-500 rounded-full mr-2"></span><span data-key="historyCompletedFasts">Recent Fasts</span></h3>
+                    <div id="history-list" class="h-64 overflow-y-auto space-y-3 pr-1 scrollbar-hide">
+                        <p id="history-loading" class="text-slate-400 text-center text-sm italic py-4" data-key="historyLoading">Loading...</p>
+                        <p id="history-empty" class="text-slate-400 text-center text-sm italic py-4 hidden" data-key="historyEmpty">No records found.</p>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- Footer -->
-        <footer class="text-center mt-8 text-slate-400">
-            <small>Powered by Ekilibrium Technologies | Built with Gemini</small>
-        </footer>
     </div>
 
     <!-- 
     ==================================================================
-    Bottom Navigation Bar (Always visible)
+    Bottom Navigation Bar
     ==================================================================
     -->
-    <nav id="app-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around max-w-2xl mx-auto rounded-t-lg shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.03)]">
-        <button id="btn-timer" class="nav-btn flex-1 flex flex-col items-center p-3 transition-colors duration-200 text-slate-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <nav id="app-nav" class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 flex justify-around max-w-2xl mx-auto shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] z-40">
+        <button id="btn-timer" class="nav-btn flex-1 flex flex-col items-center py-3 transition-colors duration-200 text-slate-400 hover:text-slate-600 active:text-sky-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span class="text-xs font-medium" data-key="navTimer">Timer</span>
+            <span class="text-[10px] font-bold" data-key="navTimer">Timer</span>
         </button>
-        <button id="btn-chat" class="nav-btn flex-1 flex flex-col items-center p-3 transition-colors duration-200 text-slate-400" disabled>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        <button id="btn-chat" class="nav-btn flex-1 flex flex-col items-center py-3 transition-colors duration-200 text-slate-400 hover:text-slate-600 active:text-sky-500" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
-            <span class="text-xs font-medium" data-key="navChat">Chat</span>
+            <span class="text-[10px] font-bold" data-key="navChat">Chat</span>
         </button>
-        <button id="btn-history" class="nav-btn flex-1 flex flex-col items-center p-3 transition-colors duration-200 text-slate-400" disabled>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <button id="btn-history" class="nav-btn flex-1 flex flex-col items-center py-3 transition-colors duration-200 text-slate-400 hover:text-slate-600 active:text-sky-500" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            <span class="text-xs font-medium" data-key="navHistory">History</span>
+            <span class="text-[10px] font-bold" data-key="navHistory">History</span>
         </button>
     </nav>
 
@@ -674,15 +624,15 @@
                 goalTitle: "{goal} Goal", // e.g., "16:8 Goal"
                 goalRemaining: "remaining",
                 goalReachedMsg: "🎉 <strong>Goal Reached!</strong> Keep going or stop to save.",
-                authTitleLogin: "Login to Unlock Features",
-                authTitleRegister: "Register to Unlock Features",
+                authTitleLogin: "Login",
+                authTitleRegister: "Register",
                 authSubtitle: "Create an account to unlock the AI Chatbot and save your history.",
                 authEmailPlaceholder: "Email",
                 authPasswordPlaceholder: "Password (min. 6 characters)",
                 authSubmitLogin: "Login",
                 authSubmitRegister: "Register",
                 authSubmitProcessing: "Processing...",
-                authToggleRegister: "Need an account? Register",
+                authToggleRegister: "Create Account",
                 authToggleLogin: "Already have an account? Login",
                 authForgotPassword: "Forgot Password?",
                 authResetEmailSent: "Password reset email sent! Check your inbox.",
@@ -695,8 +645,8 @@
                 chatSpinner: "FastMind is thinking...",
                 chatInputPlaceholder: "Ask a question...",
                 chatError: "⚠️ There was an error contacting the assistant. Please try again.",
-                historyTitle: "My Fasting History",
-                historyCompletedFasts: "Completed Fasts",
+                historyTitle: "History",
+                historyCompletedFasts: "Recent Fasts",
                 historyLoading: "Loading history...",
                 historyEmpty: "No fasts recorded yet.",
                 historyError: '<p class="text-red-500">Error loading history.</p>',
@@ -740,15 +690,15 @@
                 goalTitle: "Meta {goal}", // e.g., "Meta 16:8"
                 goalRemaining: "restante",
                 goalReachedMsg: "🎉 <strong>¡Meta Cumplida!</strong> Sigue adelante o detente para guardar.",
-                authTitleLogin: "Inicia Sesión para Desbloquear",
-                authTitleRegister: "Regístrate para Desbloquear",
+                authTitleLogin: "Inicia Sesión",
+                authTitleRegister: "Regístrate",
                 authSubtitle: "Crea una cuenta para desbloquear el Chat AI y guardar tu historial.",
                 authEmailPlaceholder: "Correo electrónico",
                 authPasswordPlaceholder: "Contraseña (mín. 6 caracteres)",
                 authSubmitLogin: "Iniciar Sesión",
                 authSubmitRegister: "Registrarse",
                 authSubmitProcessing: "Procesando...",
-                authToggleRegister: "¿Necesitas una cuenta? Regístrate",
+                authToggleRegister: "Crear Cuenta",
                 authToggleLogin: "¿Ya tienes cuenta? Inicia sesión",
                 authForgotPassword: "¿Olvidaste tu contraseña?",
                 authResetEmailSent: "¡Correo de reestablecimiento enviado! Revisa tu bandeja de entrada.",
@@ -761,8 +711,8 @@
                 chatSpinner: "FastMind está pensando...",
                 chatInputPlaceholder: "Escribe una pregunta...",
                 chatError: "⚠️ Ocurrió un error contactando al asistente. Por favor, intenta de nuevo.",
-                historyTitle: "Mi Historial de Ayunos",
-                historyCompletedFasts: "Ayunos Completados",
+                historyTitle: "Historial",
+                historyCompletedFasts: "Ayunos Recientes",
                 historyLoading: "Cargando historial...",
                 historyEmpty: "Aún no hay ayunos registrados.",
                 historyError: '<p class="text-red-500">Error al cargar el historial.</p>',
@@ -848,6 +798,7 @@
         // --- App State ---
         let currentLanguage = 'en';
         let currentMode = 'biological';
+        let currentLayout = 1; // 1, 2, 3
         
         // --- Sound State ---
         let phaseSynth = null;
@@ -904,18 +855,14 @@
         const authTitleEl = document.getElementById('auth-title');
         const forgotPasswordLink = document.getElementById('forgot-password'); 
         
-        const userContainer = document.getElementById('user-container'); // Old container
-        // New Profile elements
-        const profileHeader = document.getElementById('user-profile-header');
-        const profileName = document.getElementById('user-profile-name');
-        const rankDisplay = document.getElementById('user-rank-display');
-        const levelBadge = document.getElementById('user-level-badge');
+        const userContainer = document.getElementById('user-container'); 
+        
+        // Profile Dropdown & Elements (Dynamic selector)
         const profileDropdown = document.getElementById('profile-dropdown');
         const dropdownEmail = document.getElementById('dropdown-email');
         const btnLogoutDropdown = document.getElementById('btn-logout-dropdown');
 
-        const btnLogout = document.getElementById('btn-logout'); // Old logout btn
-        // const userEmailEl = document.getElementById('user-email'); // Old email
+        const btnLogout = document.getElementById('btn-logout'); 
         const btnHistory = document.getElementById('btn-history');
         const historyContent = document.getElementById('history-content');
         const historyList = document.getElementById('history-list');
@@ -931,8 +878,8 @@
         const calendarGridEl = document.getElementById('calendar-grid');
 
         // --- Settings Panel Elements ---
-        const btnSettings = document.getElementById('btn-settings');
         const settingsPanel = document.getElementById('settings-panel');
+        const btnSettings = document.getElementById('btn-settings'); // Classic selector now
         const langRadios = document.querySelectorAll('input[name="language"]');
         const modeRadios = document.querySelectorAll('input[name="mode"]');
         const goalRadios = document.querySelectorAll('input[name="goal"]'); 
@@ -1394,7 +1341,7 @@ ${localKnowledgeBase}
 ---
 **User question:** ${question}`;
             
-            const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; 
+            const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -1482,7 +1429,13 @@ ${localKnowledgeBase}
         
         btnHistory.addEventListener('click', () => switchTab('history'));
         
-        btnSettings.addEventListener('click', toggleSettingsPanel);
+        // Add listener for ALL settings buttons (since we have multiple layouts)
+        document.querySelectorAll('.btn-settings-trigger').forEach(btn => {
+            btn.addEventListener('click', toggleSettingsPanel);
+        });
+
+        if(btnSettings) btnSettings.addEventListener('click', toggleSettingsPanel); // Fallback for classic selector if needed
+
         langRadios.forEach(radio => radio.addEventListener('change', (e) => setLanguage(e.target.value)));
         modeRadios.forEach(radio => radio.addEventListener('change', (e) => setMode(e.target.value)));
         goalRadios.forEach(radio => radio.addEventListener('change', (e) => setGoal(e.target.value))); 
@@ -1504,15 +1457,26 @@ ${localKnowledgeBase}
         btnPrevMonth.addEventListener('click', showPrevMonth);
         btnNextMonth.addEventListener('click', showNextMonth);
         
-        // --- Dropdown Logic ---
-        profileHeader.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('hidden');
-            profileDropdown.classList.toggle('flex');
+        // --- Dropdown Logic (Updated for multiple layouts) ---
+        document.querySelectorAll('.user-profile-trigger').forEach(trigger => {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('hidden');
+                profileDropdown.classList.toggle('flex');
+                
+                // Position dropdown relative to the clicked trigger
+                const rect = trigger.getBoundingClientRect();
+                // Adjust dropdown top/left if needed or let absolute positioning handle it
+                // For simplicity, we keep it absolute to the header container which works for Layout 1
+                // For Layout 3 (floating), we might need adjustment but let's keep it simple for now
+            });
         });
 
         document.addEventListener('click', (e) => {
-            if (!profileHeader.contains(e.target) && !profileDropdown.classList.contains('hidden')) {
+            const isClickInsideTrigger = e.target.closest('.user-profile-trigger');
+            const isClickInsideDropdown = profileDropdown.contains(e.target);
+            
+            if (!isClickInsideTrigger && !isClickInsideDropdown && !profileDropdown.classList.contains('hidden')) {
                 profileDropdown.classList.add('hidden');
                 profileDropdown.classList.remove('flex');
             }
@@ -1688,19 +1652,17 @@ ${localKnowledgeBase}
             
             if(dropdownEmail) dropdownEmail.textContent = user.email;
             
-            // UPDATED: Set name IMMEDIATELY from user object (sync)
-            if (profileName) {
-                let name = user.email.split('@')[0];
-                if (name.length > 5) {
-                    name = name.substring(0, 5);
-                }
-                // Capitalize first letter
-                profileName.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            // UPDATED: Set name IMMEDIATELY (affects all layout variants via class selector)
+            let name = user.email.split('@')[0];
+            if (name.length > 5) {
+                 name = name.substring(0, 5);
             }
-            
-            // Basic Profile Header visibility: Mantener visible y actualizar
-            profileHeader.classList.add('flex');
-            profileHeader.classList.remove('hidden');
+            // Capitalize
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+
+            document.querySelectorAll('.user-profile-name').forEach(el => {
+                el.textContent = name;
+            });
 
             btnChat.disabled = false;
             btnHistory.disabled = false;
@@ -1717,14 +1679,10 @@ ${localKnowledgeBase}
             
             if(dropdownEmail) dropdownEmail.textContent = 'guest@fastmind.app';
 
-            // Reset Profile Header to Guest State
-            profileName.textContent = "Guest";
-            rankDisplay.textContent = "Novice";
-            levelBadge.textContent = "Lvl 1";
-            
-            // Mantener visible pero con info de invitado
-            profileHeader.classList.remove('hidden');
-            profileHeader.classList.add('flex');
+            // Reset Profile Headers
+            document.querySelectorAll('.user-profile-name').forEach(el => el.textContent = "Guest");
+            document.querySelectorAll('.user-rank-display').forEach(el => el.textContent = "Novice");
+            document.querySelectorAll('.user-level-badge').forEach(el => el.textContent = "1");
             
             authMessageEl.textContent = '';
             authMessageEl.classList.remove('text-green-400', 'text-red-400');
@@ -1836,11 +1794,9 @@ ${localKnowledgeBase}
                 const earnedPoints = Math.floor(hours * 10) + (goalHours > 0 && hours >= goalHours ? 50 : 0);
                 
                 const userRef = doc(db, "users", currentUser.uid);
-                
-                // Use setDoc with merge to be safer if doc doesn't exist yet (fixes the updateDoc permission issue for new users)
-                await setDoc(userRef, {
+                await updateDoc(userRef, {
                     mindPoints: increment(earnedPoints)
-                }, { merge: true });
+                });
                 
                 // 3. Refresh UI immediately
                 updateUserProfileUI(currentUser);
