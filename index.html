@@ -202,7 +202,7 @@
             transform: translateX(22px);
         }
 
-        /* --- DEBUG CONSOLE STYLES (NUEVO) --- */
+        /* --- DEBUG CONSOLE STYLES --- */
         #debug-overlay {
             position: fixed;
             bottom: 80px; /* Above nav bar */
@@ -280,13 +280,46 @@
         
         <!-- 
           ==================================================================
-          Header (MODIFICADO)
-          - Se reemplazó el 🧠 emoji por un ícono SVG.
-          - Se añadió 'flex justify-center items-center' al <h1> 
-            para alinear el SVG y el texto.
+          Header (GAMIFIED PROFILE WITH DROPDOWN)
           ==================================================================
         -->
         <header class="relative text-center mb-6">
+            
+            <!-- User Profile (Left) - Clickable for Dropdown -->
+            <div id="user-profile-header" class="absolute top-1 left-0 flex items-center justify-center cursor-pointer z-50 select-none">
+                 <!-- Avatar Container -->
+                 <div class="relative mr-2">
+                     <!-- SVG de Persona Meditando (Estilo Zen) -->
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="6" r="4" />
+                        <path d="M9 14a6 6 0 0 0-6 6v1h18v-1a6 6 0 0 0-6-6" />
+                        <path d="M12 14v3" />
+                        <path d="M12 20v.01" />
+                     </svg>
+                     <!-- XP / Level Badge -->
+                     <span id="user-level-badge" class="absolute -bottom-1 -right-1 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white">Lvl 1</span>
+                 </div>
+                 
+                 <!-- Name & Rank Info (Ajustes de alineación y espaciado aquí) -->
+                 <div class="flex flex-col items-start justify-center leading-tight">
+                     <span id="user-profile-name" class="text-xs font-bold text-slate-700 max-w-[80px] truncate">Guest</span>
+                     <span id="user-rank-display" class="text-[10px] font-semibold text-sky-600 uppercase tracking-wide">Novice</span>
+                 </div>
+
+                 <!-- DROPDOWN MENU (Hidden by default) -->
+                 <div id="profile-dropdown" class="hidden absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-100 p-4 flex-col items-start text-left transition-all transform origin-top-left z-50">
+                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Signed in as</p>
+                     <p id="dropdown-email" class="text-xs text-slate-600 mb-4 font-medium break-all">guest@fastmind.app</p>
+                     <div class="w-full border-t border-slate-100 my-2"></div>
+                     <button id="btn-logout-dropdown" class="w-full flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold py-2 px-4 rounded transition-colors">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                         </svg>
+                         Logout
+                     </button>
+                 </div>
+            </div>
+
             <h1 class="text-4xl font-bold text-slate-900 flex justify-center items-center">
                 <!-- Ícono SVG genérico de un cerebro -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-9 w-9 mr-3 text-sky-500">
@@ -302,10 +335,11 @@
             </h1>
             <p class="text-lg text-slate-500" data-key="headerSubtitle">Your AI Fasting & Wellness Coach</p>
             
-            <!-- Settings Button -->
-            <button id="btn-settings" class="absolute top-0 right-0 p-2 text-slate-500 hover:text-sky-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0l-.1.41a1.5 1.5 0 01-2.1 1.44l-.4-.16c-1.5-.6-3.14.79-2.58 2.24l.2.43a1.5 1.5 0 01-1.2 2.03l-.43.09c-1.56.32-1.56 2.6 0 2.92l.43.09a1.5 1.5 0 011.2 2.03l-.2.43c-.56 1.45 1.07 2.84 2.58 2.24l.4-.16a1.5 1.5 0 012.1 1.44l.1.41c.38 1.56 2.6 1.56 2.98 0l.1-.41a1.5 1.5 0 012.1-1.44l.4.16c1.5.6 3.14-.79 2.58-2.24l-.2-.43a1.5 1.5 0 011.2-2.03l.43-.09c-1.56-.32 1.56-2.6 0-2.92l-.43-.09a1.5 1.5 0 01-1.2-2.03l.2-.43c.56-1.45-1.07-2.84-2.58-2.24l-.4.16a1.5 1.5 0 01-2.1-1.44l-.1-.41zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+            <!-- Settings Button (New Outline Icon) -->
+            <button id="btn-settings" class="absolute top-1 right-0 p-2 text-slate-500 hover:text-sky-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-8 w-8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.212 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
             </button>
         </header>
@@ -586,6 +620,9 @@
             doc,
             setDoc,
             addDoc,
+            getDoc,
+            updateDoc,
+            increment,
             collection,
             query,
             onSnapshot,
@@ -747,7 +784,7 @@
                     { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renew", color_hex: "#7030A0", tip: "You are renewing your system." },
                     { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Reset", color_hex: "#9966CC", tip: "Your body is rebooting from within." },
                     { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Zen", color_hex: "#708090", tip: "You are in full control." },
-                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Rebirth", color_hex: "#F5F5F5", tip: "You have achieved a state of deep renewal." }
+                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Rebirth", color_hex: "#0F172A", tip: "You have achieved a state of deep renewal." }
                 ],
                 es: [
                     { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Digestión", color_hex: "#FFA500", tip: "Tu cuerpo está procesando la última comida." },
@@ -759,7 +796,7 @@
                     { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renovar", color_hex: "#7030A0", tip: "Estás renovando tu sistema." },
                     { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Reinicio", color_hex: "#9966CC", tip: "Tu cuerpo se está reiniciando desde adentro." },
                     { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Zen", color_hex: "#708090", tip: "Estás en control total." },
-                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Renacer", color_hex: "#F5F5F5", tip: "Has alcanzado un estado de renovación profunda." }
+                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Renacer", color_hex: "#0F172A", tip: "Has alcanzado un estado de renovación profunda." }
                 ]
             },
             mind: {
@@ -773,7 +810,7 @@
                     { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renewal", color_hex: "#7030A0", tip: "Mind & body renewal. Sense of accomplishment." },
                     { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Insight", color_hex: "#9966CC", tip: "Deep mental calm. Prone to insights." },
                     { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Alignment", color_hex: "#708090", tip: "Full mental and physical alignment." },
-                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Perspective", color_hex: "#F5F5F5", tip: "Emerge with a new perspective." }
+                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Perspective", color_hex: "#0F172A", tip: "Emerge with a new perspective." }
                 ],
                 es: [
                     { fase_inicio_h: 0, fase_fin_h: 4, keyword: "Preparar", color_hex: "#FFA500", tip: "Cuerpo procesando. Mente preparándose." },
@@ -785,7 +822,7 @@
                     { fase_inicio_h: 48, fase_fin_h: 60, keyword: "Renovación", color_hex: "#7030A0", tip: "Renovación de mente y cuerpo. Sentido de logro." },
                     { fase_inicio_h: 60, fase_fin_h: 72, keyword: "Perspicacia", color_hex: "#9966CC", tip: "Calma mental profunda. Propenso a ideas." },
                     { fase_inicio_h: 72, fase_fin_h: 96, keyword: "Alineación", color_hex: "#708090", tip: "Alineación mental y física total." },
-                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Perspectiva", color_hex: "#F5F5F5", tip: "Emerge con una nueva perspectiva." }
+                    { fase_inicio_h: 96, fase_fin_h: 120, keyword: "Perspectiva", color_hex: "#0F172A", tip: "Emerge con una nueva perspectiva." }
                 ]
             }
         };
@@ -857,9 +894,18 @@
         const authTitleEl = document.getElementById('auth-title');
         const forgotPasswordLink = document.getElementById('forgot-password'); 
         
-        const userContainer = document.getElementById('user-container'); 
-        const btnLogout = document.getElementById('btn-logout');
-        const userEmailEl = document.getElementById('user-email');
+        const userContainer = document.getElementById('user-container'); // Old container
+        // New Profile elements
+        const profileHeader = document.getElementById('user-profile-header');
+        const profileName = document.getElementById('user-profile-name');
+        const rankDisplay = document.getElementById('user-rank-display');
+        const levelBadge = document.getElementById('user-level-badge');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const dropdownEmail = document.getElementById('dropdown-email');
+        const btnLogoutDropdown = document.getElementById('btn-logout-dropdown');
+
+        const btnLogout = document.getElementById('btn-logout'); // Old logout btn
+        // const userEmailEl = document.getElementById('user-email'); // Old email
         const btnHistory = document.getElementById('btn-history');
         const historyContent = document.getElementById('history-content');
         const historyList = document.getElementById('history-list');
@@ -1421,7 +1467,9 @@ ${localKnowledgeBase}
         authForm.addEventListener('submit', handleAuthSubmit);
         authToggleLink.addEventListener('click', (e) => toggleAuthMode(e, false));
         forgotPasswordLink.addEventListener('click', handleForgotPassword); 
-        btnLogout.addEventListener('click', logOut);
+        if(btnLogout) btnLogout.addEventListener('click', logOut);
+        if(btnLogoutDropdown) btnLogoutDropdown.addEventListener('click', logOut); // Listener for new logout button
+        
         btnHistory.addEventListener('click', () => switchTab('history'));
         
         btnSettings.addEventListener('click', toggleSettingsPanel);
@@ -1445,6 +1493,20 @@ ${localKnowledgeBase}
 
         btnPrevMonth.addEventListener('click', showPrevMonth);
         btnNextMonth.addEventListener('click', showNextMonth);
+        
+        // --- Dropdown Logic ---
+        profileHeader.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('hidden');
+            profileDropdown.classList.toggle('flex');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!profileHeader.contains(e.target) && !profileDropdown.classList.contains('hidden')) {
+                profileDropdown.classList.add('hidden');
+                profileDropdown.classList.remove('flex');
+            }
+        });
 
 
         // ---
@@ -1485,6 +1547,8 @@ ${localKnowledgeBase}
                         currentUser = user;
                         updateUIForLoggedIn(user);
                         loadFastingHistory();
+                        // Load Profile XP Data
+                        updateUserProfileUI(user);
                     } else {
                         console.log("User is logged out.");
                         currentUser = null;
@@ -1609,9 +1673,25 @@ ${localKnowledgeBase}
 
         function updateUIForLoggedIn(user) {
             loginContainer.classList.add('hidden');
-            userContainer.classList.remove('hidden');
-            userEmailEl.textContent = user.email;
+            if(userContainer) userContainer.classList.add('hidden'); // Hide old container completely
+            // userEmailEl.textContent = user.email; // No longer used
             
+            if(dropdownEmail) dropdownEmail.textContent = user.email;
+            
+            // UPDATED: Set name IMMEDIATELY from user object (sync)
+            if (profileName) {
+                let name = user.email.split('@')[0];
+                if (name.length > 5) {
+                    name = name.substring(0, 5);
+                }
+                // Capitalize first letter
+                profileName.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            }
+            
+            // Basic Profile Header visibility: Mantener visible y actualizar
+            profileHeader.classList.add('flex');
+            profileHeader.classList.remove('hidden');
+
             btnChat.disabled = false;
             btnHistory.disabled = false;
             btnChat.classList.remove('text-slate-400'); 
@@ -1622,8 +1702,19 @@ ${localKnowledgeBase}
 
         function updateUIForLoggedOut() {
             loginContainer.classList.remove('hidden');
-            userContainer.classList.add('hidden');
-            userEmailEl.textContent = '';
+            if(userContainer) userContainer.classList.add('hidden');
+            // userEmailEl.textContent = '';
+            
+            if(dropdownEmail) dropdownEmail.textContent = 'guest@fastmind.app';
+
+            // Reset Profile Header to Guest State
+            profileName.textContent = "Guest";
+            rankDisplay.textContent = "Novice";
+            levelBadge.textContent = "Lvl 1";
+            
+            // Mantener visible pero con info de invitado
+            profileHeader.classList.remove('hidden');
+            profileHeader.classList.add('flex');
             
             authMessageEl.textContent = '';
             authMessageEl.classList.remove('text-green-400', 'text-red-400');
@@ -1655,6 +1746,57 @@ ${localKnowledgeBase}
                 switchTab('timer');
             }
         }
+        
+        // --- Gamification Logic ---
+        
+        function calculateRank(points) {
+            if (points < 500) return "Novice";
+            if (points < 2000) return "Seeker";
+            if (points < 5000) return "Adept";
+            if (points < 10000) return "Sage";
+            return "Enlightened";
+        }
+
+        async function updateUserProfileUI(user) {
+            if (!db || !user) return;
+            
+            const userRef = doc(db, "users", user.uid);
+            try {
+                const userSnap = await getDoc(userRef);
+                let userData = {};
+                
+                if (userSnap.exists()) {
+                    userData = userSnap.data();
+                } else {
+                    // Initialize user doc if missing
+                    await setDoc(userRef, { email: user.email, mindPoints: 0 }, { merge: true });
+                    userData = { mindPoints: 0 };
+                }
+                
+                const points = userData.mindPoints || 0;
+                const rank = calculateRank(points);
+                const level = Math.floor(points / 100) + 1; // 100 points per level
+                
+                // Update DOM Elements (Rank/XP only here, name handled in updateUIForLoggedIn for speed)
+                // Ensure name is updated here as well to prevent async race condition reverting it to 4 chars
+                if (profileHeader && profileName) {
+                     let name = user.email.split('@')[0];
+                     if (name.length > 5) {
+                         name = name.substring(0, 5);
+                     }
+                     profileName.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+                }
+
+                if (rankDisplay) rankDisplay.textContent = rank;
+                if (levelBadge) {
+                    levelBadge.textContent = `Lvl ${level}`;
+                    levelBadge.classList.remove('hidden');
+                }
+                
+            } catch (e) {
+                console.error("Error fetching user profile:", e);
+            }
+        }
 
 
         // --- 4. Firestore (Database) Functions ---
@@ -1666,7 +1808,8 @@ ${localKnowledgeBase}
             }
 
             try {
-                const docRef = await addDoc(collection(db, "users", currentUser.uid, "fasts"), {
+                // 1. Save the Fast Record
+                const fastDocRef = await addDoc(collection(db, "users", currentUser.uid, "fasts"), {
                     userId: currentUser.uid,
                     completedAt: serverTimestamp(), 
                     durationHours: hours,
@@ -1676,7 +1819,20 @@ ${localKnowledgeBase}
                     goalHours: goalHours, 
                     goalReached: (goalHours > 0 && hours >= goalHours) 
                 });
-                console.log("Fast saved with ID: ", docRef.id);
+                console.log("Fast saved with ID: ", fastDocRef.id);
+                
+                // 2. Update User Points (Gamification)
+                // 10 points per hour, +50 bonus if goal reached
+                const earnedPoints = Math.floor(hours * 10) + (goalHours > 0 && hours >= goalHours ? 50 : 0);
+                
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, {
+                    mindPoints: increment(earnedPoints)
+                });
+                
+                // 3. Refresh UI immediately
+                updateUserProfileUI(currentUser);
+                
             } catch (e) {
                 console.error("Error adding document: ", e);
                 logToScreen("Firestore Error: " + e, "error");
