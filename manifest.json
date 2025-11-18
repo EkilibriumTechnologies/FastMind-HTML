@@ -1,29 +1,20 @@
 {
-  "name": "FastMind - AI Fasting Coach",
+  "name": "FastMind",
   "short_name": "FastMind",
-  "description": "Your AI Fasting & Wellness Coach with timer, phases, and history.",
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F8FAFC",
   "theme_color": "#F8FAFC",
   "icons": [
     {
       "src": "https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto",
-      "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "https://placehold.co/512x512/F8FAFC/0F172A?text=🧠&font=noto",
-      "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://placehold.co/192x192/F8FAFC/0F172A?text=🎉&font=noto",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any"
+      "type": "image/png"
     }
   ]
 }
