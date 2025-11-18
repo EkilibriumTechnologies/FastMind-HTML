@@ -214,6 +214,8 @@
         }
         .log-error { color: #F87171; font-weight: bold; margin-bottom: 4px; }
         .log-warn { color: #FBBF24; }
+        .log-info { color: #60A5FA; }
+
     </style>
 </head>
 <body class="text-slate-700 min-h-screen bg-[#F8FAFC] flex flex-col">
@@ -896,6 +898,23 @@
         
         // --- CORE LOGIC ---
 
+        // Layout Switching Logic
+        function cycleHeaderLayout() {
+            currentLayout++;
+            if (currentLayout > 3) currentLayout = 1;
+            
+            document.getElementById('header-layout-1').classList.add('hidden');
+            document.getElementById('header-layout-2').classList.add('hidden');
+            document.getElementById('header-layout-3').classList.add('hidden');
+            
+            document.getElementById(`header-layout-${currentLayout}`).classList.remove('hidden');
+            
+            // Update user profile data on the new visible header
+            if (currentUser) {
+                 updateUserProfileUI(currentUser);
+            }
+        }
+
         function applyTranslations(lang) {
             const langStrings = translations[lang] || translations.en;
             document.documentElement.lang = lang; 
@@ -1453,6 +1472,12 @@ ${localKnowledgeBase}
                 playPhaseSound();
             }
         });
+        
+        // Layout Switcher Logic
+        const btnLayoutSwitcher = document.getElementById('btn-layout-switcher');
+        if (btnLayoutSwitcher) {
+            btnLayoutSwitcher.addEventListener('click', cycleHeaderLayout);
+        }
 
         btnPrevMonth.addEventListener('click', showPrevMonth);
         btnNextMonth.addEventListener('click', showNextMonth);
@@ -1552,23 +1577,38 @@ ${localKnowledgeBase}
             const password = authPasswordEl.value;
             authMessageEl.textContent = ''; 
             authMessageEl.classList.remove('text-green-400', 'text-red-400');
+            
+            // Store original text
+            const originalBtnText = isRegisterMode ? translations[currentLanguage].authSubmitRegister : translations[currentLanguage].authSubmitLogin;
+            
             authSubmitBtn.disabled = true;
             authSubmitBtn.textContent = translations[currentLanguage].authSubmitProcessing;
 
             try {
-                if (isRegisterMode) {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    console.log("User created and signed in!");
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    console.log("User signed in!");
-                }
+                // Add a timeout to the auth request
+                const authPromise = isRegisterMode 
+                    ? createUserWithEmailAndPassword(auth, email, password)
+                    : signInWithEmailAndPassword(auth, email, password);
+                
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Request timed out. Check network or console.")), 15000)
+                );
+
+                await Promise.race([authPromise, timeoutPromise]);
+                
+                console.log("Auth Action Successful");
+                // Explicitly trigger UI update if listener is slow, but listener handles state better.
+                // We will rely on listener, but if we are here, it worked.
+                
             } catch (error) {
                 console.error("Auth Error:", error.code, error.message);
+                logToScreen("Auth Failed: " + error.message, "error");
                 authMessageEl.textContent = getFriendlyAuthError(error);
                 authMessageEl.classList.add('text-red-400');
+                
+                // RESET BUTTON ON ERROR
                 authSubmitBtn.disabled = false;
-                authSubmitBtn.textContent = isRegisterMode ? translations[currentLanguage].authSubmitRegister : translations[currentLanguage].authSubmitLogin;
+                authSubmitBtn.textContent = originalBtnText;
             }
         }
 
@@ -1794,9 +1834,11 @@ ${localKnowledgeBase}
                 const earnedPoints = Math.floor(hours * 10) + (goalHours > 0 && hours >= goalHours ? 50 : 0);
                 
                 const userRef = doc(db, "users", currentUser.uid);
-                await updateDoc(userRef, {
+                
+                // Use setDoc with merge to be safer if doc doesn't exist yet (fixes the updateDoc permission issue for new users)
+                await setDoc(userRef, {
                     mindPoints: increment(earnedPoints)
-                });
+                }, { merge: true });
                 
                 // 3. Refresh UI immediately
                 updateUserProfileUI(currentUser);
