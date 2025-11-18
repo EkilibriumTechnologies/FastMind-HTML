@@ -122,12 +122,50 @@
 
         /* Avatar Glow */
         .status-avatar { transition: color 0.5s ease, stroke 0.5s ease; }
+
+        /* Insight Popup Animation */
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
     </style>
 </head>
 <body class="text-slate-600 min-h-screen flex flex-col pb-20">
 
     <!-- Silent audio element -->
     <audio id="silent-audio" loop preload="auto" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdUaW1lciBvUkdnaHRzLiBjb20AAAAAAAAAAAAAADU2Nzc2NTU0NDEzMjEzMTIAAAAAAID/AAAAAAAAAAAAAABkTEFNRTMuMTAwAIAAAAAAABNpuAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wEAAGRMYXZmNW5zLjEzLjE0MgAAAAAAAAAAAAAA/wOECAAAALEAAAAsAAAAAVAAAAAABAAAAD0AAAAARzAAAAHAAAAEAAABCAAAAGgAAAAAAAAAAAAAAAABOaW5lVGVuAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/88B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH"></audio>
+
+    <!-- NEW AI INSIGHT POPUP -->
+    <div id="ai-insight-popup" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-xs w-[90%] transform scale-95 transition-transform duration-300 m-4 relative border border-white/50 animate-pop-in">
+            <!-- Close Button -->
+            <button onclick="closeInsightPopup()" class="absolute top-3 right-3 text-slate-300 hover:text-slate-500 transition-colors p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="flex flex-col items-center text-center">
+                <!-- Animated Icon -->
+                <div class="w-14 h-14 bg-sky-50 rounded-full flex items-center justify-center text-sky-500 mb-4 shadow-inner ring-4 ring-white">
+                    <i data-lucide="sparkles" class="w-7 h-7 animate-pulse"></i>
+                </div>
+                
+                <h3 class="text-lg font-extrabold text-slate-800 mb-2 tracking-tight">FastMind Insight</h3>
+                
+                <!-- Content -->
+                <div id="ai-insight-content" class="min-h-[60px] flex items-center justify-center">
+                    <div id="insight-loading" class="flex space-x-1">
+                        <div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                        <div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                    <p id="ai-insight-text" class="text-slate-600 text-sm leading-relaxed hidden font-medium"></p>
+                </div>
+                
+                <button onclick="closeInsightPopup()" class="mt-5 text-xs font-bold text-sky-500 uppercase tracking-widest hover:text-sky-600 transition-colors">Got it</button>
+            </div>
+        </div>
+    </div>
 
     <div class="max-w-xl mx-auto w-full p-6 flex-1 overflow-y-auto relative"> 
         
@@ -450,12 +488,18 @@
         const xpProgressBar = document.getElementById('xp-progress-bar');
         const headerStatusIcon = document.getElementById('header-status-icon');
         const dropdownRankInfo = document.getElementById('dropdown-rank-info');
+        
+        // Popup Elements
+        const aiInsightPopup = document.getElementById('ai-insight-popup');
+        const aiInsightText = document.getElementById('ai-insight-text');
+        const insightLoading = document.getElementById('insight-loading');
 
         const btnHistory=document.getElementById('btn-history'), historyContent=document.getElementById('history-content'), historyList=document.getElementById('history-list'), historyLoading=document.getElementById('history-loading'), historyEmpty=document.getElementById('history-empty'), silentAudio=document.getElementById('silent-audio'), btnPrevMonth=document.getElementById('prev-month'), btnNextMonth=document.getElementById('next-month'), monthYearEl=document.getElementById('month-year'), calendarGridHeaderEl=document.getElementById('calendar-grid-header'), calendarGridEl=document.getElementById('calendar-grid');
         const btnSettings=document.getElementById('btn-settings'), settingsPanel=document.getElementById('settings-panel'), langRadios=document.querySelectorAll('input[name="language"]'), modeRadios=document.querySelectorAll('input[name="mode"]'), goalRadios=document.querySelectorAll('input[name="goal"]'), muteToggle=document.getElementById('mute-toggle'), installContainer=document.getElementById('install-container'), btnInstall=document.getElementById('btn-install'), goalDisplay=document.getElementById('goal-display'), timeRemainingEl=document.getElementById('time-remaining');
 
         // Window global for onclick
         window.toggleSettingsPanel = () => { settingsPanel.classList.toggle('hidden'); };
+        window.closeInsightPopup = () => { aiInsightPopup.classList.add('hidden', 'opacity-0'); };
 
         // Gamification Logic
         const RANKS = [
@@ -473,6 +517,44 @@
         function calculateLevel(points) {
             return Math.floor(points / 100) + 1;
         }
+        
+        // --- AI INSIGHT LOGIC ---
+        async function generateWelcomeMessage() {
+             // Show Popup with Loading
+             aiInsightPopup.classList.remove('hidden');
+             requestAnimationFrame(() => aiInsightPopup.classList.remove('opacity-0'));
+             insightLoading.classList.remove('hidden');
+             aiInsightText.classList.add('hidden');
+             
+             const currentPhase = getPhase(elapsedHours);
+             
+             // Get user stats from local storage or defaults for context
+             const storedPoints = parseInt(localStorage.getItem('fastUserPoints') || '0');
+             const storedStreak = parseInt(localStorage.getItem('fastUserStreak') || '0');
+             const currentRank = calculateRank(storedPoints).name;
+             
+             const promptContext = `
+             User Context:
+             - Fasting Duration: ${elapsedHours.toFixed(1)} hours
+             - Current Phase: ${currentPhase.keyword}
+             - Rank: ${currentRank}
+             - Streak: ${storedStreak} days
+             
+             Task: Write a witty, insightful, and very short (max 2 sentences) welcome message. Be a funny but supportive coach. Mention their phase or rank if relevant.
+             Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}
+             `;
+             
+             try {
+                 const message = await askFastMind(promptContext, true); // true = skip RAG, just chat
+                 
+                 insightLoading.classList.add('hidden');
+                 aiInsightText.innerHTML = message;
+                 aiInsightText.classList.remove('hidden');
+             } catch(e) {
+                 closeInsightPopup(); // Hide if error
+             }
+        }
+
 
         // ------------------ CORE LOGIC ------------------
         function applyTranslations(lang){
@@ -669,7 +751,7 @@
             renderChatHistory();chatInput.disabled=false;chatSubmit.disabled=false;chatSpinner.classList.add('hidden');chatInput.focus();
         }
 
-        async function askFastMind(question) {
+        async function askFastMind(question, simpleMode = false) {
             const localKnowledgeBase = `
 - **Primary Document:** fasting_guide.pdf
 - **Key Topic:** The Five Most Common and Beneficial Types of Fasting.
@@ -680,20 +762,26 @@
     - **Benefits:** Physical health and spiritual growth.
     - **Cultural Context:** Practiced in many religions (Ramadan, Yom Kippur, Lent, Navaratri).
 `;
-            const systemPrompt = "You are FastMind, a scientific fasting and wellness coach. You must answer in the language of the user's question. \n\n**Your Process (Hybrid RAG):** \n1. **FIRST,** try to answer the user's question using *only* the 'Local Knowledge Base' provided in the prompt. \n2. **SECOND,** if the answer is *not* in the Local Knowledge Base, *then* use Google Search to find scientific information, data, or guides to answer it.";
-            const userQuery = `**Local KnowledgeBase:**
-${localKnowledgeBase}
----
-**User question:** ${question}`;
+            const systemPrompt = simpleMode 
+               ? "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging." 
+               : "You are FastMind, a scientific fasting and wellness coach. You must answer in the language of the user's question. \n\n**Your Process (Hybrid RAG):** \n1. **FIRST,** try to answer the user's question using *only* the 'Local Knowledge Base' provided in the prompt. \n2. **SECOND,** if the answer is *not* in the Local Knowledge Base, *then* use Google Search to find scientific information, data, or guides to answer it.";
+            
+            const userQuery = simpleMode 
+               ? question 
+               : `**Local KnowledgeBase:**\n${localKnowledgeBase}\n---\n**User question:** ${question}`;
             
             const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
-                tools: [{ "google_search": {} }],
                 systemInstruction: { parts: [{ text: systemPrompt }] },
             };
+            
+            // Only add google search if not simple mode (popup mode)
+            if(!simpleMode) {
+                 payload.tools = [{ "google_search": {} }];
+            }
             
             try {
                 const res = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
@@ -821,6 +909,10 @@ ${localKnowledgeBase}
                     const data = doc.data();
                     const points = data.mindPoints || 0;
                     const streak = data.currentStreak || 0;
+                    
+                    // Backup to LS for offline AI context
+                    localStorage.setItem('fastUserPoints', points);
+                    localStorage.setItem('fastUserStreak', streak);
                     
                     const rank = calculateRank(points);
                     const level = calculateLevel(points);
@@ -963,7 +1055,13 @@ ${localKnowledgeBase}
 
         // Init
         const savedStart=localStorage.getItem('fastStartTime');
-        if(savedStart && localStorage.getItem('fastRunning')==='true'){ startTime=parseInt(savedStart,10); running=true; timerInterval=setInterval(updateTimer,1000); updateTimer(); }
+        if(savedStart && localStorage.getItem('fastRunning')==='true'){ 
+            startTime=parseInt(savedStart,10); 
+            running=true; 
+            timerInterval=setInterval(updateTimer,1000); 
+            updateTimer(); 
+            generateWelcomeMessage(); // Trigger AI Greeting
+        }
         applyTranslations('en');
     </script>
 </body>
