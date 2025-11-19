@@ -49,7 +49,12 @@
             padding-top: env(safe-area-inset-top); 
             padding-bottom: env(safe-area-inset-bottom);
             overscroll-behavior-y: none;
-            user-select: none;
+            /* CRITICAL FIX: Disable text selection globally to prevent blue highlight */
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight color */
         }
         
         /* Smooth Card Styles */
@@ -70,11 +75,12 @@
             transition: background 0.05s linear; 
             box-shadow: inset 0 4px 10px rgba(0,0,0,0.05);
             position: relative;
-            touch-action: none; 
+            /* CRITICAL FIXES FOR TOUCH */
+            touch-action: none; /* Disables browser handling of gestures */
+            -webkit-touch-callout: none; /* Disables callout menu on iOS */
             cursor: pointer;
         }
-        
-        /* Inner white circle */
+        /* The inner white circle */
         .progress-circle::before {
             content: ""; 
             width: 86%; height: 86%; 
@@ -109,10 +115,11 @@
             z-index: 20;
             box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
             cursor: grab;
-            transform-origin: 50% 146px; /* 130px radius + 16px offset */
+            transform-origin: 50% 146px; /* Radius + Offset */
             transition: transform 0.05s linear, opacity 0.2s ease;
             opacity: 0; /* Hidden by default */
             pointer-events: none; /* Passthrough when hidden */
+            -webkit-touch-callout: none;
         }
         .dial-knob.visible { opacity: 1; pointer-events: auto; }
         .dial-knob:active { cursor: grabbing; transform: scale(1.1); }
