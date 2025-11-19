@@ -38,7 +38,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- html2canvas for generating shareable images -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
@@ -50,7 +49,7 @@
             padding-top: env(safe-area-inset-top); 
             padding-bottom: env(safe-area-inset-bottom);
             overscroll-behavior-y: none;
-            user-select: none; /* Prevent text selection while dragging */
+            user-select: none;
         }
         
         /* Smooth Card Styles */
@@ -139,7 +138,7 @@
 
         .progress-text { position: absolute; text-align: center; z-index: 10; pointer-events: none; }
         
-        /* Chat Bubbles */
+        /* Chat Bubbles & Other Styles */
         .chat-bubble-bot { background-color: #F1F5F9; color: #334155; padding: 1rem; border-radius: 1.2rem; border-top-left-radius: 0; max-width: 85%; margin-bottom: 0.5rem; }
         .chat-bubble-user { background-color: #0EA5E9; color: white; padding: 1rem; border-radius: 1.2rem; border-top-right-radius: 0; max-width: 85%; align-self: flex-end; margin-bottom: 0.5rem; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3); }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -148,28 +147,21 @@
         .calendar-day.fasted-day { background-color: #E0F2FE; }
         .calendar-day.fasted-day span { font-weight: 700; color: #0284C7; }
         .fasted-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #0EA5E9; margin-top: 4px; }
-        
-        /* Navigation */
         .nav-btn { position: relative; }
         .nav-btn.active { color: #0F172A; }
         .nav-btn.active::after { content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background-color: #0F172A; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
-        
-        /* Toggle Switch */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 28px; }
         .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         input:checked + .slider { background-color: #0EA5E9; }
         input:checked + .slider:before { transform: translateX(22px); }
-        
-        /* Animations */
         .panel-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .status-avatar { transition: color 0.5s ease, stroke 0.5s ease; }
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .victory-gradient { background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%); }
         
-        /* Onboarding Styles */
         .onboarding-slide { display: none; flex-col: column; align-items: center; justify-content: center; height: 100%; text-align: center; opacity: 0; transition: opacity 0.5s ease; }
         .onboarding-slide.active { display: flex; opacity: 1; }
         .dot { width: 8px; height: 8px; border-radius: 50%; background-color: rgba(255,255,255,0.3); transition: all 0.3s; }
@@ -187,7 +179,7 @@
             <div class="onboarding-slide active" data-index="0">
                 <div class="w-24 h-24 bg-sky-500/20 rounded-full flex items-center justify-center mb-8"><i data-lucide="timer" class="w-12 h-12 text-sky-400"></i></div>
                 <h2 class="text-3xl font-bold mb-4">Track your Fasts</h2>
-                <p class="text-slate-400 text-lg leading-relaxed">Drag the clock dial to adjust your start time easily.</p>
+                <p class="text-slate-400 text-lg leading-relaxed">Press and hold the ring for 2 seconds to adjust your start time.</p>
             </div>
             <div class="onboarding-slide" data-index="1">
                 <div class="w-24 h-24 bg-purple-500/20 rounded-full flex items-center justify-center mb-8"><i data-lucide="brain-circuit" class="w-12 h-12 text-purple-400"></i></div>
@@ -456,7 +448,27 @@
         function calculateRank(points) { return RANKS.find(r => points >= r.min && points < r.max) || RANKS[RANKS.length - 1]; }
         function calculateLevel(points) { return Math.floor(points / 100) + 1; }
         
-        // Core Logic
+        // --- AI INSIGHT LOGIC ---
+        async function generateWelcomeMessage() {
+             aiInsightPopup.classList.remove('hidden');
+             requestAnimationFrame(() => aiInsightPopup.classList.remove('opacity-0'));
+             insightLoading.classList.remove('hidden');
+             aiInsightText.classList.add('hidden');
+             
+             const currentPhase = getPhase(elapsedHours);
+             const storedPoints = parseInt(localStorage.getItem('fastUserPoints') || '0');
+             const storedStreak = parseInt(localStorage.getItem('fastUserStreak') || '0');
+             const currentRank = calculateRank(storedPoints).name;
+             
+             const promptContext = `User Context: Fasting Duration: ${elapsedHours.toFixed(1)} hours. Current Phase: ${currentPhase.keyword}. Rank: ${currentRank}. Streak: ${storedStreak} days. Task: Write a witty, insightful, and very short (max 2 sentences) welcome message. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
+             try {
+                 const message = await askFastMind(promptContext, true);
+                 insightLoading.classList.add('hidden');
+                 aiInsightText.innerHTML = message;
+                 aiInsightText.classList.remove('hidden');
+             } catch(e) { closeInsightPopup(); }
+        }
+
         function applyTranslations(lang){
             const langStrings=translations[lang]||translations.en;
             document.documentElement.lang=lang;
@@ -536,9 +548,11 @@
             }
         }
         
-        // Dial Logic
+        // Dial Logic (Updated for Winding + 72h limit + Long Press)
         function initDialInteraction() {
             let lastAngle = null;
+            let longPressTimer = null;
+            let startX = 0, startY = 0;
 
             const getAngle = (e) => {
                 const touch = e.touches ? e.touches[0] : e;
@@ -555,7 +569,14 @@
             };
 
             const handleMove = (e) => {
-                if (!isDraggingDial) return;
+                if (!isDraggingDial) {
+                     // Logic to cancel long press if finger moves too much (scrolling)
+                     const touch = e.touches ? e.touches[0] : e;
+                     if (Math.abs(touch.clientX - startX) > 10 || Math.abs(touch.clientY - startY) > 10) {
+                         clearTimeout(longPressTimer);
+                     }
+                     return;
+                }
                 e.preventDefault();
                 
                 const currentAngle = getAngle(e);
@@ -569,21 +590,17 @@
                 if (delta > 180) delta -= 360;
                 if (delta < -180) delta += 360;
 
-                // Add delta to time (Delta positive = Clockwise = Future = Less duration)
                 const deltaMs = (delta / 360) * 12 * 60 * 60 * 1000;
-                
                 let newStartTime = startTime + deltaMs;
                 const now = Date.now();
                 const maxPast = now - (72 * 60 * 60 * 1000);
                 
-                // Clamping
                 if (newStartTime > now) newStartTime = now;
                 if (newStartTime < maxPast) newStartTime = maxPast;
                 
                 startTime = newStartTime;
                 lastAngle = currentAngle;
 
-                // Visual updates
                 const startObj = new Date(startTime);
                 const hours = startObj.getHours();
                 const minutes = startObj.getMinutes();
@@ -596,14 +613,22 @@
             };
 
             const startDrag = (e) => {
-                if(!running) startTimer();
-                isDraggingDial = true;
-                lastAngle = getAngle(e);
-                dialKnob.classList.add('visible'); 
-                ghostTimeLabel.classList.remove('hidden');
+                const touch = e.touches ? e.touches[0] : e;
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                longPressTimer = setTimeout(() => {
+                    if(!running) startTimer();
+                    isDraggingDial = true;
+                    lastAngle = getAngle(e);
+                    dialKnob.classList.add('visible'); 
+                    ghostTimeLabel.classList.remove('hidden');
+                    if(navigator.vibrate) navigator.vibrate(50); // Haptic Feedback
+                }, 2000); // 2 seconds delay
             };
 
             const stopDrag = () => {
+                clearTimeout(longPressTimer); 
                 if (isDraggingDial) {
                     isDraggingDial = false;
                     lastAngle = null;
