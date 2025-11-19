@@ -51,6 +51,7 @@
             padding-top: env(safe-area-inset-top); 
             padding-bottom: env(safe-area-inset-bottom);
             overscroll-behavior-y: none;
+            user-select: none; /* Prevent text selection while dragging */
         }
         
         /* Smooth Card Styles */
@@ -68,9 +69,10 @@
             display: grid; 
             place-items: center;
             background: conic-gradient(#E2E8F0 0%, #E2E8F0 0);  
-            transition: background 0.3s ease-out;
+            transition: background 0.1s linear; /* Faster for drag response */
             box-shadow: inset 0 4px 10px rgba(0,0,0,0.05);
             position: relative;
+            touch-action: none; /* Critical for dragging on mobile */
         }
         /* The inner white circle */
         .progress-circle::before {
@@ -79,6 +81,8 @@
             background: #FFFFFF; 
             border-radius: 50%;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            position: absolute;
+            z-index: 5;
         }
         /* Outer ring border effect */
         .progress-ring-bg {
@@ -87,6 +91,56 @@
             border-radius: 50%;
             border: 10px solid #F1F5F9;
             z-index: -1;
+        }
+
+        /* Clock Markers */
+        .clock-marker {
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background-color: #CBD5E1;
+            z-index: 4;
+            transform-origin: center 130px; /* half of circle height */
+        }
+        .marker-12 { top: 0; left: 50%; transform: translateX(-50%); }
+        .marker-3 { top: 50%; right: 0; transform: translateY(-50%) rotate(90deg); }
+        .marker-6 { bottom: 0; left: 50%; transform: translateX(-50%); }
+        .marker-9 { top: 50%; left: 0; transform: translateY(-50%) rotate(90deg); }
+        
+        /* Interactive Knob */
+        .dial-knob {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: #0EA5E9;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            top: 0;
+            left: 50%;
+            margin-left: -12px; /* Center horizontally */
+            margin-top: -12px;  /* Center vertically on the line */
+            z-index: 20;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transform-origin: 50% 142px; /* 130px (radius) + 12px (half knob) */
+            transition: transform 0.1s linear; /* Smooth movement */
+        }
+        
+        /* Ghost Time Label */
+        #ghost-time-label {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            z-index: 30;
+            pointer-events: none;
+            white-space: nowrap;
         }
 
         .progress-text { position: absolute; text-align: center; z-index: 10; }
@@ -148,50 +202,28 @@
     <!-- Silent audio element -->
     <audio id="silent-audio" loop preload="auto" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdUaW1lciBvUkdnaHRzLiBjb20AAAAAAAAAAAAAADU2Nzc2NTU0NDEzMjEzMTIAAAAAAID/AAAAAAAAAAAAAABkTEFNRTMuMTAwAIAAAAAAABNpuAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wEAAGRMYXZmNW5zLjEzLjE0MgAAAAAAAAAAAAAA/wOECAAAALEAAAAsAAAAAVAAAAAABAAAAD0AAAAARzAAAAHAAAAEAAABCAAAAGgAAAAAAAAAAAAAAAABOaW5lVGVuAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/88B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH"></audio>
 
-    <!-- ONBOARDING OVERLAY (NEW) -->
+    <!-- ONBOARDING OVERLAY -->
     <div id="onboarding-modal" class="fixed inset-0 z-[80] bg-slate-900 flex flex-col items-center justify-center text-white hidden">
-        <!-- Slides Container -->
         <div id="onboarding-slides" class="w-full max-w-md p-8 text-center flex-1 flex flex-col justify-center items-center">
-            
-            <!-- Slide 1 -->
             <div class="onboarding-slide active" data-index="0">
-                <div class="w-24 h-24 bg-sky-500/20 rounded-full flex items-center justify-center mb-8">
-                    <i data-lucide="timer" class="w-12 h-12 text-sky-400"></i>
-                </div>
+                <div class="w-24 h-24 bg-sky-500/20 rounded-full flex items-center justify-center mb-8"><i data-lucide="timer" class="w-12 h-12 text-sky-400"></i></div>
                 <h2 class="text-3xl font-bold mb-4">Track your Fasts & Phases</h2>
                 <p class="text-slate-400 text-lg leading-relaxed">Monitor real-time progress and understand your body's biological stages as they happen.</p>
             </div>
-
-            <!-- Slide 2 -->
             <div class="onboarding-slide" data-index="1">
-                <div class="w-24 h-24 bg-purple-500/20 rounded-full flex items-center justify-center mb-8">
-                    <i data-lucide="brain-circuit" class="w-12 h-12 text-purple-400"></i>
-                </div>
+                <div class="w-24 h-24 bg-purple-500/20 rounded-full flex items-center justify-center mb-8"><i data-lucide="brain-circuit" class="w-12 h-12 text-purple-400"></i></div>
                 <h2 class="text-3xl font-bold mb-4">Watch your Brain Evolve</h2>
                 <p class="text-slate-400 text-lg leading-relaxed">As you fast, your brain avatar changes color to reflect your metabolic state and mental clarity.</p>
             </div>
-
-            <!-- Slide 3 -->
             <div class="onboarding-slide" data-index="2">
-                <div class="w-24 h-24 bg-amber-500/20 rounded-full flex items-center justify-center mb-8">
-                    <i data-lucide="trophy" class="w-12 h-12 text-amber-400"></i>
-                </div>
+                <div class="w-24 h-24 bg-amber-500/20 rounded-full flex items-center justify-center mb-8"><i data-lucide="trophy" class="w-12 h-12 text-amber-400"></i></div>
                 <h2 class="text-3xl font-bold mb-4">Earn Mind Points & Ranks</h2>
                 <p class="text-slate-400 text-lg leading-relaxed">Gamify your wellness. Level up from Novice to Enlightened by staying consistent.</p>
             </div>
-
         </div>
-        
-        <!-- Controls -->
         <div class="w-full max-w-md p-8 flex justify-between items-center">
             <button id="onboard-skip" class="text-slate-400 text-sm font-medium hover:text-white transition">Skip</button>
-            
-            <div class="flex space-x-2" id="onboard-dots">
-                <div class="dot active"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-            
+            <div class="flex space-x-2" id="onboard-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
             <button id="onboard-next" class="bg-sky-500 hover:bg-sky-600 text-white px-8 py-3 rounded-2xl font-bold transition shadow-lg shadow-sky-500/30">Next</button>
         </div>
     </div>
@@ -218,20 +250,11 @@
             <div class="text-center">
                 <h3 class="text-xl font-bold text-slate-900 mb-1">Fast Complete! 🎉</h3>
                 <p class="text-slate-500 text-sm mb-6">How do you feel right now?</p>
-                
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <button onclick="selectMood('Energetic')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 transition-all hover:scale-105">
-                        <span class="text-2xl mb-1">⚡</span><span class="text-xs font-bold text-emerald-700">Energetic</span>
-                    </button>
-                    <button onclick="selectMood('Focused')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-100 transition-all hover:scale-105">
-                        <span class="text-2xl mb-1">🧘‍♂️</span><span class="text-xs font-bold text-sky-700">Focused</span>
-                    </button>
-                    <button onclick="selectMood('Tired')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all hover:scale-105">
-                        <span class="text-2xl mb-1">🥱</span><span class="text-xs font-bold text-slate-600">Tired</span>
-                    </button>
-                    <button onclick="selectMood('Hungry')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-100 transition-all hover:scale-105">
-                        <span class="text-2xl mb-1">🍔</span><span class="text-xs font-bold text-orange-700">Hungry</span>
-                    </button>
+                    <button onclick="selectMood('Energetic')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 transition-all hover:scale-105"><span class="text-2xl mb-1">⚡</span><span class="text-xs font-bold text-emerald-700">Energetic</span></button>
+                    <button onclick="selectMood('Focused')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-100 transition-all hover:scale-105"><span class="text-2xl mb-1">🧘‍♂️</span><span class="text-xs font-bold text-sky-700">Focused</span></button>
+                    <button onclick="selectMood('Tired')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all hover:scale-105"><span class="text-2xl mb-1">🥱</span><span class="text-xs font-bold text-slate-600">Tired</span></button>
+                    <button onclick="selectMood('Hungry')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-100 transition-all hover:scale-105"><span class="text-2xl mb-1">🍔</span><span class="text-xs font-bold text-orange-700">Hungry</span></button>
                 </div>
                 <p class="text-[10px] text-slate-400">Recording your mood helps AI customize your plan.</p>
             </div>
@@ -389,7 +412,19 @@
                     </div>
                     <div id="timer-display" class="relative flex justify-center items-center mb-10 z-10">
                         <div class="progress-ring-bg"></div>
-                        <div id="progress-circle" class="progress-circle"></div>
+                        <div id="progress-circle" class="progress-circle">
+                            <!-- CLOCK MARKERS -->
+                            <div class="clock-marker marker-12"></div>
+                            <div class="clock-marker marker-3"></div>
+                            <div class="clock-marker marker-6"></div>
+                            <div class="clock-marker marker-9"></div>
+                            <!-- GHOST LABEL -->
+                            <div id="ghost-time-label" class="hidden">Started: 2:30 PM</div>
+                        </div>
+                        
+                        <!-- KNOB -->
+                        <div id="dial-knob" class="dial-knob hidden"></div>
+
                         <div class="progress-text flex flex-col items-center">
                             <div id="phase-name" class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-1">Not Started</div>
                             <div id="chronometer" class="text-5xl font-black text-slate-900 tabular-nums tracking-tight">00:00:00</div>
@@ -495,6 +530,11 @@
         const btnTimer=document.getElementById('btn-timer'), btnChat=document.getElementById('btn-chat'), timerContent=document.getElementById('timer-content'), chatContent=document.getElementById('chat-content'), btnStart=document.getElementById('btn-start'), btnStop=document.getElementById('btn-stop'), progressCircle=document.getElementById('progress-circle'), phaseNameEl=document.getElementById('phase-name'), chronometerEl=document.getElementById('chronometer'), timerMessage=document.getElementById('timer-message'), chatForm=document.getElementById('chat-form'), chatInput=document.getElementById('chat-input'), chatSubmit=document.getElementById('chat-submit'), chatHistoryEl=document.getElementById('chat-history'), chatSpinner=document.getElementById('chat-spinner');
         const loginContainer=document.getElementById('login-container'), authForm=document.getElementById('auth-form'), authEmailEl=document.getElementById('auth-email'), authPasswordEl=document.getElementById('auth-password'), authSubmitBtn=document.getElementById('auth-submit'), authMessageEl=document.getElementById('auth-message'), authToggleLink=document.getElementById('auth-toggle'), forgotPasswordLink=document.getElementById('forgot-password');
         
+        // Dial Elements
+        const dialKnob = document.getElementById('dial-knob');
+        const ghostTimeLabel = document.getElementById('ghost-time-label');
+        let isDraggingDial = false;
+
         // Dropdown & Profile
         const userProfileHeader=document.getElementById('user-profile-header'), profileDropdown=document.getElementById('profile-dropdown'), dropdownUserEmail=document.getElementById('dropdown-user-email'), btnLogoutDropdown=document.getElementById('btn-logout-dropdown');
         const userLevelBadge = document.getElementById('user-level-badge');
@@ -636,8 +676,55 @@
                 phaseNameEl.textContent=currentPhase.keyword;
                 phaseNameEl.style.color=currentPhase.color_hex;
                 if(!goalReached) timerMessage.innerHTML=`<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
-                progressCircle.style.background=`conic-gradient(${currentPhase.color_hex} ${Math.min(elapsedHours/24*100,100)}%, #E2E8F0 0)`;
+                
+                // Rainbow Logic
+                const allPhases = fastingDataSets[currentMode][currentLanguage];
+                const maxHours = currentGoalHours > 0 ? Math.max(currentGoalHours, 24) : 24;
+                
+                let stops = [];
+                for (let phase of allPhases) {
+                    if (phase.fase_inicio_h >= maxHours) break;
+                    const phaseEndH = Math.min(phase.fase_fin_h, maxHours);
+                    const phaseStartPct = (phase.fase_inicio_h / maxHours) * 100;
+                    const phaseEndPct = (phaseEndH / maxHours) * 100;
+                    
+                    if (elapsedHours >= phaseEndH) {
+                        stops.push(`${phase.color_hex} ${phaseStartPct}% ${phaseEndPct}%`);
+                    } else if (elapsedHours > phase.fase_inicio_h) {
+                         const currentPosPct = (elapsedHours / maxHours) * 100;
+                         stops.push(`${phase.color_hex} ${phaseStartPct}% ${currentPosPct}%`);
+                         stops.push(`#E2E8F0 ${currentPosPct}% 100%`);
+                         break;
+                    } else {
+                        if (stops.length === 0 || !stops[stops.length-1].includes('100%')) { stops.push(`#E2E8F0 ${phaseStartPct}% 100%`); }
+                        break;
+                    }
+                }
+                if (stops.length === 0) stops.push(`#E2E8F0 0% 100%`);
+                
+                progressCircle.style.background = `conic-gradient(${stops.join(', ')})`;
                 headerStatusIcon.style.color = currentPhase.color_hex;
+                
+                // KNOB POSITION LOGIC
+                // 12h Clock: 12=0deg, 3=90deg, 6=180deg, 9=270deg
+                if(startTime) {
+                    const startObj = new Date(startTime);
+                    const hours = startObj.getHours() % 12;
+                    const minutes = startObj.getMinutes();
+                    // Degrees: (Hours * 30) + (Minutes * 0.5)
+                    const degrees = (hours * 30) + (minutes * 0.5);
+                    
+                    dialKnob.classList.remove('hidden');
+                    // Knob is positioned relative to center, rotate container or use transform
+                    // Since knob is at top center by CSS, rotate it around center
+                    dialKnob.style.transform = `rotate(${degrees}deg) translate(0, -130px) rotate(-${degrees}deg)`; 
+                    // Note: The second rotate keeps knob upright, but for a dot it doesn't matter.
+                    // Better approach for a simple dot on ring:
+                    // Rotate the knob ELEMENT around the center. 
+                    // Actually, let's rotate the knob itself based on `transform-origin`.
+                    dialKnob.style.transform = `rotate(${degrees}deg)`;
+                }
+
             }else{
                 phaseNameEl.textContent="Not Started";
                 phaseNameEl.style.color="#94A3B8";
@@ -646,9 +733,129 @@
                 timerMessage.innerHTML=translations[currentLanguage].timerMessageNotStarted;
                 progressCircle.style.background=`conic-gradient(#E2E8F0 0%, #E2E8F0 0)`;
                 headerStatusIcon.style.color = "#94A3B8"; 
+                dialKnob.classList.add('hidden');
             }
         }
         
+        // --- DIAL INTERACTION LOGIC ---
+        function initDialInteraction() {
+            const handleMove = (e) => {
+                if (!isDraggingDial) return;
+                e.preventDefault(); // Stop scroll
+                
+                const touch = e.touches ? e.touches[0] : e;
+                const rect = progressCircle.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                // Calculate angle
+                const x = touch.clientX - centerX;
+                const y = touch.clientY - centerY;
+                
+                // Math.atan2 returns -PI to +PI. 0 is East (3pm). We want 0 at North (12pm).
+                // Atan2(y,x). North is (0, -1). 
+                // Standard math: 0 deg is East. 
+                // We adjust: subtract 90 deg (PI/2) to make 0 deg North?
+                
+                let angleRad = Math.atan2(y, x);
+                let angleDeg = angleRad * (180 / Math.PI);
+                
+                // Adjust so 0 is top (12 o'clock)
+                angleDeg += 90;
+                
+                // Normalize to 0-360
+                if (angleDeg < 0) angleDeg += 360;
+                
+                // Update Knob Visual immediately
+                dialKnob.style.transform = `rotate(${angleDeg}deg)`;
+                
+                // Convert Angle to Time
+                // 360 deg = 12 hours = 720 minutes.
+                // deg / 30 = hours. (e.g., 90 deg / 30 = 3 o'clock)
+                const totalMinutes = (angleDeg / 360) * 12 * 60;
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = Math.floor(totalMinutes % 60);
+                
+                // Format for Ghost Label
+                const displayHour = hours === 0 ? 12 : hours; 
+                const displayMin = minutes.toString().padStart(2, '0');
+                // We don't know AM/PM purely from angle. We must infer relative to NOW.
+                
+                // INFERENCE LOGIC:
+                // Construct a "Candidate Date" for today with this H:M
+                const now = new Date();
+                let candidateDate = new Date(now);
+                
+                // Try PM first (most common case for 12h clock adjustment if it's afternoon)
+                // Actually, let's find the closest time in the past 24h that matches this angle on a 12h clock.
+                // There are two possibilities: AM or PM of this visual time.
+                
+                // E.g. Angle says "3:00". It could be 3 AM or 3 PM.
+                // We check both against "Now".
+                
+                let time1 = new Date(now); time1.setHours(hours, minutes, 0, 0); // AMish (0-11)
+                let time2 = new Date(now); time2.setHours(hours + 12, minutes, 0, 0); // PMish (12-23)
+                
+                // If time1 is in future, move to yesterday
+                if (time1 > now) time1.setDate(time1.getDate() - 1);
+                // If time2 is in future, move to yesterday
+                if (time2 > now) time2.setDate(time2.getDate() - 1);
+                
+                // Which one is closer to "Now" but in the past?
+                // Usually the most recent one.
+                // startTime is usually < 24h ago.
+                const diff1 = now - time1;
+                const diff2 = now - time2;
+                
+                let bestTime = (diff1 < diff2) ? time1 : time2;
+                
+                // Update Label
+                const ampm = bestTime.getHours() >= 12 ? 'PM' : 'AM';
+                const h12 = bestTime.getHours() % 12 || 12;
+                ghostTimeLabel.textContent = `Started: ${h12}:${displayMin} ${ampm}`;
+                
+                // Update Global State but don't save yet
+                startTime = bestTime.getTime();
+                // Force instant UI update
+                running = true; // Assume running if dragging
+                updateTimer();
+            };
+
+            const startDrag = (e) => {
+                if(!running) {
+                    // If not running, start it now at "Now" so we have a knob to drag
+                     startTimer();
+                }
+                isDraggingDial = true;
+                ghostTimeLabel.classList.remove('hidden');
+                handleMove(e); // Snap immediately
+            };
+
+            const stopDrag = () => {
+                if (isDraggingDial) {
+                    isDraggingDial = false;
+                    ghostTimeLabel.classList.add('hidden');
+                    // Save the adjustment
+                    localStorage.setItem('fastStartTime', startTime.toString());
+                    updateTimer(); // Final snap
+                }
+            };
+
+            // Listeners on the KNOB and the CIRCLE (easier to hit)
+            dialKnob.addEventListener('mousedown', startDrag);
+            dialKnob.addEventListener('touchstart', startDrag, {passive: false});
+            
+            progressCircle.addEventListener('mousedown', startDrag);
+            progressCircle.addEventListener('touchstart', startDrag, {passive: false});
+
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('touchmove', handleMove, {passive: false});
+            
+            window.addEventListener('mouseup', stopDrag);
+            window.addEventListener('touchend', stopDrag);
+        }
+
+        // --- UPDATE TIMER LOGIC UPDATED ---
         function updateTimer(){
             if(!running){updateTimerVisuals();return;}
             if(!startTime)return;
@@ -1044,8 +1251,9 @@
         window.addEventListener('appinstalled', () => { installContainer.classList.add('hidden'); deferredPrompt = null; });
         if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error('ServiceWorker failed:', err)); }); }
         
-        // Start App Logic
-        checkOnboarding(); // <-- Check if we show onboarding
+        // INIT
+        checkOnboarding();
+        initDialInteraction(); // <-- Initialize the dial logic
         const savedStart=localStorage.getItem('fastStartTime');
         if(savedStart && localStorage.getItem('fastRunning')==='true'){ startTime=parseInt(savedStart,10); running=true; timerInterval=setInterval(updateTimer,1000); updateTimer(); generateWelcomeMessage(); }
         applyTranslations('en');
