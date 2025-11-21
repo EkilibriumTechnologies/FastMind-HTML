@@ -1,1152 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-
-    <!-- ==================================================================
-         META TAGS & PWA
-         ================================================================== -->
-    <title>FastMind – AI Fasting Coach</title>
-    <meta name="title" content="FastMind – AI Fasting Coach">
-    <meta name="description" content="FastMind helps you track your intermittent fasting phases with real-time timers, science-based insights, and an AI assistant that guides your wellness journey.">
-
-    <!-- PWA -->
-    <meta name="theme-color" content="#F8FAFC"/>
-    <link rel="manifest" href="./manifest.json">
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto">
-    <link rel="icon" type="image/x-icon" href="./fastmind_logo.ico">
-
-    <!-- Styles & Scripts -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastMind</title>
+    <link rel="manifest" href="manifest.json">
     <style>
-        /* Custom Font & Safe Areas */
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #F1F5F9;  
-            color: #0F172A;
-            padding-top: env(safe-area-inset-top); 
-            padding-bottom: env(safe-area-inset-bottom);
-            overscroll-behavior-y: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Smooth Card Styles */
-        .glass-card {
-            background: #FFFFFF;
-            border-radius: 2rem;
-            box-shadow: 0 20px 40px -10px rgba(148, 163, 184, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        /* Progress Circle */
-        .progress-circle {
-            width: 280px;
-            height: 280px;
-            border-radius: 50%; 
-            display: grid; 
-            place-items: center;
-            background: conic-gradient(#E2E8F0 0%, #E2E8F0 0);  
-            transition: background 0.05s linear; 
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.05), 0 10px 30px -10px rgba(0,0,0,0.1);
-            position: relative;
-            touch-action: none; 
-            cursor: pointer;
-            -webkit-touch-callout: none;
-        }
-        .progress-circle::before {
-            content: ""; width: 88%; height: 88%; background: #FFFFFF; border-radius: 50%;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); position: absolute; z-index: 5; pointer-events: none; 
-        }
-
-        /* Interactive Knob */
-        .dial-knob {
-            position: absolute;
-            width: 36px; height: 36px;
-            background-color: #0EA5E9;
-            border: 4px solid #fff;
-            border-radius: 50%;
-            top: 0; left: 50%;
-            margin-left: -18px; margin-top: -18px;
-            z-index: 20;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.5);
-            cursor: grab;
-            transform-origin: 50% 158px; /* Radius (140) + Offset (18) */
-            transition: transform 0.05s linear, opacity 0.2s ease, scale 0.2s ease;
-            opacity: 0; pointer-events: none; scale: 0.8;
-        }
-        .dial-knob.visible { opacity: 1; pointer-events: auto; scale: 1; }
-        .dial-knob:active { cursor: grabbing; transform: scale(1.1); }
-        
-        /* Ghost Time Label */
-        #ghost-time-label {
-            position: absolute; top: 22%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(15, 23, 42, 0.95); color: white; padding: 6px 16px;
-            border-radius: 20px; font-size: 0.85rem; font-weight: 700; z-index: 30;
-            pointer-events: none; white-space: nowrap; box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-        }
-
-        /* Centered Info inside Circle */
-        .progress-text { 
-            position: absolute; 
-            text-align: center; 
-            z-index: 10; 
-            pointer-events: none; 
-            width: 100%; 
-            height: 100%;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            padding-bottom: 10px; 
-        }
-        
-        /* Mood Button Pulse */
-        @keyframes subtlePulse { 0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.2); } 70% { box-shadow: 0 0 0 6px rgba(14, 165, 233, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); } }
-        .mood-btn-pulse { animation: subtlePulse 2s infinite; pointer-events: auto !important; cursor: pointer; }
-
-        /* Common Styles */
-        .chat-bubble-bot { background-color: #F1F5F9; color: #334155; padding: 1rem; border-radius: 1.2rem; border-top-left-radius: 0; max-width: 85%; margin-bottom: 0.5rem; }
-        .chat-bubble-user { background-color: #0EA5E9; color: white; padding: 1rem; border-radius: 1.2rem; border-top-right-radius: 0; max-width: 85%; align-self: flex-end; margin-bottom: 0.5rem; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3); }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .calendar-day { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 40px; width: 100%; border-radius: 0.5rem; }
-        .calendar-day.fasted-day { background-color: #E0F2FE; }
-        .calendar-day.fasted-day span { font-weight: 700; color: #0284C7; }
-        .fasted-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #0EA5E9; margin-top: 4px; }
-        .nav-btn { position: relative; }
-        .nav-btn.active { color: #0F172A; }
-        .nav-btn.active::after { content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background-color: #0F172A; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 28px; }
-        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        input:checked + .slider { background-color: #0EA5E9; }
-        input:checked + .slider:before { transform: translateX(22px); }
-        .panel-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .status-avatar { transition: color 0.5s ease, stroke 0.5s ease; }
-        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        .victory-gradient { background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%); }
-        
-        .onboarding-slide { display: none; flex-col: column; align-items: center; justify-content: center; height: 100%; text-align: center; opacity: 0; transition: opacity 0.5s ease; }
-        .onboarding-slide.active { display: flex; opacity: 1; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background-color: rgba(255,255,255,0.3); transition: all 0.3s; }
-        .dot.active { background-color: #0EA5E9; width: 24px; border-radius: 4px; }
+        /* Estilos para probar la funcionalidad Premium */
+        .premium-enabled { background-color: #f0f8ff; } /* Ejemplo visual */
+        .premium-only { display: none; } /* Oculto por defecto */
+        .locked-free { opacity: 0.4; pointer-events: none; }
     </style>
 </head>
-<body class="text-slate-600 min-h-screen flex flex-col pb-20">
+<body>
 
-    <!-- Silent audio -->
-    <audio id="silent-audio" loop preload="auto" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdUaW1lciBvUkdnaHRzLiBjb20AAAAAAAAAAAAAADU2Nzc2NTU0NDEzMjEzMTIAAAAAAID/AAAAAAAAAAAAAABkTEFNRTMuMTAwAIAAAAAAABNpuAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAABkTEFNRTMuMTAwBwAAAAAAAAABNwAAAAEAAAAAw9DNsYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wEAAGRMYXZmNW5zLjEzLjE0MgAAAAAAAAAAAAAA/wOECAAAALEAAAAsAAAAAVAAAAAABAAAAD0AAAAARzAAAAHAAAAEAAABCAAAAGgAAAAAAAAAAAAAAAABOaW5lVGVuAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/88B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/8B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH//+AAMP/AATEAUShAAYD/wDEIACA//3+AB//P/B/gIeEAACAQio//z+BwQAACIAADAgAAsAAGAAAgAAAAgAAIAAwCAAAAEAAAAAAAQH"></audio>
-
-    <!-- ONBOARDING OVERLAY -->
-    <div id="onboarding-modal" class="fixed inset-0 z-[80] bg-slate-900 flex flex-col items-center justify-center text-white hidden">
-        <div id="onboarding-slides" class="w-full max-w-md p-8 text-center flex-1 flex flex-col justify-center items-center">
-            <div class="onboarding-slide active" data-index="0">
-                <div class="w-24 h-24 bg-sky-500/20 rounded-full flex items-center justify-center mb-8"><i data-lucide="timer" class="w-12 h-12 text-sky-400"></i></div>
-                <h2 class="text-3xl font-bold mb-4">Track your Fasts</h2>
-                <p class="text-slate-400 text-lg leading-relaxed">Press and hold the ring for a moment to adjust your start time.</p>
-            </div>
-            <div class="onboarding-slide" data-index="1">
-                <div class="w-24 h-24 bg-purple-500/20 rounded-full flex items-center justify-center mb-8"><i data-lucide="brain-circuit" class="w-12 h-12 text-purple-400"></i></div>
-                <h2 class="text-3xl font-bold mb-4">Watch your Brain Evolve</h2>
-                <p class="text-slate-400 text-lg leading-relaxed">As you fast, your brain avatar changes color to reflect your metabolic state.</p>
-            </div>
-            <div class="onboarding-slide" data-index="2">
-                <div class="w-24 h-24 bg-amber-500/20 rounded-full flex items-center justify-center mb-8"><i data-lucide="trophy" class="w-12 h-12 text-amber-400"></i></div>
-                <h2 class="text-3xl font-bold mb-4">Gamify your Wellness</h2>
-                <p class="text-slate-400 text-lg leading-relaxed">Earn Mind Points & Ranks for consistency.</p>
-            </div>
-        </div>
-        <div class="w-full max-w-md p-8 flex justify-between items-center">
-            <button id="onboard-skip" class="text-slate-400 text-sm font-medium hover:text-white transition">Skip</button>
-            <div class="flex space-x-2" id="onboard-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
-            <button id="onboard-next" class="bg-sky-500 hover:bg-sky-600 text-white px-8 py-3 rounded-2xl font-bold transition shadow-lg shadow-sky-500/30">Next</button>
-        </div>
-    </div>
-
-    <!-- AI INSIGHT POPUP -->
-    <div id="ai-insight-popup" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-xs w-[90%] transform scale-95 transition-transform duration-300 m-4 relative border border-white/50 animate-pop-in">
-            <button onclick="closeInsightPopup()" class="absolute top-3 right-3 text-slate-300 hover:text-slate-500 transition-colors p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <div class="flex flex-col items-center text-center">
-                <div class="w-14 h-14 bg-sky-50 rounded-full flex items-center justify-center text-sky-500 mb-4 shadow-inner ring-4 ring-white"><i data-lucide="sparkles" class="w-7 h-7 animate-pulse"></i></div>
-                <h3 class="text-lg font-extrabold text-slate-800 mb-2 tracking-tight">FastMind Insight</h3>
-                <div id="ai-insight-content" class="min-h-[60px] flex items-center justify-center">
-                    <div id="insight-loading" class="flex space-x-1"><div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0s"></div><div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div><div class="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div></div>
-                    <p id="ai-insight-text" class="text-slate-600 text-sm leading-relaxed hidden font-medium"></p>
-                </div>
-                <button onclick="closeInsightPopup()" class="mt-5 text-xs font-bold text-sky-500 uppercase tracking-widest hover:text-sky-600 transition-colors">Got it</button>
-            </div>
-        </div>
-    </div>
+    <h1>FastMind HTML</h1>
     
-    <!-- MOOD MODAL -->
-    <div id="mood-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-xs w-[90%] transform scale-95 transition-transform duration-300 m-4 relative animate-pop-in">
-            <div class="text-center">
-                <h3 id="mood-modal-title" class="text-xl font-bold text-slate-900 mb-1">Fast Complete! 🎉</h3>
-                <p class="text-slate-500 text-sm mb-6">How do you feel right now?</p>
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <button onclick="selectMood('Energetic')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 transition-all hover:scale-105"><span class="text-2xl mb-1">⚡</span><span class="text-xs font-bold text-emerald-700">Energetic</span></button>
-                    <button onclick="selectMood('Focused')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-100 transition-all hover:scale-105"><span class="text-2xl mb-1">🧘‍♂️</span><span class="text-xs font-bold text-sky-700">Focused</span></button>
-                    <button onclick="selectMood('Tired')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all hover:scale-105"><span class="text-2xl mb-1">🥱</span><span class="text-xs font-bold text-slate-600">Tired</span></button>
-                    <button onclick="selectMood('Hungry')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-100 transition-all hover:scale-105"><span class="text-2xl mb-1">🍔</span><span class="text-xs font-bold text-orange-700">Hungry</span></button>
-                </div>
-            </div>
-        </div>
+    <button onclick="comprarPremium()">Comprar Premium (Mensual)</button>
+    
+    <div class="locked-free">
+        <p>Contenido Gratuito (Se bloquea si no eres premium... lógica inversa en tu script)</p>
+    </div>
+    <div class="premium-only">
+        <p>✨ ¡Contenido Exclusivo Premium! ✨</p>
     </div>
 
-    <!-- VICTORY MODAL -->
-    <div id="victory-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
-        <div class="flex flex-col items-center w-full max-w-sm">
-            <div id="victory-card" class="bg-white rounded-3xl p-8 w-80 text-center shadow-2xl relative overflow-hidden victory-gradient mb-6 mx-auto">
-                <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                <div class="relative z-10 flex flex-col items-center">
-                     <div class="flex items-center space-x-2 text-white/90 mb-6"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 4a5.5 5.5 0 0 0-5.5 5.5v1a5.5 5.5 0 0 0 5.5 5.5" /> <path d="M14.5 4a5.5 5.5 0 0 1 5.5 5.5v1a5.5 5.5 0 0 1-5.5 5.5" /><path d="M12 2v20" stroke-opacity="0.2"/><path d="M13 8L9 14h6l-4 6" stroke="white" fill="none"/></svg><span class="font-bold text-lg tracking-tight">FastMind</span></div>
-                     <h2 class="text-3xl font-black text-white mb-2 tracking-tight">FAST<br>COMPLETE</h2>
-                     <div class="w-16 h-1 bg-white/30 rounded-full mb-6"></div>
-                     <div class="grid grid-cols-2 gap-3 w-full mb-6">
-                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20"><p class="text-white/60 text-[10px] uppercase font-bold">Duration</p><p id="victory-duration" class="text-white font-bold text-xl">16h 20m</p></div>
-                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20"><p class="text-white/60 text-[10px] uppercase font-bold">Points</p><p id="victory-points" class="text-white font-bold text-xl">+160</p></div>
-                     </div>
-                     <div class="flex items-center justify-center space-x-2 text-white/90 text-sm font-medium bg-black/10 px-4 py-2 rounded-full"><span id="victory-rank">Novice</span> <span>•</span> <span id="victory-mood">⚡ Energetic</span></div>
-                </div>
-            </div>
-            <div class="flex flex-col gap-3 w-80 px-4">
-                <button onclick="shareVictory()" class="w-full bg-white hover:bg-slate-50 text-slate-900 font-bold py-4 rounded-2xl shadow-lg transition flex items-center justify-center space-x-2"><i data-lucide="share-2" class="w-5 h-5"></i><span>Share to IG / TikTok</span></button>
-                <button onclick="closeVictoryModal()" class="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 rounded-2xl transition">Close</button>
-            </div>
-        </div>
-    </div>
 
-    <div class="max-w-xl mx-auto w-full p-6 flex-1 overflow-y-auto relative"> 
-        
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-8 pt-2 relative z-20">
-            <button id="user-profile-header" class="flex items-center text-left focus:outline-none hover:opacity-80 transition-opacity">
-                 <div class="relative mr-3">
-                     <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shadow-sm">
-                         <!-- Custom SVG: Meditator/Yogi -->
-                         <svg id="header-status-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 status-avatar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3.5" /><path d="M9 14a6 6 0 0 0-6 6v1h18v-1a6 6 0 0 0-6-6" /><path d="M12 14v3" /><path d="M12 20v.01" /></svg>
-                     </div>
-                     <span id="user-level-badge" class="absolute -bottom-1 -right-1 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm">1</span>
-                 </div>
-                 <div class="flex flex-col items-start">
-                     <div class="flex items-center gap-1">
-                         <span id="user-profile-name" class="text-sm font-bold text-slate-800 max-w-[100px] truncate">Guest</span>
-                         <div id="streak-container" class="hidden items-center bg-orange-50 px-1.5 rounded-full border border-orange-100"><span class="text-orange-500 text-[10px]">🔥</span><span id="streak-count" class="text-[10px] font-bold text-orange-600 ml-0.5">0</span></div>
-                     </div>
-                     <span id="user-rank-display" class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Novice</span>
-                     <div class="w-16 h-1 bg-slate-200 rounded-full mt-1 overflow-hidden"><div id="xp-progress-bar" class="h-full bg-sky-400 w-0 transition-all duration-500"></div></div>
-                 </div>
-            </button>
+    <script>
+        // ======== FASTMIND PREMIUM SYSTEM ======== //
+        // Detectamos si estamos en una app nativa con Capacitor
+        const isNative = typeof Capacitor !== "undefined" && Capacitor.isNativePlatform();
 
-            <div class="flex items-center space-x-2">
-                <div class="bg-sky-50 rounded-lg p-1.5 text-sky-500">
-                    <!-- Custom SVG: Fast Brain -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                         <path d="M9.5 4a5.5 5.5 0 0 0-5.5 5.5v1a5.5 5.5 0 0 0 5.5 5.5" /> 
-                         <path d="M14.5 4a5.5 5.5 0 0 1 5.5 5.5v1a5.5 5.5 0 0 1-5.5 5.5" />
-                         <path d="M12 2v20" stroke-opacity="0.2"/>
-                         <path d="M13 8L9 14h6l-4 6" stroke="#0EA5E9" fill="none"/>
-                    </svg>
-                </div>
-                <span class="font-extrabold text-xl tracking-tight text-slate-900">FastMind</span>
-            </div>
+        console.log("Native App:", isNative);
 
-            <button id="btn-settings" class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-200 bg-white transition-colors"><i data-lucide="settings" class="w-5 h-5"></i></button>
-        </header>
-
-        <!-- Profile Dropdown -->
-        <div id="profile-dropdown" class="absolute top-20 left-6 bg-white rounded-xl shadow-xl border border-slate-100 p-5 w-64 hidden z-50 transform transition-all duration-200 origin-top-left">
-            <div class="flex flex-col items-center">
-                <div class="w-14 h-14 bg-sky-50 rounded-full flex items-center justify-center text-sky-500 mb-3"><i data-lucide="user" class="w-7 h-7"></i></div>
-                <p id="dropdown-user-email" class="text-slate-900 font-bold text-sm mb-1 break-all text-center">guest@fastmind.app</p>
-                <p id="dropdown-rank-info" class="text-slate-400 text-xs mb-4">Novice • 0 MP</p>
-                <button id="btn-logout-dropdown" class="w-full py-2.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 font-semibold rounded-lg transition-colors text-xs flex items-center justify-center gap-2"><i data-lucide="log-out" class="w-3 h-3"></i> Sign Out</button>
-            </div>
-        </div>
-
-        <!-- Settings Panel -->
-        <div id="settings-panel" class="hidden mb-8 glass-card p-6 panel-transition transform origin-top relative z-30">
-            <div class="flex justify-between items-center mb-6"><h2 class="text-lg font-bold text-slate-900" data-key="settingsTitle">Settings</h2><button onclick="toggleSettingsPanel()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button></div>
-            <div class="space-y-6">
-                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" data-key="settingsLanguage">Language</label><div class="flex bg-slate-100 rounded-xl p-1"><input type="radio" name="language" id="lang-en" value="en" class="hidden peer/en" checked><label for="lang-en" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/en:bg-white peer-checked/en:text-slate-900 peer-checked/en:shadow-sm transition-all">English</label><input type="radio" name="language" id="lang-es" value="es" class="hidden peer/es"><label for="lang-es" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/es:bg-white peer-checked/es:text-slate-900 peer-checked/es:shadow-sm transition-all">Español</label></div></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" data-key="settingsMode">Mode</label><div class="flex bg-slate-100 rounded-xl p-1"><input type="radio" name="mode" id="mode-biological" value="biological" class="hidden peer/bio" checked><label for="mode-biological" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/bio:bg-white peer-checked/bio:text-slate-900 peer-checked/bio:shadow-sm transition-all" data-key="settingsBiological">Biological</label><input type="radio" name="mode" id="mode-mind" value="mind" class="hidden peer/mind"><label for="mode-mind" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/mind:bg-white peer-checked/mind:text-slate-900 peer-checked/mind:shadow-sm transition-all" data-key="settingsMind">Mental</label></div></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" data-key="settingsGoal">Fast Goal</label><div class="grid grid-cols-2 gap-3"><div class="relative"><input type="radio" name="goal" id="goal-none" value="0" class="peer hidden" checked><label for="goal-none" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoalNone">None</label></div><div class="relative"><input type="radio" name="goal" id="goal-16" value="16" class="peer hidden"><label for="goal-16" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal16">16:8</label></div><div class="relative"><input type="radio" name="goal" id="goal-18" value="18" class="peer hidden"><label for="goal-18" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal18">18:6</label></div><div class="relative"><input type="radio" name="goal" id="goal-23" value="23" class="peer hidden"><label for="goal-23" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal23">OMAD</label></div></div></div>
-                <div class="flex items-center justify-between py-2"><span id="mute-label" class="text-sm font-medium text-slate-700" data-key="settingsSoundUnmuted">Sound Effects</span><label class="switch"><input type="checkbox" id="mute-toggle"><span class="slider"></span></label></div>
-                <div class="pt-4 mt-4 border-t border-slate-100"><h3 class="text-xs font-bold text-rose-500 uppercase tracking-wider mb-3">Danger Zone</h3><button onclick="deleteAccount()" class="w-full flex items-center justify-center space-x-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-3 px-6 rounded-xl transition duration-200 border border-rose-200"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Delete Account</span></button></div>
-            </div>
-            <div id="install-container" class="hidden mt-6 pt-6 border-t border-slate-100"><button id="btn-install" class="w-full flex items-center justify-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition duration-200"><i data-lucide="download" class="w-4 h-4"></i><span data-key="settingsInstallButton">Install App</span></button></div>
-        </div>
-
-        <!-- Main Content Area -->
-        <main id="app-main" class="relative z-10">
-            <!-- TIMER CARD -->
-            <div id="timer-content" class="mb-8 panel-transition">
-                <div class="glass-card p-8 flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-slate-50 to-transparent opacity-50 pointer-events-none"></div>
-                    <div id="goal-display" class="hidden mb-6 z-10"><div class="inline-flex items-center space-x-2 bg-sky-50 text-sky-600 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide"><span data-key="goalTitle">Goal</span><span>•</span><span id="time-remaining" class="tabular-nums">00:00:00</span></div></div>
-                    
-                    <div id="timer-display" class="relative flex justify-center items-center mb-10 z-10">
-                        <div class="progress-ring-bg"></div>
-                        <div id="progress-circle" class="progress-circle">
-                            <!-- GHOST LABEL -->
-                            <div id="ghost-time-label" class="hidden">Started: 2:30 PM</div>
-                            <!-- KNOB -->
-                            <div id="dial-knob" class="dial-knob opacity-0"></div>
-                        </div>
-                        
-                        <div class="progress-text flex flex-col items-center">
-                            <!-- MOOD ICON (NEW) -->
-                            <button id="mood-indicator" onclick="openMoodCheckin()" class="mb-1 p-2 bg-white/80 rounded-full shadow-sm hover:scale-110 transition-transform mood-btn-pulse">
-                                <span id="mood-icon-display" class="text-lg">😶</span>
-                            </button>
-
-                            <!-- GOAL DISPLAY (INSIDE CIRCLE) -->
-                            <div id="goal-display" class="hidden inline-flex items-center space-x-1 bg-sky-50/80 backdrop-blur-sm text-sky-600 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide mb-1 border border-sky-100/50"><span data-key="goalTitle">Goal</span><span>•</span><span id="time-remaining" class="tabular-nums">00:00:00</span></div>
-
-                            <div id="phase-name" class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-0">Not Started</div>
-                            <div id="chronometer" class="text-5xl font-black text-slate-900 tabular-nums tracking-tighter leading-none mt-2">00:00:00</div>
-                        </div>
-                    </div>
-
-                    <div class="flex w-full gap-4 mb-6 z-10">
-                        <button id="btn-start" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-200 transition transform active:scale-95 flex items-center justify-center space-x-2"><i data-lucide="play-circle" class="w-5 h-5 fill-current"></i><span data-key="btnStart">Start</span></button>
-                        <button id="btn-stop" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-rose-200 transition transform active:scale-95 flex items-center justify-center space-x-2 hidden"><i data-lucide="stop-circle" class="w-5 h-5 fill-current"></i><span data-key="btnStop">Stop</span></button>
-                    </div>
-                    <div id="timer-message" class="w-full bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-500 z-10" data-key="timerMessageNotStarted">Press <strong class="text-emerald-600">Start</strong> to begin your fast.</div>
-                </div>
-            </div>
-
-            <!-- LOGIN CARD -->
-            <div id="login-container" class="mb-8 panel-transition">
-                <div class="glass-card p-8 flex flex-col items-center text-center">
-                    <div class="w-14 h-14 bg-sky-50 rounded-2xl flex items-center justify-center text-sky-500 mb-4"><i data-lucide="lock" class="w-7 h-7"></i></div>
-                    <h2 id="auth-title" class="text-xl font-bold text-slate-900 mb-1" data-key="authTitleLogin">Login</h2>
-                    <p class="text-slate-400 text-sm mb-6" data-key="authSubtitle">Save history & chat with AI.</p>
-                    <form id="auth-form" class="w-full space-y-3">
-                        <div class="relative"><div class="absolute left-4 top-3.5 text-slate-400"><i data-lucide="mail" class="w-5 h-5"></i></div><input type="email" id="auth-email" placeholder="Email" required class="w-full pl-12 pr-4 py-3.5 bg-slate-50 text-slate-900 font-medium rounded-xl border border-slate-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition-all placeholder:text-slate-400"></div>
-                        <div class="relative"><div class="absolute left-4 top-3.5 text-slate-400"><i data-lucide="key" class="w-5 h-5"></i></div><input type="password" id="auth-password" placeholder="Password" required minlength="6" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 text-slate-900 font-medium rounded-xl border border-slate-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition-all placeholder:text-slate-400"></div>
-                        <p id="auth-message" class="text-xs text-center h-4 font-bold text-rose-500"></p>
-                        <button type="submit" id="auth-submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md transition duration-200">Login</button>
-                    </form>
-                    <div class="flex justify-between w-full mt-6 text-sm font-medium"><a href="#" id="auth-toggle" class="text-sky-600 hover:text-sky-700" data-key="authToggleRegister">Register</a><a href="#" id="forgot-password" class="text-slate-400 hover:text-slate-600" data-key="authForgotPassword">Forgot Password?</a></div>
-                </div>
-            </div>
-
-            <!-- CHAT TAB -->
-            <div id="chat-content" class="hidden mb-8 panel-transition">
-                <div class="glass-card flex flex-col h-[70vh] overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 bg-white/50 backdrop-blur-sm flex items-center justify-center sticky top-0 z-10"><span class="font-bold text-slate-800" data-key="chatTitle">FastMind AI</span></div>
-                    <div id="chat-history" class="flex-1 overflow-y-auto p-4 scrollbar-hide bg-white/30"></div>
-                    <div id="chat-spinner" class="hidden text-center p-2 text-sm font-medium text-sky-500 animate-pulse" data-key="chatSpinner">Thinking...</div>
-                    <form id="chat-form" class="p-3 bg-white border-t border-slate-100 flex gap-2"><input type="text" id="chat-input" placeholder="Ask..." class="flex-1 bg-slate-50 border-0 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-sky-100 outline-none"><button type="submit" id="chat-submit" class="bg-sky-500 hover:bg-sky-600 text-white rounded-xl w-12 flex items-center justify-center transition-colors"><i data-lucide="send" class="w-5 h-5"></i></button></form>
-                </div>
-            </div>
-
-            <!-- HISTORY TAB -->
-            <div id="history-content" class="hidden mb-8 panel-transition">
-                <div class="glass-card p-6">
-                    <h2 class="text-lg font-bold text-slate-900 mb-6 text-center" data-key="historyTitle">History</h2>
-                    <div id="calendar-container" class="mb-8">
-                        <div class="flex justify-between items-center mb-4 px-2"><button id="prev-month" class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button><h3 id="month-year" class="font-bold text-slate-800"></h3><button id="next-month" class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></button></div>
-                        <div id="calendar-grid-header" class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider"></div>
-                        <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
-                    </div>
-                    <div class="border-t border-slate-100 pt-6">
-                        <h3 class="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider text-center" data-key="historyCompletedFasts">Recent Fasts</h3>
-                        <div id="history-list" class="h-64 overflow-y-auto space-y-3 pr-1 scrollbar-hide"><p id="history-loading" class="text-slate-400 text-sm text-center mt-10" data-key="historyLoading">Loading...</p><p id="history-empty" class="text-slate-400 text-sm text-center mt-10 hidden" data-key="historyEmpty">No fasts yet.</p></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- JOURNAL CONTENT (NEW) -->
-            <div id="journal-content" class="hidden mb-8 panel-transition">
-               <div class="glass-card p-6 flex flex-col h-[70vh]">
-                   <h2 class="text-lg font-bold text-slate-900 mb-4 text-center" data-key="journalTitle">My Journal</h2>
-                   <div class="mb-4">
-                       <textarea id="journal-input" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-sky-100 outline-none resize-none h-24" placeholder="How are you feeling today?" data-key-target="placeholder" data-key="journalPlaceholder"></textarea>
-                       <button id="journal-submit" class="mt-2 w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 rounded-xl transition-colors text-sm" data-key="journalSave">Save Note</button>
-                   </div>
-                   <div id="journal-list" class="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-hide">
-                        <p id="journal-empty" class="text-slate-400 text-sm text-center mt-10" data-key="journalEmpty">No notes yet.</p>
-                   </div>
-               </div>
-           </div>
-        </main>
-        
-        <footer class="text-center mt-4 text-slate-300 text-xs font-medium"><span class="opacity-50">FastMind v2.0</span></footer>
-    </div>
-
-    <nav id="app-nav" class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 flex justify-around pb-safe pt-2 px-6 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
-        <button id="btn-timer" class="nav-btn flex-1 flex flex-col items-center p-3 text-slate-400 transition-all hover:text-slate-600"><i data-lucide="timer" class="w-6 h-6 mb-1"></i></button>
-        <button id="btn-chat" class="nav-btn flex-1 flex flex-col items-center p-3 text-slate-400 transition-all hover:text-slate-600" disabled><i data-lucide="message-square" class="w-6 h-6 mb-1"></i></button>
-        <button id="btn-journal" class="nav-btn flex-1 flex flex-col items-center p-3 text-slate-400 transition-all hover:text-slate-600" disabled><i data-lucide="book-open" class="w-6 h-6 mb-1"></i></button>
-        <button id="btn-history" class="nav-btn flex-1 flex flex-col items-center p-3 text-slate-400 transition-all hover:text-slate-600" disabled><i data-lucide="calendar" class="w-6 h-6 mb-1"></i></button>
-    </nav>
-
-    <script type="module">
-        lucide.createIcons();
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment, setDoc, addDoc, deleteDoc, collection, query, onSnapshot, serverTimestamp, orderBy, limit, getDocs, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-
-        setLogLevel('Debug');
-        const translations={en:{headerSubtitle:"Your AI Fasting & Wellness Coach",settingsTitle:"Settings",settingsLanguage:"Language",settingsMode:"Fasting Mode",settingsBiological:"Biological",settingsMind:"Mental",settingsGoal:"Fast Goal",settingsGoalNone:"None",settingsGoal16:"16:8",settingsGoal18:"18:6",settingsGoal23:"OMAD",settingsSound:"Sound",settingsSoundUnmuted:"Sound Effects",settingsSoundMuted:"Sound Muted",settingsInstall:"Install App",settingsInstallButton:"Install App",btnStart:"Start",btnStop:"Stop",timerMessageNotStarted:"Press <strong class='text-emerald-600'>Start</strong> to begin your fast.",timerMessageCompleted:"Fast completed! Total: <strong>{finalTime}</strong>. Start again?",timerMessageNotSaved:"<br><span class='text-xs'>Login to save history!</span>",timerMessageSaved:"<br><span class='text-xs text-emerald-600'>Saved to history!</span>",timerMessageOffline:"<br><em>Saved offline. Sync pending.</em>",goalTitle:"{goal} Goal",goalRemaining:"left",goalReachedMsg:"🎉 <strong>Goal Reached!</strong>",authTitleLogin:"Login",authTitleRegister:"Register",authSubtitle:"Save history & chat with AI.",authEmailPlaceholder:"Email",authPasswordPlaceholder:"Password",authSubmitLogin:"Login",authSubmitRegister:"Register",authSubmitProcessing:"Processing...",authToggleRegister:"Register",authToggleLogin:"Login",authForgotPassword:"Forgot Password?",authResetEmailSent:"Reset email sent!",authEnterEmailFirst:"Enter email first.",btnLogout:"Sign Out",chatTitle:"FastMind AI",chatBotName:"FastMind",chatUserName:"You",chatWelcome:"Hi! I'm FastMind. Ask me about fasting.",chatSpinner:"Thinking...",chatInputPlaceholder:"Ask...",chatError:"⚠️ Connection error.",historyTitle:"History",historyCompletedFasts:"Recent Fasts",historyLoading:"Loading...",historyEmpty:"No fasts yet.",historyError:'<span class="text-rose-500">Error loading.</span>',historyDuration:"Duration",historyNoDate:"No date",calendarDays:['S','M','T','W','T','F','S'],calendarMonths:["January","February","March","April","May","June","July","August","September","October","November","December"],navTimer:"Timer",navChat:"Chat",navHistory:"History",navJournal:"Journal",journalTitle:"My Journal",journalPlaceholder:"How are you feeling today?",journalSave:"Save Note",journalEmpty:"No notes yet.",errorInvalidEmail:"Invalid email.",errorInvalidPassword:"Invalid email/pass.",errorEmailInUse:"Email already in use.",errorWeakPassword:"Password too short.",errorUnknown:"Error occurred."},es:{headerSubtitle:"Tu Coach de Ayuno",settingsTitle:"Ajustes",settingsLanguage:"Idioma",settingsMode:"Modo",settingsBiological:"Biológico",settingsMind:"Mental",settingsGoal:"Meta",settingsGoalNone:"Ninguna",settingsGoal16:"16:8",settingsGoal18:"18:6",settingsGoal23:"OMAD",settingsSound:"Sonido",settingsSoundUnmuted:"Efectos de Sonido",settingsSoundMuted:"Silencio",settingsInstall:"Instalar",settingsInstallButton:"Instalar App",btnStart:"Iniciar",btnStop:"Detener",timerMessageNotStarted:"Presiona <strong class='text-emerald-600'>Iniciar</strong> para comenzar.",timerMessageCompleted:"¡Completado! Total: <strong>{finalTime}</strong>.",timerMessageNotSaved:"<br><span class='text-xs'>¡Inicia sesión para guardar!</span>",timerMessageSaved:"<br><span class='text-xs text-emerald-600'>¡Guardado!</span>",timerMessageOffline:"<br><em>Guardado offline.</em>",goalTitle:"Meta {goal}",goalRemaining:"restante",goalReachedMsg:"🎉 <strong>¡Meta Cumplida!</strong>",authTitleLogin:"Entrar",authTitleRegister:"Registro",authSubtitle:"Guarda historial y chatea con IA.",authEmailPlaceholder:"Correo",authPasswordPlaceholder:"Contraseña",authSubmitLogin:"Entrar",authSubmitRegister:"Registrarse",authSubmitProcessing:"Procesando...",authToggleRegister:"Registrarse",authToggleLogin:"Entrar",authForgotPassword:"¿Olvidaste pass?",authResetEmailSent:"¡Correo enviado!",authEnterEmailFirst:"Pon tu correo.",btnLogout:"Salir",chatTitle:"FastMind AI",chatBotName:"FastMind",chatUserName:"Tú",chatWelcome:"¡Hola! Pregúntame sobre el ayuno.",chatSpinner:"Pensando...",chatInputPlaceholder:"Pregunta...",chatError:"⚠️ Error de conexión.",historyTitle:"Historial",historyCompletedFasts:"Ayunos Recientes",historyLoading:"Cargando...",historyEmpty:"Sin ayunos.",historyError:'<span class="text-rose-500">Error al cargar.</span>',historyDuration:"Duración",historyNoDate:"Sin fecha",calendarDays:['D','L','M','M','J','V','S'],calendarMonths:["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],navTimer:"Reloj",navChat:"Chat",navHistory:"Historial",navJournal:"Diario",journalTitle:"Mi Diario",journalPlaceholder:"¿Cómo te sientes hoy?",journalSave:"Guardar Nota",journalEmpty:"Sin notas aún.",errorInvalidEmail:"Correo inválido.",errorInvalidPassword:"Datos inválidos.",errorEmailInUse:"Correo en uso.",errorWeakPassword:"Contraseña corta.",errorUnknown:"Error desconocido."}};
-        const fastingDataSets={biological:{en:[{fase_inicio_h:0,fase_fin_h:4,keyword:"Digest",color_hex:"#FB923C",tip:"Processing meal."},{fase_inicio_h:4,fase_fin_h:12,keyword:"Shift",color_hex:"#FACC15",tip:"Metabolism shifting."},{fase_inicio_h:12,fase_fin_h:18,keyword:"Burn",color_hex:"#A3E635",tip:"Fat burning starts."},{fase_inicio_h:18,fase_fin_h:24,keyword:"Switch",color_hex:"#4ADE80",tip:"Ketosis mode."},{fase_inicio_h:24,fase_fin_h:36,keyword:"Focus",color_hex:"#38BDF8",tip:"Mental sharpness."},{fase_inicio_h:36,fase_fin_h:48,keyword:"Cleanse",color_hex:"#60A5FA",tip:"Cellular cleaning."},{fase_inicio_h:48,fase_fin_h:60,keyword:"Renew",color_hex:"#818CF8",tip:"System renewal."},{fase_inicio_h:60,fase_fin_h:72,keyword:"Reset",color_hex:"#A78BFA",tip:"Deep reboot."},{fase_inicio_h:72,fase_fin_h:96,keyword:"Zen",color_hex:"#94A3B8",tip:"Full control."},{fase_inicio_h:96,fase_fin_h:120,keyword:"Rebirth",color_hex:"#0F172A",tip:"Deep renewal."}],es:[{fase_inicio_h:0,fase_fin_h:4,keyword:"Digestión",color_hex:"#FB923C",tip:"Procesando comida."},{fase_inicio_h:4,fase_fin_h:12,keyword:"Cambio",color_hex:"#FACC15",tip:"Metabolismo cambiando."},{fase_inicio_h:12,fase_fin_h:18,keyword:"Quema",color_hex:"#A3E635",tip:"Quema de grasa."},{fase_inicio_h:18,fase_fin_h:24,keyword:"Cetosis",color_hex:"#4ADE80",tip:"Modo cetosis."},{fase_inicio_h:24,fase_fin_h:36,keyword:"Enfoque",color_hex:"#38BDF8",tip:"Mente aguda."},{fase_inicio_h:36,fase_fin_h:48,keyword:"Limpieza",color_hex:"#60A5FA",tip:"Limpieza celular."},{fase_inicio_h:48,fase_fin_h:60,keyword:"Renovación",color_hex:"#7030A0",tip:"Renovación de mente y cuerpo. Sentido de logro."},{fase_inicio_h:60,fase_fin_h:72,keyword:"Reinicio",color_hex:"#A78BFA",tip:"Reinicio profundo."},{fase_inicio_h:72,fase_fin_h:96,keyword:"Zen",color_hex:"#94A3B8",tip:"Control total."},{fase_inicio_h:96,fase_fin_h:120,keyword:"Renacer",color_hex:"#0F172A",tip:"Renovación total."}]},mind:{en:[{fase_inicio_h:0,fase_fin_h:4,keyword:"Prepare",color_hex:"#FB923C",tip:"Mind preparing."},{fase_inicio_h:4,fase_fin_h:12,keyword:"Discipline",color_hex:"#FACC15",tip:"Test of discipline."},{fase_inicio_h:12,fase_fin_h:18,keyword:"Clarity",color_hex:"#A3E635",tip:"Fog lifting."},{fase_inicio_h:18,fase_fin_h:24,keyword:"Focus",color_hex:"#4ADE80",tip:"Sharp focus."},{fase_inicio_h:24,fase_fin_h:36,keyword:"Resilience",color_hex:"#38BDF8",tip:"Mental strength."},{fase_inicio_h:36,fase_fin_h:48,keyword:"Reflection",color_hex:"#60A5FA",tip:"Deep calm."},{fase_inicio_h:48,fase_fin_h:60,keyword:"Renewal",color_hex:"#818CF8",tip:"Accomplishment."},{fase_inicio_h:60,fase_fin_h:72,keyword:"Insight",color_hex:"#A78BFA",tip:"Deep insights."},{fase_inicio_h:72,fase_fin_h:96,keyword:"Alignment",color_hex:"#94A3B8",tip:"Full alignment."},{fase_inicio_h:96,fase_fin_h:120,keyword:"Perspective",color_hex:"#0F172A",tip:"New perspective."}],es:[{fase_inicio_h:0,fase_fin_h:4,keyword:"Preparar",color_hex:"#FB923C",tip:"Mente lista."},{fase_inicio_h:4,fase_fin_h:12,keyword:"Disciplina",color_hex:"#FACC15",tip:"Prueba mental."},{fase_inicio_h:12,fase_fin_h:18,keyword:"Claridad",color_hex:"#A3E635",tip:"Niebla fuera."},{fase_inicio_h:18,fase_fin_h:24,keyword:"Enfoque",color_hex:"#4ADE80",tip:"Enfoque total."},{fase_inicio_h:24,fase_fin_h:36,keyword:"Resiliencia",color_hex:"#38BDF8",tip:"Fuerza mental."},{fase_inicio_h:36,fase_fin_h:48,keyword:"Reflexión",color_hex:"#60A5FA",tip:"Calma profunda."},{fase_inicio_h:48,fase_fin_h:60,keyword:"Renovación",color_hex:"#818CF8",tip:"Logro total."},{fase_inicio_h:60,fase_fin_h:72,keyword:"Perspicacia",color_hex:"#A78BFA",tip:"Ideas claras."},{fase_inicio_h:72,fase_fin_h:96,keyword:"Alineación",color_hex:"#94A3B8",tip:"Alineación total."},{fase_inicio_h:96,fase_fin_h:120,keyword:"Perspectiva",color_hex:"#0F172A",tip:"Nueva visión."}]}};
-        
-        let startTime=null, running=false, elapsedHours=0, chatHistory=[], currentTab='timer', timerInterval=null;
-        let currentLanguage='en', currentMode='biological', isMuted=false, currentGoalHours=0, goalTargetTime=0, goalReached=false;
-        let auth, db, currentUser, historyUnsubscribe, userUnsubscribe, allUserFasts=[], currentCalendarMonth=new Date().getMonth(), currentCalendarYear=new Date().getFullYear(), isRegisterMode=false;
-        let journalUnsubscribe;
-        
-        // Dial Logic
-        let isDraggingDial = false;
-
-        // DOM Elements (Declared ONCE at top)
-        const btnTimer=document.getElementById('btn-timer'), btnChat=document.getElementById('btn-chat'), btnJournal=document.getElementById('btn-journal'), timerContent=document.getElementById('timer-content'), chatContent=document.getElementById('chat-content'), journalContent=document.getElementById('journal-content'), btnStart=document.getElementById('btn-start'), btnStop=document.getElementById('btn-stop'), progressCircle=document.getElementById('progress-circle'), phaseNameEl=document.getElementById('phase-name'), chronometerEl=document.getElementById('chronometer'), timerMessage=document.getElementById('timer-message'), chatForm=document.getElementById('chat-form'), chatInput=document.getElementById('chat-input'), chatSubmit=document.getElementById('chat-submit'), chatHistoryEl=document.getElementById('chat-history'), chatSpinner=document.getElementById('chat-spinner');
-        const journalInput=document.getElementById('journal-input'), journalSubmit=document.getElementById('journal-submit'), journalList=document.getElementById('journal-list');
-        const loginContainer=document.getElementById('login-container'), authForm=document.getElementById('auth-form'), authEmailEl=document.getElementById('auth-email'), authPasswordEl=document.getElementById('auth-password'), authSubmitBtn=document.getElementById('auth-submit'), authMessageEl=document.getElementById('auth-message'), authToggleLink=document.getElementById('auth-toggle'), forgotPasswordLink=document.getElementById('forgot-password');
-        const userProfileHeader=document.getElementById('user-profile-header'), profileDropdown=document.getElementById('profile-dropdown'), dropdownUserEmail=document.getElementById('dropdown-user-email'), btnLogoutDropdown=document.getElementById('btn-logout-dropdown');
-        const userLevelBadge=document.getElementById('user-level-badge'), userProfileName=document.getElementById('user-profile-name'), userRankDisplay=document.getElementById('user-rank-display'), streakContainer=document.getElementById('streak-container'), streakCount=document.getElementById('streak-count'), xpProgressBar=document.getElementById('xp-progress-bar'), headerStatusIcon=document.getElementById('header-status-icon'), dropdownRankInfo=document.getElementById('dropdown-rank-info');
-        const dialKnob=document.getElementById('dial-knob'), ghostTimeLabel=document.getElementById('ghost-time-label');
-        const aiInsightPopup=document.getElementById('ai-insight-popup'), aiInsightText=document.getElementById('ai-insight-text'), insightLoading=document.getElementById('insight-loading');
-        const moodModal=document.getElementById('mood-modal'), moodModalTitle=document.getElementById('mood-modal-title'), victoryModal=document.getElementById('victory-modal'), victoryDuration=document.getElementById('victory-duration'), victoryPoints=document.getElementById('victory-points'), victoryRank=document.getElementById('victory-rank'), victoryMood=document.getElementById('victory-mood');
-        const onboardingModal=document.getElementById('onboarding-modal'), onboardSlides=document.querySelectorAll('.onboarding-slide'), onboardDots=document.querySelectorAll('.dot'), onboardNext=document.getElementById('onboard-next'), onboardSkip=document.getElementById('onboard-skip');
-        const goalDisplay=document.getElementById('goal-display'), timeRemainingEl=document.getElementById('time-remaining'), btnHistory=document.getElementById('btn-history');
-        const historyContent=document.getElementById('history-content'), historyList=document.getElementById('history-list'), historyLoading=document.getElementById('history-loading'), historyEmpty=document.getElementById('history-empty'), silentAudio=document.getElementById('silent-audio'), btnPrevMonth=document.getElementById('prev-month'), btnNextMonth=document.getElementById('next-month'), monthYearEl=document.getElementById('month-year'), calendarGridHeaderEl=document.getElementById('calendar-grid-header'), calendarGridEl=document.getElementById('calendar-grid');
-        const btnSettings=document.getElementById('btn-settings'), settingsPanel=document.getElementById('settings-panel'), langRadios=document.querySelectorAll('input[name="language"]'), modeRadios=document.querySelectorAll('input[name="mode"]'), goalRadios=document.querySelectorAll('input[name="goal"]'), muteToggle=document.getElementById('mute-toggle'), installContainer=document.getElementById('install-container'), btnInstall=document.getElementById('btn-install');
-        const moodIndicator=document.getElementById('mood-indicator'), moodIconDisplay=document.getElementById('mood-icon-display');
-
-        let pendingFastData = null;
-        let lastPhaseIndex = null;
-        let isMidFastCheckin = false;
-
-        window.toggleSettingsPanel = () => { settingsPanel.classList.toggle('hidden'); };
-        window.closeInsightPopup = () => { aiInsightPopup.classList.add('hidden', 'opacity-0'); };
-        window.closeVictoryModal = () => { victoryModal.classList.add('hidden', 'opacity-0'); };
-        window.closeOnboarding = () => { onboardingModal.classList.add('hidden'); localStorage.setItem('fastMindOnboardingSeen', 'true'); };
-        
-        // Attach the missing function to window so onclick works
-        window.openMoodCheckin = function() {
-             isMidFastCheckin = true;
-             moodModalTitle.textContent = "How are you feeling?";
-             moodModal.classList.remove('hidden');
-             requestAnimationFrame(() => moodModal.classList.remove('opacity-0'));
-        };
-
-        // ONBOARDING LOGIC
-        let currentSlide = 0;
-        function checkOnboarding() { if (!localStorage.getItem('fastMindOnboardingSeen')) onboardingModal.classList.remove('hidden'); }
-        function showSlide(index) { onboardSlides.forEach(slide => slide.classList.remove('active')); onboardDots.forEach(dot => dot.classList.remove('active')); onboardSlides[index].classList.add('active'); onboardDots[index].classList.add('active'); if (index === onboardSlides.length - 1) onboardNext.textContent = "Get Started"; else onboardNext.textContent = "Next"; }
-        onboardNext.addEventListener('click', () => { if (currentSlide < onboardSlides.length - 1) { currentSlide++; showSlide(currentSlide); } else { closeOnboarding(); }});
-        onboardSkip.addEventListener('click', closeOnboarding);
-
-        // Gamification Logic
-        const RANKS = [ { name: "Novice", min: 0, max: 500 }, { name: "Seeker", min: 500, max: 2000 }, { name: "Adept", min: 2000, max: 5000 }, { name: "Sage", min: 5000, max: 10000 }, { name: "Enlightened", min: 10000, max: Infinity } ];
-        function calculateRank(points) { return RANKS.find(r => points >= r.min && points < r.max) || RANKS[RANKS.length - 1]; }
-        function calculateLevel(points) { return Math.floor(points / 100) + 1; }
-        
-        // --- AI INSIGHT LOGIC ---
-        async function generateWelcomeMessage() {
-             aiInsightPopup.classList.remove('hidden');
-             requestAnimationFrame(() => aiInsightPopup.classList.remove('opacity-0'));
-             insightLoading.classList.remove('hidden');
-             aiInsightText.classList.add('hidden');
-             
-             const currentPhase = getPhase(elapsedHours);
-             const storedPoints = parseInt(localStorage.getItem('fastUserPoints') || '0');
-             const storedStreak = parseInt(localStorage.getItem('fastUserStreak') || '0');
-             const currentRank = calculateRank(storedPoints).name;
-             
-             const promptContext = `User Context: Fasting Duration: ${elapsedHours.toFixed(1)} hours. Current Phase: ${currentPhase.keyword}. Rank: ${currentRank}. Streak: ${storedStreak} days. Task: Write a witty, insightful, and very short (max 2 sentences) welcome message. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
-             try {
-                 const message = await askFastMind(promptContext, true);
-                 insightLoading.classList.add('hidden');
-                 aiInsightText.innerHTML = message;
-                 aiInsightText.classList.remove('hidden');
-             } catch(e) { closeInsightPopup(); }
-        }
-        
-        // Sound Function
-        function playPhaseChangeSound() {
-            if (isMuted) return;
-            try {
-                const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-                const now = Tone.now();
-                synth.triggerAttackRelease(["C4", "E4", "G4"], "8n", now);
-                synth.triggerAttackRelease(["E4", "G4", "C5"], "4n", now + 0.2);
-            } catch (e) { console.error("Audio error", e); }
+        // Cargar estado premium guardado
+        function isPremiumUser() {
+            return localStorage.getItem("fastmind_premium") === "true";
         }
 
-        function applyTranslations(lang){
-            const langStrings=translations[lang]||translations.en;
-            document.documentElement.lang=lang;
-            document.querySelectorAll('[data-key]').forEach(el=>{ const key=el.dataset.key; if(langStrings[key]) el.innerHTML=langStrings[key]; });
-            document.querySelectorAll('[data-key-target="placeholder"]').forEach(el=>{ const key=el.dataset.key; if(langStrings[key]) el.placeholder=langStrings[key]; });
-            updateTimerVisuals(); renderCalendar(currentCalendarMonth,currentCalendarYear,allUserFasts); renderChatHistory(); updateGoalDisplay();
-            const muteLabel = document.getElementById('mute-label');
-            if (muteLabel) { muteLabel.dataset.key = isMuted ? 'settingsSoundMuted' : 'settingsSoundUnmuted'; muteLabel.innerHTML = translations[currentLanguage][muteLabel.dataset.key]; }
-        }
-        function setLanguage(lang){if(lang===currentLanguage)return;currentLanguage=lang;if(running)getPhase(elapsedHours);applyTranslations(lang);}
-        function setMode(mode){if(mode===currentMode)return;currentMode=mode;if(running)getPhase(elapsedHours);updateTimerVisuals();updateTimer();}
-        function setGoal(goal){goal=parseInt(goal,10);if(goal===currentGoalHours)return;currentGoalHours=goal;if(running){goalReached=false;if(currentGoalHours>0){goalTargetTime=startTime+(currentGoalHours*3600*1000);goalDisplay.classList.remove('hidden')}else{goalTargetTime=0;goalDisplay.classList.add('hidden')}}updateGoalDisplay();updateTimer();}
-        
-        function updateGoalDisplay(){
-            if(currentGoalHours>0){
-                const goalLabel = document.querySelector(`label[for="goal-${currentGoalHours}"]`);
-                if(goalLabel) {
-                     const goalText=goalLabel.textContent;
-                     const titleKey=translations[currentLanguage].goalTitle;
-                     const titleEl = goalDisplay.querySelector('[data-key="goalTitle"]');
-                     if(titleEl) titleEl.innerHTML=titleKey.replace("{goal}",goalText);
-                     
-                     const remainingEl = goalDisplay.querySelector('[data-key="goalRemaining"]');
-                     if(remainingEl) remainingEl.innerHTML=translations[currentLanguage].goalRemaining;
-                     
-                     // Ensure visibility if set
-                     goalDisplay.classList.remove('hidden');
-                }
-            } else {
-                goalDisplay.classList.add('hidden');
-            }
+        // Activar Premium
+        function activarPremium() {
+            localStorage.setItem("fastmind_premium", "true");
+            console.log("🔥 Premium activado");
+            document.body.classList.add("premium-enabled");
+            actualizarUI(); // Forzar actualización inmediata
         }
 
-        function getPhase(hours){const data=fastingDataSets[currentMode][currentLanguage];const phase=data.find(p=>hours>=p.fase_inicio_h&&hours<p.fase_fin_h);return phase||data[data.length-1];}
-        function formatTime(s){if(s<0)s=0;const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60);return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;}
-        
-        function updateTimerVisuals(){
-            if(running){
-                const currentPhase=getPhase(elapsedHours);
-                chronometerEl.style.color=currentPhase.color_hex;
-                phaseNameEl.textContent=currentPhase.keyword;
-                phaseNameEl.style.color=currentPhase.color_hex;
-                if(!goalReached) timerMessage.innerHTML=`<strong>${currentPhase.keyword}:</strong> ${currentPhase.tip}`;
-                
-                const allPhases = fastingDataSets[currentMode][currentLanguage];
-                let stops = [];
-                const startObj = new Date(startTime);
-                const startAngle = ((startObj.getHours() % 12) + startObj.getMinutes()/60) * 30;
-
-                let currentAngle = 0; 
-                for (let phase of allPhases) {
-                     const phaseDuration = phase.fase_fin_h - phase.fase_inicio_h;
-                     const phaseDeg = phaseDuration * 30; 
-                     if (elapsedHours >= phase.fase_fin_h) {
-                         stops.push(`${phase.color_hex} ${currentAngle}deg ${currentAngle + phaseDeg}deg`);
-                         currentAngle += phaseDeg;
-                     } else if (elapsedHours > phase.fase_inicio_h) {
-                         const partialDuration = elapsedHours - phase.fase_inicio_h;
-                         const partialDeg = partialDuration * 30;
-                         stops.push(`${phase.color_hex} ${currentAngle}deg ${currentAngle + partialDeg}deg`);
-                         stops.push(`#E2E8F0 ${currentAngle + partialDeg}deg 360deg`);
-                         break;
-                     } else {
-                         stops.push(`#E2E8F0 ${currentAngle}deg 360deg`);
-                         break;
-                     }
-                }
-                if(stops.length === 0) stops.push(`#E2E8F0 0deg 360deg`);
-                progressCircle.style.background = `conic-gradient(from ${startAngle}deg, ${stops.join(', ')})`;
-                headerStatusIcon.style.color = currentPhase.color_hex;
-                
-                if(isDraggingDial) { dialKnob.classList.add('visible'); } else { dialKnob.classList.remove('visible'); }
-                dialKnob.style.transform = `rotate(${startAngle}deg)`;
-
-                btnStart.classList.add('hidden');
-                btnStop.classList.remove('hidden');
-            }else{
-                phaseNameEl.textContent="Not Started";
-                phaseNameEl.style.color="#94A3B8";
-                chronometerEl.textContent="00:00:00";
-                chronometerEl.style.color="#0F172A";
-                timerMessage.innerHTML=translations[currentLanguage].timerMessageNotStarted;
-                progressCircle.style.background=`conic-gradient(#E2E8F0 0%, #E2E8F0 0)`;
-                headerStatusIcon.style.color = "#94A3B8"; 
-                dialKnob.classList.remove('visible');
-
-                btnStart.classList.remove('hidden');
-                btnStop.classList.add('hidden');
-            }
+        // Desactivar Premium (para pruebas)
+        function desactivarPremium() {
+            localStorage.setItem("fastmind_premium", "false");
+            console.log("❌ Premium desactivado");
+            document.body.classList.remove("premium-enabled");
+            actualizarUI();
         }
-        
-        // Dial Logic
-        function initDialInteraction() {
-            let lastAngle = null;
-            let longPressTimer = null;
-            let startX = 0, startY = 0;
 
-            const getAngle = (e) => {
-                const touch = e.touches ? e.touches[0] : e;
-                const rect = progressCircle.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                const x = touch.clientX - centerX;
-                const y = touch.clientY - centerY;
-                let angleRad = Math.atan2(y, x);
-                let angleDeg = angleRad * (180 / Math.PI);
-                angleDeg += 90; 
-                if (angleDeg < 0) angleDeg += 360;
-                return angleDeg;
-            };
+        // Mostrar/ocultar funciones premium
+        function actualizarUI() {
+            const premium = isPremiumUser();
+            const premiumElements = document.querySelectorAll(".premium-only");
 
-            const handleMove = (e) => {
-                if (!isDraggingDial) {
-                     const touch = e.touches ? e.touches[0] : e;
-                     if (touch && (Math.abs(touch.clientX - startX) > 10 || Math.abs(touch.clientY - startY) > 10)) {
-                         clearTimeout(longPressTimer);
-                     }
-                     return;
-                }
-                e.preventDefault();
-                
-                const currentAngle = getAngle(e);
-                
-                if (lastAngle === null) {
-                    lastAngle = currentAngle;
+            premiumElements.forEach(el => {
+                el.style.display = premium ? "block" : "none";
+            });
+
+            // Si tienes elementos que se ven en free pero se bloquean (o viceversa)
+            // Ajusta esta lógica según tu diseño real
+            const freeLocked = document.querySelectorAll(".locked-free");
+            freeLocked.forEach(el => {
+                 // Si es premium, se ve bien (1). Si no, se ve opaco (0.4)
+                el.style.opacity = premium ? "1" : "0.4";
+                el.style.pointerEvents = premium ? "auto" : "none";
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            actualizarUI();
+        });
+
+
+        // ======== NATIVO: CONFIGURAR BILLING ======== //
+        if (isNative) {
+            // Esperamos a deviceready que es disparado por el plugin de cordova
+            document.addEventListener("deviceready", () => {
+                console.log("Device Ready: Iniciando sistema de compras…");
+
+                // Verificamos que el plugin se haya cargado
+                if (!window.store) {
+                    console.error("El plugin de compras no está instalado o falló al cargar.");
                     return;
                 }
 
-                let delta = currentAngle - lastAngle;
-                if (delta > 180) delta -= 360;
-                if (delta < -180) delta += 360;
+                store.verbosity = store.DEBUG;
 
-                const deltaMs = (delta / 360) * 12 * 60 * 60 * 1000;
-                let newStartTime = startTime + deltaMs;
-                const now = Date.now();
-                const maxPast = now - (72 * 60 * 60 * 1000);
-                
-                if (newStartTime > now) newStartTime = now;
-                if (newStartTime < maxPast) newStartTime = maxPast;
-                
-                startTime = newStartTime;
-                lastAngle = currentAngle;
-
-                const startObj = new Date(startTime);
-                const hours = startObj.getHours();
-                const minutes = startObj.getMinutes();
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                const h12 = hours % 12 || 12;
-                ghostTimeLabel.textContent = `Start: ${h12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-                
-                running = true;
-                updateTimer();
-            };
-
-            const startDrag = (e) => {
-                const touch = e.touches ? e.touches[0] : e;
-                if(touch) {
-                    startX = touch.clientX;
-                    startY = touch.clientY;
-                }
-                
-                longPressTimer = setTimeout(() => {
-                    if(!running) startTimer();
-                    isDraggingDial = true;
-                    lastAngle = getAngle(e);
-                    dialKnob.classList.add('visible'); 
-                    ghostTimeLabel.classList.remove('hidden');
-                    if(navigator.vibrate) navigator.vibrate(50);
-                }, 500); 
-            };
-
-            const stopDrag = () => {
-                clearTimeout(longPressTimer); 
-                if (isDraggingDial) {
-                    isDraggingDial = false;
-                    lastAngle = null;
-                    ghostTimeLabel.classList.add('hidden');
-                    dialKnob.classList.remove('visible'); 
-                    localStorage.setItem('fastStartTime', startTime.toString());
-                    updateTimer();
-                }
-            };
-            
-            const handleRingStart = (e) => { if(isDraggingDial) return; startDrag(e); }
-
-            dialKnob.addEventListener('mousedown', startDrag);
-            dialKnob.addEventListener('touchstart', startDrag, {passive: false});
-            progressCircle.addEventListener('mousedown', handleRingStart);
-            progressCircle.addEventListener('touchstart', handleRingStart, {passive: false});
-
-            window.addEventListener('mousemove', handleMove);
-            window.addEventListener('touchmove', handleMove, {passive: false});
-            window.addEventListener('mouseup', stopDrag);
-            window.addEventListener('touchend', stopDrag);
-        }
-
-        function updateTimer(){
-            if(!running){updateTimerVisuals();return;}
-            if(!startTime)return;
-            const now=Date.now();
-            const elapsedMs=now-startTime;
-            const elapsedSec=Math.floor(elapsedMs/1000);
-            const timeString=formatTime(elapsedSec);
-            elapsedHours=elapsedMs/(1000*3600);
-            chronometerEl.textContent=timeString;
-            const currentPhase=getPhase(elapsedHours);
-            const allPhases = fastingDataSets[currentMode][currentLanguage];
-            const currentPhaseIndex = allPhases.indexOf(currentPhase);
-
-            // Sound & Mood checkin - BLOCK IF DRAGGING
-            if (!isDraggingDial && lastPhaseIndex !== null && currentPhaseIndex !== lastPhaseIndex) {
-                 playPhaseChangeSound();
-                 if (document.visibilityState === 'visible') {
-                      openMoodCheckin();
-                 }
-            }
-            
-            // Update lastPhaseIndex ONLY if we are not dragging, OR update it silently when dragging stops
-            if (!isDraggingDial) {
-                lastPhaseIndex = currentPhaseIndex;
-            }
-
-            if(currentGoalHours>0 && !goalReached){
-                const rem=goalTargetTime-now;
-                if(rem<=0){timeRemainingEl.textContent=formatTime(0);goalReached=true;timerMessage.innerHTML=translations[currentLanguage].goalReachedMsg;}
-                else{timeRemainingEl.textContent=formatTime(rem/1000);}
-            }
-            updateTimerVisuals();
-        }
-        function startTimer(){
-            if(Tone.context.state!=='running')Tone.start();
-            startTime=Date.now();running=true;elapsedHours=0;timerMessage.dataset.key="";goalReached=false;
-            if(currentGoalHours>0){goalTargetTime=startTime+(currentGoalHours*3600*1000);updateGoalDisplay();goalDisplay.classList.remove('hidden')}else{goalTargetTime=0;goalDisplay.classList.add('hidden')}
-            localStorage.setItem('fastStartTime',startTime.toString());localStorage.setItem('fastRunning','true');localStorage.setItem('fastGoalHours',currentGoalHours.toString());
-            if(timerInterval)clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();silentAudio.play().catch(()=>{});
-            
-            // BUTTON STATE
-            btnStart.classList.add('hidden');
-            btnStop.classList.remove('hidden');
-        }
-        function stopTimer(){
-            if(!running)return;running=false;localStorage.removeItem('fastStartTime');localStorage.removeItem('fastRunning');localStorage.removeItem('fastGoalHours');
-            if(timerInterval)clearInterval(timerInterval);
-            
-            isMidFastCheckin = false; 
-            moodModalTitle.textContent = "Fast Complete! 🎉";
-            
-            pendingFastData={finalTime:chronometerEl.textContent,finalHours:elapsedHours,finalPhase:getPhase(elapsedHours),goalHours:currentGoalHours};
-            moodModal.classList.remove('hidden');requestAnimationFrame(()=>moodModal.classList.remove('opacity-0'));
-            silentAudio.pause();goalDisplay.classList.add('hidden');goalReached=false;goalTargetTime=0;updateTimerVisuals();progressCircle.style.background=`conic-gradient(#E2E8F0 0%, #E2E8F0 0)`;elapsedHours=0;startTime=null;
-            
-            // Force UI Reset
-            btnStart.classList.remove('hidden');
-            btnStop.classList.add('hidden');
-        }
-
-        // Global Mood
-        window.selectMood = async function(mood) {
-            const moodEmoji = mood === 'Energetic' ? '⚡' : mood === 'Focused' ? '🧘‍♂️' : mood === 'Tired' ? '🥱' : '🍔';
-            moodIconDisplay.textContent = moodEmoji; 
-            
-            // Fetch recent journal context
-            let journalContext = "";
-            if (currentUser) {
-                try {
-                    const q = query(collection(db, "users", currentUser.uid, "journal"), orderBy("createdAt", "desc"), limit(3));
-                    const querySnapshot = await getDocs(q);
-                    const notes = [];
-                    querySnapshot.forEach((doc) => {
-                        notes.push(doc.data().text);
-                    });
-                    if (notes.length > 0) {
-                        journalContext = "Recent Journal Notes: " + notes.join("; ") + ". ";
-                    }
-                } catch (e) {
-                    console.log("Error fetching journal for AI context", e);
-                }
-            }
-
-            // AI Advice for Mid-Fast Checkin
-            if (isMidFastCheckin) {
-                 const currentPhase = getPhase(elapsedHours);
-                 const prompt = `User context: Fasting phase "${currentPhase.keyword}" (${elapsedHours.toFixed(1)}h). Current Mood: ${mood}. ${journalContext} Task: Give 1 specific sentence of advice or encouragement based on this context. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
-                 
-                 moodModal.classList.add('opacity-0');
-                 setTimeout(() => moodModal.classList.add('hidden'), 300);
-                 
-                 aiInsightPopup.classList.remove('hidden');
-                 requestAnimationFrame(() => aiInsightPopup.classList.remove('opacity-0'));
-                 insightLoading.classList.remove('hidden');
-                 aiInsightText.classList.add('hidden');
-                 
-                 try {
-                     const advice = await askFastMind(prompt, true);
-                     insightLoading.classList.add('hidden');
-                     aiInsightText.innerHTML = advice;
-                     aiInsightText.classList.remove('hidden');
-                 } catch(e) { closeInsightPopup(); }
-                 
-                 return; 
-            }
-            
-            if(!pendingFastData) return;
-            const { finalTime, finalHours, finalPhase, goalHours } = pendingFastData;
-            let completedMsg = translations[currentLanguage].timerMessageCompleted.replace("{finalTime}", finalTime);
-            timerMessage.dataset.key="timerMessageCompleted";
-            let pointsEarned = Math.floor(finalHours * 10);
-            if(goalHours > 0 && finalHours >= goalHours) pointsEarned += 50;
-            if(currentUser){
-                saveFastToFirestore(finalHours, finalTime, finalPhase, goalHours, mood);
-                completedMsg += translations[currentLanguage].timerMessageSaved;
-            } else { completedMsg += translations[currentLanguage].timerMessageNotSaved; }
-            timerMessage.innerHTML = completedMsg;
-            victoryDuration.textContent = finalTime;
-            victoryPoints.textContent = `+${pointsEarned}`;
-            victoryRank.textContent = document.getElementById('user-rank-display').textContent;
-            const moodText = mood === 'Energetic' ? '⚡ Energetic' : mood === 'Focused' ? '🧘‍♂️ Focused' : mood === 'Tired' ? '🥱 Tired' : '🍔 Hungry';
-            victoryMood.textContent = moodText;
-            moodModal.classList.add('opacity-0');
-            setTimeout(() => { moodModal.classList.add('hidden'); victoryModal.classList.remove('hidden'); requestAnimationFrame(() => victoryModal.classList.remove('opacity-0')); }, 300);
-            pendingFastData = null;
-        }
-        
-        // Victory Share
-        window.shareVictory = async function() {
-            const element = document.getElementById('victory-card');
-            try {
-                const canvas = await html2canvas(element, { scale: 2, backgroundColor: null });
-                canvas.toBlob(async (blob) => {
-                    if (!blob) return;
-                    const file = new File([blob], "fastmind_victory.png", { type: "image/png" });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try { await navigator.share({ files: [file], title: 'My Fasting Victory', text: 'Just finished a fast with FastMind! 🧠⚡' }); } catch (err) { console.error("Share failed:", err); }
-                    } else {
-                        const link = document.createElement('a'); link.download = 'fastmind_victory.png'; link.href = canvas.toDataURL(); link.click();
-                    }
+                // Registrar suscripción mensual
+                // IMPORTANTE: "fastmind_premium_monthly" debe existir en Google Play Console
+                store.register({
+                    id: "fastmind_premium_monthly",
+                    type: store.SUBSCRIPTION
                 });
-            } catch (e) { console.error("Capture failed:", e); alert("Could not generate image. Please screenshot instead."); }
-        };
-        
-        // Delete Account
-        window.deleteAccount = async function() {
-             if(!currentUser) return;
-             const confirmed = confirm("Are you sure? This will permanently delete your account and all history. This cannot be undone.");
-             if(confirmed) {
-                 try { await deleteDoc(doc(db, "users", currentUser.uid)); await deleteUser(currentUser); alert("Account deleted."); window.location.reload(); } catch(e) { alert("Error deleting account. You may need to re-login first."); console.error(e); }
-             }
-        }
 
-        // JOURNAL LOGIC (NEW)
-        async function loadJournalEntries() {
-             if (!currentUser) {
-                 journalList.innerHTML = `<p id="journal-empty" class="text-slate-400 text-sm text-center mt-10" data-key="journalEmpty">${translations[currentLanguage].journalEmpty}</p>`;
-                 return;
-             }
-             
-             const q = query(collection(db, "users", currentUser.uid, "journal"), orderBy("createdAt", "desc"));
-             journalUnsubscribe = onSnapshot(q, snap => {
-                 if (snap.empty) {
-                     journalList.innerHTML = `<p id="journal-empty" class="text-slate-400 text-sm text-center mt-10" data-key="journalEmpty">${translations[currentLanguage].journalEmpty}</p>`;
-                     return;
-                 }
-                 
-                 let html = '';
-                 snap.forEach(doc => {
-                     const data = doc.data();
-                     const date = data.createdAt ? data.createdAt.toDate().toLocaleString() : 'Just now';
-                     html += `
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-2">
-                            <p class="text-xs font-bold text-slate-400 mb-1">${date}</p>
-                            <p class="text-slate-700 text-sm whitespace-pre-wrap">${data.text}</p>
-                        </div>
-                     `;
-                 });
-                 journalList.innerHTML = html;
-             });
-        }
-
-        async function saveJournalEntry() {
-            const text = journalInput.value.trim();
-            if(!text) return;
-            if(!currentUser) { alert("Please login to save notes."); return; }
-            
-            journalSubmit.disabled = true;
-            journalSubmit.textContent = "Saving...";
-            
-            try {
-                await addDoc(collection(db, "users", currentUser.uid, "journal"), {
-                    text: text,
-                    createdAt: serverTimestamp()
+                // Cuando aprueban el pago
+                store.when("fastmind_premium_monthly").approved((order) => {
+                    order.finish();
+                    activarPremium();
+                    alert("¡Gracias por tu compra! Premium Activado.");
                 });
-                journalInput.value = '';
-            } catch(e) {
-                console.error("Error saving note", e);
-                alert("Error saving note.");
-            }
-            
-            journalSubmit.disabled = false;
-            journalSubmit.textContent = translations[currentLanguage].journalSave;
-        }
-        
-        journalSubmit.addEventListener('click', saveJournalEntry);
 
-        function switchTab(tab){
-            if((tab==='chat'||tab==='history'||tab==='journal')&&!currentUser)return;
-            currentTab=tab;
-            chatContent.classList.add('hidden');historyContent.classList.add('hidden');timerContent.classList.add('hidden');loginContainer.classList.add('hidden');journalContent.classList.add('hidden');
-            btnTimer.classList.remove('active');btnChat.classList.remove('active');btnHistory.classList.remove('active');btnJournal.classList.remove('active');
-            
-            if(tab==='timer'){ 
-                btnTimer.classList.add('active'); timerContent.classList.remove('hidden'); 
-                if(!currentUser) loginContainer.classList.remove('hidden'); 
-            }
-            else if(tab==='chat'){
-                chatContent.classList.remove('hidden');btnChat.classList.add('active');renderChatHistory();
-            }
-            else if(tab==='history'){
-                historyContent.classList.remove('hidden');btnHistory.classList.add('active');
-            }
-            else if(tab==='journal'){
-                journalContent.classList.remove('hidden');btnJournal.classList.add('active');loadJournalEntries();
-            }
-        }
-        
-        function renderChatHistory(){
-            const t=translations[currentLanguage];
-            chatHistoryEl.innerHTML=`<div class="chat-bubble-bot"><span class="font-bold text-sky-600 text-xs mb-1 block">${t.chatBotName}</span><p class="text-sm">${t.chatWelcome}</p></div>`;
-            chatHistory.forEach(([q,a])=>{
-                chatHistoryEl.innerHTML+=`<div class="chat-bubble-user"><span class="font-bold text-sky-100 text-xs mb-1 block text-right">${t.chatUserName}</span><p class="text-sm">${q}</p></div>`;
-                chatHistoryEl.innerHTML+=`<div class="chat-bubble-bot"><span class="font-bold text-sky-600 text-xs mb-1 block">${t.chatBotName}</span><div class="text-sm mt-1">${a}</div></div>`;
-            });
-            chatHistoryEl.scrollTop=chatHistoryEl.scrollHeight;
-        }
-        
-        function updateMediaSession(timeString, phase) {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: `Fast in Progress: ${timeString}`,
-                    artist: `Current Phase: ${phase}`,
-                    album: 'FastMind',
-                    artwork: [ { src: 'https://placehold.co/192x192/F8FAFC/0F172A?text=🧠&font=noto', sizes: '192x192', type: 'image/png' } ]
+                store.ready(() => {
+                    console.log("🟢 Billing listo");
                 });
-                navigator.mediaSession.playbackState = "playing";
-            }
-        }
 
-        async function handleChatSubmit(e){
-            e.preventDefault();const q=chatInput.value.trim();if(!q)return;
-            chatInput.value='';chatInput.disabled=true;chatSubmit.disabled=true;chatSpinner.classList.remove('hidden');
-            try{const a=await askFastMind(q);chatHistory.push([q,a]);}catch(err){chatHistory.push([q,translations[currentLanguage].chatError]);}
-            renderChatHistory();chatInput.disabled=false;chatSubmit.disabled=false;chatSpinner.classList.add('hidden');chatInput.focus();
-        }
-
-        async function askFastMind(question, simpleMode = false) {
-            const localKnowledgeBase = `[Fasting Guide Context Placeholder]`; 
-            const systemPrompt = simpleMode 
-               ? "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags)." 
-               : "You are FastMind. Answer in user language. Hybrid RAG: 1. Local KB. 2. Google Search. Do not use markdown formatting (no asterisks or hashtags).";
-            const userQuery = simpleMode ? question : `**Local KnowledgeBase:**\n${localKnowledgeBase}\n---\n**User question:** ${question}`;
-            const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
-            if(!simpleMode) { payload.tools = [{ "google_search": {} }]; }
-            try {
-                const res = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                const data = await res.json();
-                let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't understand.";
-                text = text.replace(/[\*#]/g, '');
-                return text;
-            } catch (e) { return "Error connecting to AI."; }
-        }
-        
-        function renderCalendar(month, year, fasts) {
-            calendarGridEl.innerHTML = '';
-            calendarGridHeaderEl.innerHTML = '';
-            const t = translations[currentLanguage];
-            monthYearEl.textContent = `${t.calendarMonths[month]} ${year}`;
-            t.calendarDays.forEach(d => calendarGridHeaderEl.innerHTML += `<div>${d}</div>`);
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const fastDates = new Set(fasts.map(f => f.completedAt ? f.completedAt.toDate().toDateString() : ''));
-            for(let i=0; i<firstDay; i++) calendarGridEl.innerHTML += `<div></div>`;
-            for(let i=1; i<=daysInMonth; i++){
-                const dateStr = new Date(year, month, i).toDateString();
-                const isFasted = fastDates.has(dateStr);
-                calendarGridEl.innerHTML += `<div class="calendar-day ${isFasted?'fasted-day':''}"><span>${i}</span>${isFasted?'<div class="fasted-dot"></div>':''}</div>`;
-            }
-        }
-
-        // --- FIREBASE LOGIC ---
-        const firebaseConfig = { apiKey: "AIzaSyDFD5Ba2Y-rCDcMTxvubsr41LCYGO9_GyU", authDomain: "fastmind-c6603.firebaseapp.com", projectId: "fastmind-c6603", storageBucket: "fastmind-c6603.firebasestorage.app", messagingSenderId: "406678650879", appId: "1:406678650879:web:08e3838f2349bcda4ff1ca", measurementId: "G-MF1G9QB52L" };
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            enableIndexedDbPersistence(db).catch(()=>{});
-            
-            onAuthStateChanged(auth, user => {
-                if(user){
-                    currentUser=user;
-                    updateUIForLoggedIn(user);
-                    loadFastingHistory();
-                    loadUserStats(user.uid);
-                } else {
-                    currentUser=null;
-                    updateUIForLoggedOut();
-                    if(historyUnsubscribe) historyUnsubscribe();
-                    if(userUnsubscribe) userUnsubscribe();
-                }
-            });
-        } catch(e){ console.error("Firebase Init Error", e); }
-
-        async function handleAuthSubmit(e){
-            e.preventDefault();
-            const email=authEmailEl.value, password=authPasswordEl.value;
-            authMessageEl.textContent='';authSubmitBtn.disabled=true;authSubmitBtn.textContent=translations[currentLanguage].authSubmitProcessing;
-            try {
-                if(isRegisterMode){
-                    const cred = await createUserWithEmailAndPassword(auth, email, password);
-                    await setDoc(doc(db, "users", cred.user.uid), { email: email, mindPoints: 0, currentStreak: 0, lastFastDate: null, createdAt: serverTimestamp() });
-                } else { await signInWithEmailAndPassword(auth, email, password); }
-            } catch(error){
-                authMessageEl.textContent = error.code; authSubmitBtn.disabled=false; authSubmitBtn.textContent = isRegisterMode ? translations[currentLanguage].authSubmitRegister : translations[currentLanguage].authSubmitLogin;
-            }
-        }
-        
-        async function saveFastToFirestore(hours, durStr, phase, goal, mood = null){
-             if(!currentUser) return;
-             const userRef = doc(db, "users", currentUser.uid);
-             const userDocSnap = await getDoc(userRef);
-             let newPoints = Math.floor(hours * 10);
-             if(goal > 0 && hours >= goal) newPoints += 50;
-             let newStreak = 1;
-             let currentStreak = 0;
-             let lastFastDate = null;
-             if(userDocSnap.exists()){
-                 const data = userDocSnap.data();
-                 currentStreak = data.currentStreak || 0;
-                 lastFastDate = data.lastFastDate ? data.lastFastDate.toDate() : null;
-             }
-             if(lastFastDate){
-                 const now = new Date();
-                 const diffTime = Math.abs(now - lastFastDate);
-                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                 if(diffDays <= 2) { newStreak = currentStreak + 1; } else { newStreak = 1; }
-             }
-             await addDoc(collection(db, "users", currentUser.uid, "fasts"), {
-                 completedAt: serverTimestamp(), duration: hours, durationString: durStr, finalPhase: phase.keyword, goalHours: goal, mood: mood
-             });
-             await updateDoc(userRef, {
-                 mindPoints: increment(newPoints),
-                 currentStreak: newStreak,
-                 lastFastDate: serverTimestamp()
-             });
-        }
-        
-        function loadUserStats(uid){
-            const userRef = doc(db, "users", uid);
-            userUnsubscribe = onSnapshot(userRef, (doc) => {
-                if(doc.exists()){
-                    const data = doc.data();
-                    const points = data.mindPoints || 0;
-                    const streak = data.currentStreak || 0;
-                    localStorage.setItem('fastUserPoints', points);
-                    localStorage.setItem('fastUserStreak', streak);
-                    const rank = calculateRank(points);
-                    const level = calculateLevel(points);
-                    userLevelBadge.textContent = level;
-                    userRankDisplay.textContent = rank.name;
-                    if(streak > 0) { streakContainer.classList.remove('hidden'); streakContainer.classList.add('flex'); streakCount.textContent = streak; } else { streakContainer.classList.add('hidden'); }
-                    const nextRank = RANKS[RANKS.indexOf(rank) + 1] || {min: points + 1000}; 
-                    const prevRankMin = rank.min;
-                    const progress = ((points - prevRankMin) / (nextRank.min - prevRankMin)) * 100;
-                    xpProgressBar.style.width = `${Math.min(progress, 100)}%`;
-                    dropdownRankInfo.textContent = `${rank.name} • ${points} MP`;
-                }
+                store.refresh();
             });
         }
-        
-        function loadFastingHistory(){
-             if(!currentUser) return;
-             historyLoading.classList.remove('hidden'); historyEmpty.classList.add('hidden'); historyList.innerHTML='';
-             const q = query(collection(db, "users", currentUser.uid, "fasts"), orderBy("completedAt", "desc"));
-             historyUnsubscribe = onSnapshot(q, snap => {
-                 historyLoading.classList.add('hidden');
-                 const fasts = [];
-                 snap.forEach(d => fasts.push(d.data()));
-                 allUserFasts = fasts;
-                 if(fasts.length===0) historyEmpty.classList.remove('hidden'); else renderHistoryList(fasts);
-                 renderCalendar(currentCalendarMonth, currentCalendarYear, fasts);
-             });
-        }
-        
-        function renderHistoryList(fasts){
-             historyList.innerHTML='';
-             fasts.forEach(f => {
-                 const date = f.completedAt ? f.completedAt.toDate().toLocaleDateString() : 'No date';
-                 const moodEmoji = f.mood === 'Energetic' ? '⚡' : f.mood === 'Focused' ? '🧘‍♂️' : f.mood === 'Tired' ? '🥱' : f.mood === 'Hungry' ? '🍔' : ''; 
-                 historyList.innerHTML += `<div class="bg-slate-50 p-4 rounded-xl mb-2 flex justify-between items-center border border-slate-100"><div><p class="font-bold text-slate-800 text-sm">${date} ${moodEmoji}</p><p class="text-slate-500 text-xs">${f.durationString}</p></div><span class="font-bold text-xs py-1 px-3 rounded-full bg-white text-sky-600 border border-sky-100 shadow-sm">${f.finalPhase}</span></div>`;
-             });
+
+        // ======== BOTÓN PARA COMPRAR PREMIUM ======== //
+        function comprarPremium() {
+            if (!isNative) {
+                alert("Esta compra solo está disponible en la app instalada desde Google Play.");
+                // Para pruebas en web, descomenta esto si quieres simular:
+                // activarPremium(); 
+                return;
+            }
+            
+            if(window.store) {
+                store.order("fastmind_premium_monthly");
+            } else {
+                alert("Error: Tienda no inicializada");
+            }
         }
 
-        function updateUIForLoggedIn(user){
-            loginContainer.classList.add('hidden');
-            dropdownUserEmail.textContent=user.email;
-            document.getElementById('user-profile-name').textContent = user.email.split('@')[0];
-            btnChat.disabled=false; btnHistory.disabled=false; btnJournal.disabled=false;
-            btnChat.classList.remove('text-slate-400'); btnHistory.classList.remove('text-slate-400'); btnJournal.classList.remove('text-slate-400');
-            btnChat.classList.add('text-sky-500'); btnHistory.classList.add('text-sky-500'); btnJournal.classList.add('text-sky-500');
-        }
-        
-        function updateUIForLoggedOut(){
-            if(currentTab === 'timer') loginContainer.classList.remove('hidden');
-            profileDropdown.classList.add('hidden');
-            streakContainer.classList.add('hidden');
-            userLevelBadge.textContent = "1";
-            userRankDisplay.textContent = "Novice";
-            xpProgressBar.style.width = "0%";
-            headerStatusIcon.style.color = "#94A3B8";
-            document.getElementById('user-profile-name').textContent = "Guest";
-            btnChat.disabled=true; btnHistory.disabled=true; btnJournal.disabled=true;
-            btnChat.classList.add('text-slate-400'); btnHistory.classList.add('text-slate-400'); btnJournal.classList.add('text-slate-400');
-            authSubmitBtn.disabled=false;
-            authSubmitBtn.textContent = isRegisterMode ? translations[currentLanguage].authSubmitRegister : translations[currentLanguage].authSubmitLogin;
-        }
-
-        btnStart.addEventListener('click', startTimer); btnStop.addEventListener('click', stopTimer);
-        btnTimer.addEventListener('click',()=>switchTab('timer')); btnChat.addEventListener('click',()=>switchTab('chat')); btnHistory.addEventListener('click',()=>switchTab('history')); btnJournal.addEventListener('click',()=>switchTab('journal'));
-        chatForm.addEventListener('submit', handleChatSubmit); authForm.addEventListener('submit', handleAuthSubmit);
-        userProfileHeader.addEventListener('click', (e) => { e.stopPropagation(); if(currentUser) profileDropdown.classList.toggle('hidden'); });
-        document.addEventListener('click', (e) => { if(!userProfileHeader.contains(e.target) && !profileDropdown.contains(e.target)) profileDropdown.classList.add('hidden'); });
-        btnLogoutDropdown.addEventListener('click', () => { signOut(auth); profileDropdown.classList.add('hidden'); });
-        authToggleLink.addEventListener('click', (e)=> { e.preventDefault(); isRegisterMode=!isRegisterMode; authMessageEl.textContent=''; if(isRegisterMode){ document.getElementById('auth-title').textContent=translations[currentLanguage].authTitleRegister; authSubmitBtn.textContent=translations[currentLanguage].authSubmitRegister; authToggleLink.textContent=translations[currentLanguage].authToggleLogin; } else { document.getElementById('auth-title').textContent=translations[currentLanguage].authTitleLogin; authSubmitBtn.textContent=translations[currentLanguage].authSubmitLogin; authToggleLink.textContent=translations[currentLanguage].authToggleRegister; }});
-        btnSettings.addEventListener('click', ()=>toggleSettingsPanel());
-        langRadios.forEach(r=>r.addEventListener('change', e=>setLanguage(e.target.value)));
-        modeRadios.forEach(r=>r.addEventListener('change', e=>setMode(e.target.value)));
-        goalRadios.forEach(r=>r.addEventListener('change', e=>setGoal(e.target.value)));
-        btnPrevMonth.addEventListener('click', ()=>{ if(currentCalendarMonth===0){currentCalendarMonth=11;currentCalendarYear--;}else{currentCalendarMonth--;} renderCalendar(currentCalendarMonth,currentCalendarYear,allUserFasts); });
-        btnNextMonth.addEventListener('click', ()=>{ if(currentCalendarMonth===11){currentCalendarMonth=0;currentCalendarYear++;}else{currentCalendarMonth++;} renderCalendar(currentCalendarMonth,currentCalendarYear,allUserFasts); });
-        
-        muteToggle.addEventListener('change', () => { isMuted = !muteToggle.checked; }); 
-
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installContainer.classList.remove('hidden'); });
-        btnInstall.addEventListener('click', async () => { if (!deferredPrompt) return; installContainer.classList.add('hidden'); deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; });
-        window.addEventListener('appinstalled', () => { installContainer.classList.add('hidden'); deferredPrompt = null; });
-        if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error('ServiceWorker failed:', err)); }); }
-        
-        // Init
-        initDialInteraction();
-        checkOnboarding();
-        const savedStart=localStorage.getItem('fastStartTime');
-        if(savedStart && localStorage.getItem('fastRunning')==='true'){ startTime=parseInt(savedStart,10); running=true; timerInterval=setInterval(updateTimer,1000); updateTimer(); generateWelcomeMessage(); }
-        applyTranslations('en');
-        
+        // ======== TEST BUTTONS (solo para web) ======== //
+        window.testPremiumOn = activarPremium;
+        window.testPremiumOff = desactivarPremium;
     </script>
 </body>
 </html>
