@@ -1354,6 +1354,62 @@
             setTheme(savedTheme, true);
         }
         
+        // Dark Mode Functions
+        function isNightTime() {
+            const now = new Date();
+            const hour = now.getHours();
+            return hour >= 18 || hour < 6; // 6 PM to 6 AM
+        }
+        
+        function applyDarkMode(shouldBeDark) {
+            if (shouldBeDark) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        
+        function setTheme(theme, forceApply = false) {
+            // Allow forcing theme application even if it matches (useful for initialization)
+            if (!forceApply && theme === currentTheme) return;
+            currentTheme = theme;
+            localStorage.setItem('fastMindTheme', theme);
+            
+            // Clear existing interval
+            if (themeCheckInterval) {
+                clearInterval(themeCheckInterval);
+                themeCheckInterval = null;
+            }
+            
+            if (theme === 'auto') {
+                // Check time and apply accordingly
+                const shouldBeDark = isNightTime();
+                applyDarkMode(shouldBeDark);
+                
+                // Set up interval to check every minute
+                themeCheckInterval = setInterval(() => {
+                    const shouldBeDark = isNightTime();
+                    applyDarkMode(shouldBeDark);
+                }, 60000); // Check every minute
+            } else if (theme === 'dark') {
+                applyDarkMode(true);
+            } else {
+                applyDarkMode(false);
+            }
+            
+            // Update radio buttons - explicitly set checked state for all
+            themeRadios.forEach(radio => {
+                radio.checked = (radio.value === theme);
+            });
+        }
+        
+        function initTheme() {
+            const savedTheme = localStorage.getItem('fastMindTheme') || 'light';
+            // Force apply on initialization to ensure theme is properly set up
+            // This fixes the bug where currentTheme was set before calling setTheme()
+            setTheme(savedTheme, true);
+        }
+        
         function updateGoalDisplay(){
             if(currentGoalHours>0){
                 const goalLabel = document.querySelector(`label[for="goal-${currentGoalHours}"]`);
