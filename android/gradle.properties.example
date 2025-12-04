@@ -22,8 +22,9 @@ org.gradle.jvmargs=-Xmx1536m
 android.useAndroidX=true
 
 # Signing configuration for release builds
-# DO NOT COMMIT CREDENTIALS TO VERSION CONTROL
-# Set these values via environment variables or create a local gradle.properties file
-# Example: KEYSTORE_PASSWORD=your_password_here
-# Example: KEY_ALIAS=your_alias_here
-# Example: KEY_PASSWORD=your_password_here
+# Copy this file to gradle.properties and fill in your credentials
+# DO NOT COMMIT gradle.properties WITH REAL CREDENTIALS
+KEYSTORE_PASSWORD=your_keystore_password_here
+KEY_ALIAS=your_key_alias_here
+KEY_PASSWORD=your_key_password_here
+
