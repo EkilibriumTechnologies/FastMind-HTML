@@ -1,0 +1,7 @@
+{
+	"appId": "com.fastmind.app",
+	"appName": "fastmind",
+	"webDir": "www",
+	"bundledWebRuntime": false,
+	"packageClassList": []
+}
