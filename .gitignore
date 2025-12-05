@@ -1,7 +1,7 @@
 # API Keys and sensitive configuration
 config.js
-# config.prod.js - TEMPORALMENTE se subirá a Git hasta que la función sea pública
-# www/config.prod.js - TEMPORALMENTE se subirá a Git hasta que la función sea pública
+config.prod.js
+www/config.prod.js
 *.key
 *.pem
 *.p12
