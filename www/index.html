@@ -48,39 +48,64 @@
                 return true;
             }
             
+            // En producción (no localhost), siempre intentar cargar desde Firebase Function
+            const isLocalhost = window.location.hostname === 'localhost' || 
+                               window.location.hostname === '127.0.0.1' ||
+                               window.location.hostname === '';
+            
+            if (isLocalhost) {
+                console.log('ℹ️ Localhost: Skipping Firebase Function');
+                return false;
+            }
+            
             try {
+                console.log('🔄 Attempting to load API keys from Firebase Function...');
                 const response = await fetch(FIREBASE_FUNCTION_URL, {
                     method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    signal: AbortSignal.timeout(5000)
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors', // Explicitly enable CORS
+                    credentials: 'omit',
+                    signal: AbortSignal.timeout(10000) // 10 second timeout for production
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success && data.keys) {
-                        if (data.keys.openai) window.OPENAI_API_KEY = data.keys.openai;
-                        if (data.keys.gemini) window.GEMINI_API_KEY = data.keys.gemini;
+                        if (data.keys.openai) {
+                            window.OPENAI_API_KEY = data.keys.openai;
+                        }
+                        if (data.keys.gemini) {
+                            window.GEMINI_API_KEY = data.keys.gemini;
+                        }
                         console.log('✅ API keys loaded from Firebase Function');
                         return true;
+                    } else {
+                        console.warn('⚠️ Firebase Function returned unsuccessful response:', data);
                     }
+                } else {
+                    console.error('❌ Firebase Function returned error:', response.status, response.statusText);
                 }
             } catch (error) {
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    console.log('ℹ️ Localhost: Using config.js (Firebase Function not accessible)');
-                } else {
-                    console.warn('⚠️ Could not load keys from Firebase Function:', error.message);
+                console.error('❌ Error loading keys from Firebase Function:', error.message);
+                if (error.name === 'AbortError') {
+                    console.error('❌ Firebase Function request timed out');
                 }
             }
             return false;
         }
         
-        // Intentar cargar desde Firebase Function después de que la página cargue (solo si no hay keys)
+        // Intentar cargar desde Firebase Function después de que la página cargue
         window.addEventListener('DOMContentLoaded', () => {
-            if (!window.OPENAI_API_KEY && !window.GEMINI_API_KEY) {
-                loadApiKeysFromFunction().catch(() => {
-                    console.log('Using local config files');
-                });
-            }
+            // Wait a bit to ensure page is fully loaded
+            setTimeout(() => {
+                if (!window.OPENAI_API_KEY && !window.GEMINI_API_KEY) {
+                    loadApiKeysFromFunction().catch((err) => {
+                        console.error('Failed to load API keys:', err);
+                    });
+                }
+            }, 500);
         });
     </script>
     <script src="https://cdn.tailwindcss.com"></script>

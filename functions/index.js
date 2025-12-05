@@ -13,7 +13,11 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const cors = require('cors')({ origin: true });
+const cors = require('cors')({ 
+  origin: true, // Allow all origins for now
+  methods: ['GET', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+});
 
 admin.initializeApp();
 
@@ -24,6 +28,13 @@ admin.initializeApp();
  * Security: Can be restricted to authenticated users or specific domains
  */
 exports.getApiKeys = functions.https.onRequest((req, res) => {
+  // Handle OPTIONS preflight request
+  if (req.method === 'OPTIONS') {
+    return cors(req, res, () => {
+      res.status(204).send('');
+    });
+  }
+  
   return cors(req, res, () => {
     // Optional: Add authentication check here
     // const authHeader = req.headers.authorization;
