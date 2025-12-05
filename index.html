@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <!-- ==================================================================
          META TAGS & PWA
@@ -18,6 +21,8 @@
     <link rel="icon" type="image/x-icon" href="./fastmind_logo.ico">
 
     <!-- Styles & Scripts -->
+    <!-- Load API Key configuration (if exists) - config.js should be in .gitignore -->
+    <script src="./config.js" onerror="console.warn('config.js not found. API key must be set via localStorage or window.GEMINI_API_KEY')"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1822,20 +1827,196 @@
                ? "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags)." 
                : "You are FastMind. Answer in user language. Hybrid RAG: 1. Local KB. 2. Google Search. Do not use markdown formatting (no asterisks or hashtags).";
             const userQuery = simpleMode ? question : `**Local KnowledgeBase:**\n${localKnowledgeBase}\n---\n**User question:** ${question}`;
-            const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; 
-            // Restore original model that was working
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
-            if(!simpleMode) { payload.tools = [{ "google_search": {} }]; }
+            
+            // Load API keys
+            const openaiKey = window.OPENAI_API_KEY || localStorage.getItem('OPENAI_API_KEY') || '';
+            const geminiKey = window.GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
+            
+            if (!openaiKey && !geminiKey) {
+                console.error('No API keys found. Please set OPENAI_API_KEY or GEMINI_API_KEY');
+                return translations[currentLanguage]?.chatError || "AI service not configured. Please contact support.";
+            } 
+            
+            // Try providers in order: ChatGPT (OpenAI) first, then Gemini as backup
+            const providers = [];
+            
+            // Add OpenAI providers if key is available
+            if (openaiKey) {
+                providers.push(
+                    {type: 'openai', model: 'gpt-4o-mini', key: openaiKey},
+                    {type: 'openai', model: 'gpt-4o', key: openaiKey},
+                    {type: 'openai', model: 'gpt-3.5-turbo', key: openaiKey}
+                );
+            }
+            
+            // Add Gemini providers if key is available (as backup)
+            if (geminiKey) {
+                providers.push(
+                    {type: 'gemini', model: 'gemini-1.5-flash', version: 'v1', key: geminiKey},
+                    {type: 'gemini', model: 'gemini-1.5-pro', version: 'v1', key: geminiKey}
+                );
+            }
+            
+            if (providers.length === 0) {
+                return translations[currentLanguage]?.chatError || "No AI providers configured. Please set API keys.";
+            }
+            
+            let lastError = null;
+            
             try {
-                const res = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                const data = await res.json();
-                let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't understand.";
-                text = text.replace(/[\*#]/g, '');
-                return text;
-            } catch (e) { 
-                console.error('AI Request Error:', e);
-                return translations[currentLanguage]?.chatError || "Error connecting to AI."; 
+            // Try each provider until one works
+            for (const provider of providers) {
+                let timeoutId = null;
+                try {
+                    let apiUrl, payload, headers;
+                    
+                    if (provider.type === 'openai') {
+                        // OpenAI API
+                        apiUrl = 'https://api.openai.com/v1/chat/completions';
+                        headers = {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${provider.key}`
+                        };
+                        payload = {
+                            model: provider.model,
+                            messages: [
+                                {role: 'system', content: systemPrompt},
+                                {role: 'user', content: userQuery}
+                            ],
+                            temperature: 0.7,
+                            max_tokens: simpleMode ? 150 : 500
+                        };
+                        console.log(`Trying OpenAI: ${provider.model}`);
+                    } else {
+                        // Gemini API
+                        apiUrl = `https://generativelanguage.googleapis.com/${provider.version}/models/${provider.model}:generateContent?key=${provider.key}`;
+                        headers = {'Content-Type': 'application/json'};
+                        payload = {
+                            contents: [{ parts: [{ text: userQuery }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        };
+                        if(!simpleMode) { payload.tools = [{ "google_search": {} }]; }
+                        console.log(`Trying Gemini: ${provider.model} (${provider.version})`);
+                    }
+                    
+                    // Create abort controller for timeout
+                    const controller = new AbortController();
+                    timeoutId = setTimeout(() => controller.abort(), 30000);
+                    
+                    const res = await fetch(apiUrl, { 
+                        method: 'POST', 
+                        headers: headers, 
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                
+                    // Check if response is ok
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        console.error(`❌ ${provider.type} ${provider.model} HTTP Error:`, {
+                            status: res.status,
+                            statusText: res.statusText,
+                            error: errorData
+                        });
+                        
+                        if (timeoutId) clearTimeout(timeoutId);
+                        const error = new Error(`HTTP ${res.status}: ${errorData.error?.message || res.statusText}`);
+                        error.status = res.status;
+                        throw error;
+                    }
+                    
+                    const data = await res.json();
+                    
+                    // Parse response based on provider
+                    let text = null;
+                    
+                    if (provider.type === 'openai') {
+                        // OpenAI response structure
+                        text = data.choices?.[0]?.message?.content;
+                        if (data.error) {
+                            throw new Error(`OpenAI Error: ${data.error.message}`);
+                        }
+                    } else {
+                        // Gemini response structure
+                        if (data.candidates && data.candidates[0]) {
+                            const candidate = data.candidates[0];
+                            if (candidate.content && candidate.content.parts && candidate.content.parts[0]) {
+                                text = candidate.content.parts[0].text;
+                            }
+                        }
+                        if (data.error) {
+                            throw new Error(`Gemini Error: ${data.error.message}`);
+                        }
+                    }
+                    
+                    if (!text) {
+                        throw new Error('No text in response');
+                    }
+                    
+                    // Clean up markdown formatting
+                    text = text.replace(/[\*#]/g, '').trim();
+                    
+                    if (!text || text.length === 0) {
+                        throw new Error('Empty response');
+                    }
+                    
+                    console.log(`✅ Success with ${provider.type}: ${provider.model}`);
+                    return text;
+                    
+                } catch (providerError) {
+                    try { if (timeoutId) clearTimeout(timeoutId); } catch(e) {}
+                    lastError = providerError;
+                    console.warn(`❌ ${provider.type} ${provider.model} failed:`, providerError);
+                    
+                    // Continue to next provider unless this is the last one
+                    if (provider === providers[providers.length - 1]) {
+                        throw providerError;
+                    }
+                    continue;
+                }
+            }
+            
+            throw lastError || new Error('All providers failed');
+            
+        } catch (e) { 
+                console.error('AI Request Error (all models failed):', e);
+                console.error('Error details:', {
+                    name: e.name,
+                    message: e.message,
+                    status: e.status,
+                    stack: e.stack
+                });
+                
+                // More specific error messages based on error type
+                if (e.name === 'AbortError') {
+                    return translations[currentLanguage]?.chatError || "AI request timed out. Please try again.";
+                } 
+                
+                // Check status code first (most reliable)
+                if (e.status === 404) {
+                    return translations[currentLanguage]?.chatError || "⚠️ All AI models unavailable (404). The API endpoints may have changed. Please check Google Cloud Console API status.";
+                } else if (e.status === 403) {
+                    return translations[currentLanguage]?.chatError || "⚠️ AI access denied (403). The API key may be invalid or expired. Please check Google Cloud Console.";
+                } else if (e.status === 429) {
+                    return translations[currentLanguage]?.chatError || "⚠️ AI quota exceeded (429). Please try again later or check your Google Cloud Console quota limits.";
+                }
+                
+                // Then check message content
+                if (e.message) {
+                    if (e.message.includes('404')) {
+                        return translations[currentLanguage]?.chatError || "⚠️ AI service not found (404). Please check Google Cloud Console.";
+                    } else if (e.message.includes('403')) {
+                        return translations[currentLanguage]?.chatError || "⚠️ AI access denied (403). Please check your API key in Google Cloud Console.";
+                    } else if (e.message.includes('429')) {
+                        return translations[currentLanguage]?.chatError || "⚠️ AI quota exceeded (429). Please try again later.";
+                    } else if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+                        return translations[currentLanguage]?.chatError || "⚠️ Connection error. Please check your internet connection and try again.";
+                    }
+                }
+                
+                return translations[currentLanguage]?.chatError || `⚠️ Error connecting to AI: ${e.message || 'Unknown error'}. Please try again.`; 
             }
         }
         
@@ -2042,17 +2223,61 @@
             }
         } 
 
+        // Declare deferredPrompt variable
+        let deferredPrompt = null;
+
+        // Version check to force cache refresh if needed
+        const APP_VERSION = '2.1';
+        const storedVersion = localStorage.getItem('app_version');
+        if (storedVersion !== APP_VERSION) {
+            console.log('App version changed, clearing caches...');
+            localStorage.setItem('app_version', APP_VERSION);
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    registrations.forEach(reg => reg.unregister());
+                });
+            }
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => caches.delete(name));
+                });
+            }
+            // Force reload after a short delay
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
+        }
+
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installContainer.classList.remove('hidden'); });
         btnInstall.addEventListener('click', async () => { if (!deferredPrompt) return; installContainer.classList.add('hidden'); deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; });
         window.addEventListener('appinstalled', () => { installContainer.classList.add('hidden'); deferredPrompt = null; });
         if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { 
-            window.addEventListener('load', () => { 
-                navigator.serviceWorker.register('./sw.js?v=6').then(() => {
-                    // Force update check
-                    navigator.serviceWorker.getRegistration().then(reg => {
-                        if (reg) reg.update();
-                    });
-                }).catch(err => console.error('ServiceWorker failed:', err)); 
+            window.addEventListener('load', async () => {
+                try {
+                    // Unregister all old service workers first to force fresh install
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        console.log('Unregistered old Service Worker');
+                    }
+                    
+                    // Clear all caches
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        await Promise.all(cacheNames.map(name => caches.delete(name)));
+                        console.log('Cleared all caches');
+                    }
+                    
+                    // Small delay to ensure cleanup completes
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Register new service worker with cache-busting timestamp
+                    const registration = await navigator.serviceWorker.register('./sw.js?v=8&t=' + Date.now());
+                    console.log('Service Worker registered successfully:', registration.scope);
+                    
+                } catch (err) {
+                    console.error('ServiceWorker registration failed:', err);
+                }
             }); 
         }
         

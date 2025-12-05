@@ -946,22 +946,195 @@
         }
 
         async function askFastMind(question, simpleMode = false) {
+            // PREMIUM FEATURE SYSTEM - Gate AI chat
+            if (!premiumManager.isPremium()) {
+                premiumManager.showUpgradeModal();
+                return translations[currentLanguage]?.chatError || "This feature requires Premium.";
+            }
+            
             const localKnowledgeBase = `[Fasting Guide Context Placeholder]`; 
             const systemPrompt = simpleMode 
                ? "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags)." 
                : "You are FastMind. Answer in user language. Hybrid RAG: 1. Local KB. 2. Google Search. Do not use markdown formatting (no asterisks or hashtags).";
             const userQuery = simpleMode ? question : `**Local KnowledgeBase:**\n${localKnowledgeBase}\n---\n**User question:** ${question}`;
-            const apiKey = "AIzaSyAGWbP_rv989PNREnA5Dh1dUEh2cyhHJZ8"; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
-            if(!simpleMode) { payload.tools = [{ "google_search": {} }]; }
+            // Load API keys
+            const openaiKey = window.OPENAI_API_KEY || localStorage.getItem('OPENAI_API_KEY') || '';
+            const geminiKey = window.GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
+            
+            if (!openaiKey && !geminiKey) {
+                console.error('No API keys found. Please set OPENAI_API_KEY or GEMINI_API_KEY');
+                return translations[currentLanguage]?.chatError || "AI service not configured. Please contact support.";
+            }
+            
+            // Try providers in order: ChatGPT (OpenAI) first, then Gemini as backup
+            const providers = [];
+            
+            // Add OpenAI providers if key is available
+            if (openaiKey) {
+                providers.push(
+                    {type: 'openai', model: 'gpt-4o-mini', key: openaiKey},
+                    {type: 'openai', model: 'gpt-4o', key: openaiKey},
+                    {type: 'openai', model: 'gpt-3.5-turbo', key: openaiKey}
+                );
+            }
+            
+            // Add Gemini providers if key is available (as backup)
+            if (geminiKey) {
+                providers.push(
+                    {type: 'gemini', model: 'gemini-1.5-flash', version: 'v1', key: geminiKey},
+                    {type: 'gemini', model: 'gemini-1.5-pro', version: 'v1', key: geminiKey}
+                );
+            }
+            
+            if (providers.length === 0) {
+                return translations[currentLanguage]?.chatError || "No AI providers configured. Please set API keys.";
+            }
+            
+            let lastError = null;
+            
             try {
-                const res = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                const data = await res.json();
-                let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't understand.";
-                text = text.replace(/[\*#]/g, '');
-                return text;
-            } catch (e) { return "Error connecting to AI."; }
+            // Try each provider until one works
+            for (const provider of providers) {
+                let timeoutId = null;
+                try {
+                    let apiUrl, payload, headers;
+                    
+                    if (provider.type === 'openai') {
+                        // OpenAI API
+                        apiUrl = 'https://api.openai.com/v1/chat/completions';
+                        headers = {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${provider.key}`
+                        };
+                        payload = {
+                            model: provider.model,
+                            messages: [
+                                {role: 'system', content: systemPrompt},
+                                {role: 'user', content: userQuery}
+                            ],
+                            temperature: 0.7,
+                            max_tokens: simpleMode ? 150 : 500
+                        };
+                        console.log(`Trying OpenAI: ${provider.model}`);
+                    } else {
+                        // Gemini API
+                        apiUrl = `https://generativelanguage.googleapis.com/${provider.version}/models/${provider.model}:generateContent?key=${provider.key}`;
+                        headers = {'Content-Type': 'application/json'};
+                        payload = {
+                            contents: [{ parts: [{ text: userQuery }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        };
+                        if(!simpleMode) { payload.tools = [{ "google_search": {} }]; }
+                        console.log(`Trying Gemini: ${provider.model} (${provider.version})`);
+                    }
+                    
+                    // Create abort controller for timeout
+                    const controller = new AbortController();
+                    timeoutId = setTimeout(() => controller.abort(), 30000);
+                    
+                    const res = await fetch(apiUrl, { 
+                        method: 'POST', 
+                        headers: headers, 
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                
+                    // Check if response is ok
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        console.error(`❌ ${provider.type} ${provider.model} HTTP Error:`, {
+                            status: res.status,
+                            statusText: res.statusText,
+                            error: errorData
+                        });
+                        
+                        if (timeoutId) clearTimeout(timeoutId);
+                        const error = new Error(`HTTP ${res.status}: ${errorData.error?.message || res.statusText}`);
+                        error.status = res.status;
+                        throw error;
+                    }
+                    
+                    const data = await res.json();
+                    
+                    // Parse response based on provider
+                    let text = null;
+                    
+                    if (provider.type === 'openai') {
+                        // OpenAI response structure
+                        text = data.choices?.[0]?.message?.content;
+                        if (data.error) {
+                            throw new Error(`OpenAI Error: ${data.error.message}`);
+                        }
+                    } else {
+                        // Gemini response structure
+                        if (data.candidates && data.candidates[0]) {
+                            const candidate = data.candidates[0];
+                            if (candidate.content && candidate.content.parts && candidate.content.parts[0]) {
+                                text = candidate.content.parts[0].text;
+                            }
+                        }
+                        if (data.error) {
+                            throw new Error(`Gemini Error: ${data.error.message}`);
+                        }
+                    }
+                    
+                    if (!text) {
+                        throw new Error('No text in response');
+                    }
+                    
+                    // Clean up markdown formatting
+                    text = text.replace(/[\*#]/g, '').trim();
+                    
+                    if (!text || text.length === 0) {
+                        throw new Error('Empty response');
+                    }
+                    
+                    console.log(`✅ Success with ${provider.type}: ${provider.model}`);
+                    return text;
+                    
+                } catch (providerError) {
+                    try { if (timeoutId) clearTimeout(timeoutId); } catch(e) {}
+                    lastError = providerError;
+                    console.warn(`❌ ${provider.type} ${provider.model} failed:`, providerError);
+                    
+                    // Continue to next provider unless this is the last one
+                    if (provider === providers[providers.length - 1]) {
+                        throw providerError;
+                    }
+                    continue;
+                }
+            }
+            
+            throw lastError || new Error('All providers failed');
+            
+        } catch (e) { 
+                console.error('AI Request Error (all providers failed):', e);
+                
+                // More specific error messages based on error type
+                if (e.name === 'AbortError') {
+                    return translations[currentLanguage]?.chatError || "AI request timed out. Please try again.";
+                } 
+                
+                // Check status code first (most reliable)
+                if (e.status === 404) {
+                    return translations[currentLanguage]?.chatError || "⚠️ All AI models unavailable (404). Please check API status.";
+                } else if (e.status === 403) {
+                    return translations[currentLanguage]?.chatError || "⚠️ AI access denied (403). The API key may be invalid or expired.";
+                } else if (e.status === 429) {
+                    return translations[currentLanguage]?.chatError || "⚠️ AI quota exceeded (429). Please try again later.";
+                }
+                
+                // Then check message content
+                if (e.message) {
+                    if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+                        return translations[currentLanguage]?.chatError || "⚠️ Connection error. Please check your internet connection and try again.";
+                    }
+                }
+                
+                return translations[currentLanguage]?.chatError || `⚠️ Error connecting to AI: ${e.message || 'Unknown error'}. Please try again.`; 
+            }
         }
         
         function renderCalendar(month, year, fasts) {
@@ -1135,10 +1308,13 @@
         
         muteToggle.addEventListener('change', () => { isMuted = !muteToggle.checked; }); 
 
+        // Declare deferredPrompt variable
+        let deferredPrompt = null;
+
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installContainer.classList.remove('hidden'); });
         btnInstall.addEventListener('click', async () => { if (!deferredPrompt) return; installContainer.classList.add('hidden'); deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; });
         window.addEventListener('appinstalled', () => { installContainer.classList.add('hidden'); deferredPrompt = null; });
-        if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error('ServiceWorker failed:', err)); }); }
+        if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { window.addEventListener('load', async () => { try { const registrations = await navigator.serviceWorker.getRegistrations(); for (let reg of registrations) await reg.unregister(); if ('caches' in window) { const names = await caches.keys(); await Promise.all(names.map(n => caches.delete(n))); } await navigator.serviceWorker.register('./sw.js?v=8&t=' + Date.now()); } catch(err) { console.error('ServiceWorker failed:', err); } }); }
         
         // Init
         initDialInteraction();
