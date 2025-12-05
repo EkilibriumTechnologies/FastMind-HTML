@@ -57,3 +57,4 @@ Los siguientes archivos están en `.gitignore` y NO se subirán a Git:
 2. Usa `git filter-branch` o `git-filter-repo` para remover del historial
 3. Considera usar GitHub Secret Scanning para detectar keys expuestas
 
+
