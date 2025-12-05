@@ -28,11 +28,13 @@ admin.initializeApp();
  * Security: Can be restricted to authenticated users or specific domains
  */
 exports.getApiKeys = functions.https.onRequest((req, res) => {
-  // Handle OPTIONS preflight request
+  // Handle OPTIONS preflight request FIRST, before CORS wrapper
   if (req.method === 'OPTIONS') {
-    return cors(req, res, () => {
-      res.status(204).send('');
-    });
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Access-Control-Max-Age', '3600');
+    return res.status(204).send('');
   }
   
   return cors(req, res, () => {
