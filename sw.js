@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fastmind-v8';
+const CACHE_NAME = 'fastmind-v9';
 const ASSETS = [
   './manifest.json'
   // NOTE: NOT caching index.html - always fetch fresh from network
@@ -68,22 +68,38 @@ self.addEventListener('fetch', event => {
   }
   
   // Stale-while-revalidate for other assets (CSS, JS, images, etc.)
+  // IMPORTANT: Don't cache POST requests, chrome-extension, or non-GET methods
+  if (event.request.method !== 'GET' || 
+      event.request.url.startsWith('chrome-extension://') ||
+      event.request.url.startsWith('chrome://')) {
+    // Let these requests pass through without Service Worker interference
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
         const fetchPromise = fetch(event.request)
           .then(networkResponse => {
-              // Clone the response BEFORE using it to cache
-              const responseClone = networkResponse.clone();
-              
-              // Don't cache HTML files or Firebase requests
-              if (!networkResponse.url.includes('index.html') && 
+              // Only cache GET requests with successful responses
+              if (networkResponse.ok && 
+                  networkResponse.status === 200 &&
+                  !networkResponse.url.includes('index.html') && 
                   !networkResponse.url.includes('firebase') &&
                   !networkResponse.url.includes('googleapis.com') &&
-                  !networkResponse.url.includes('gstatic.com')) {
+                  !networkResponse.url.includes('gstatic.com') &&
+                  !networkResponse.url.startsWith('chrome-extension://') &&
+                  !networkResponse.url.startsWith('chrome://')) {
+                // Clone the response BEFORE using it to cache
+                const responseClone = networkResponse.clone();
                 // Use the clone for caching, original for returning
                 caches.open(CACHE_NAME).then(cache => {
                   cache.put(event.request, responseClone).catch(err => {
-                    console.error('SW: Cache put error:', err);
+                    // Silently ignore cache errors for unsupported request types
+                    if (!err.message.includes('chrome-extension') && 
+                        !err.message.includes('POST')) {
+                      console.error('SW: Cache put error:', err);
+                    }
                   });
                 });
               }

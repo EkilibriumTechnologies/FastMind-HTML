@@ -19,17 +19,40 @@
 
     <!-- Styles & Scripts -->
     <!-- Load API Key configuration -->
-    <!-- Priority: 1. Firebase Function (producción segura), 2. config.js (local dev), 3. config.prod.js (fallback), 4. localStorage -->
+    <!-- Priority: 1. config.js (local dev - carga primero), 2. Firebase Function (producción), 3. config.prod.js (fallback), 4. localStorage -->
+    <script src="./config.js" onerror="console.log('Local config.js not found, will try Firebase Function...')"></script>
     <script>
-        // Firebase Function URL - Se actualizará después del deploy
+        // Prevenir que config.prod.js sobrescriba config.js si ya hay keys
+        const originalOpenAI = window.OPENAI_API_KEY;
+        const originalGemini = window.GEMINI_API_KEY;
+    </script>
+    <script src="./config.prod.js" onerror="console.log('config.prod.js not found (normal for local dev)')"></script>
+    <script>
+        // Restaurar keys de config.js si config.prod.js las sobrescribió con placeholders
+        if (originalOpenAI && (!window.OPENAI_API_KEY || window.OPENAI_API_KEY.includes('YOUR_'))) {
+            window.OPENAI_API_KEY = originalOpenAI;
+        }
+        if (originalGemini && (!window.GEMINI_API_KEY || window.GEMINI_API_KEY.includes('YOUR_'))) {
+            window.GEMINI_API_KEY = originalGemini;
+        }
+    </script>
+    <script>
+        // Firebase Function URL
         const FIREBASE_FUNCTION_URL = 'https://us-central1-fastmind-c6603.cloudfunctions.net/getApiKeys';
         
-        // Función para cargar API keys desde Firebase Function
+        // Función para cargar API keys desde Firebase Function (solo si no están ya cargadas)
         async function loadApiKeysFromFunction() {
+            // Si ya tenemos keys de config.js, no intentar cargar desde Firebase
+            if (window.OPENAI_API_KEY || window.GEMINI_API_KEY) {
+                console.log('✅ API keys already loaded from config.js');
+                return true;
+            }
+            
             try {
                 const response = await fetch(FIREBASE_FUNCTION_URL, {
                     method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: AbortSignal.timeout(5000)
                 });
                 
                 if (response.ok) {
@@ -42,17 +65,24 @@
                     }
                 }
             } catch (error) {
-                console.warn('⚠️ Could not load keys from Firebase Function:', error.message);
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('ℹ️ Localhost: Using config.js (Firebase Function not accessible)');
+                } else {
+                    console.warn('⚠️ Could not load keys from Firebase Function:', error.message);
+                }
             }
             return false;
         }
         
-        loadApiKeysFromFunction().catch(() => {
-            console.log('Firebase Function not available, will use config files');
+        // Intentar cargar desde Firebase Function después de que la página cargue (solo si no hay keys)
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!window.OPENAI_API_KEY && !window.GEMINI_API_KEY) {
+                loadApiKeysFromFunction().catch(() => {
+                    console.log('Using local config files');
+                });
+            }
         });
     </script>
-    <script src="./config.js" onerror="console.log('Local config.js not found, trying production config...')"></script>
-    <script src="./config.prod.js" onerror="console.warn('Production config.prod.js not found. API keys must be set via localStorage or window variables')"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -993,14 +1023,20 @@
                : "You are FastMind. Answer in user language. Hybrid RAG: 1. Local KB. 2. Google Search. Do not use markdown formatting (no asterisks or hashtags).";
             const userQuery = simpleMode ? question : `**Local KnowledgeBase:**\n${localKnowledgeBase}\n---\n**User question:** ${question}`;
             // Load API keys
-            // Priority: 1. Firebase Function (already set in window), 2. window variables (config.js), 3. localStorage
+            // Priority: 1. window variables (config.js ya cargado), 2. localStorage, 3. Firebase Function (solo si no hay keys locales)
             let openaiKey = window.OPENAI_API_KEY || localStorage.getItem('OPENAI_API_KEY') || '';
             let geminiKey = window.GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
             
-            // If keys not loaded, try Firebase Function one more time (sync)
-            if (!openaiKey && !geminiKey) {
+            // Solo intentar Firebase Function si no tenemos keys locales y no estamos en localhost
+            if (!openaiKey && !geminiKey && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
                 try {
-                    const response = await fetch('https://us-central1-fastmind-c6603.cloudfunctions.net/getApiKeys');
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    const response = await fetch('https://us-central1-fastmind-c6603.cloudfunctions.net/getApiKeys', {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
                     if (response.ok) {
                         const data = await response.json();
                         if (data.success && data.keys) {
@@ -1011,7 +1047,9 @@
                         }
                     }
                 } catch (e) {
-                    console.warn('Firebase Function not available:', e.message);
+                    if (e.name !== 'AbortError') {
+                        console.warn('Firebase Function not available, using local config');
+                    }
                 }
             }
             
