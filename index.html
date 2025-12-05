@@ -21,8 +21,51 @@
     <link rel="icon" type="image/x-icon" href="./fastmind_logo.ico">
 
     <!-- Styles & Scripts -->
-    <!-- Load API Key configuration (if exists) - config.js should be in .gitignore -->
-    <script src="./config.js" onerror="console.warn('config.js not found. API key must be set via localStorage or window.GEMINI_API_KEY')"></script>
+    <!-- Load API Key configuration -->
+    <!-- Priority: 1. Firebase Function (producción segura), 2. config.js (local dev), 3. config.prod.js (fallback), 4. localStorage -->
+    <script>
+        // Firebase Function URL - Se actualizará después del deploy
+        // Para obtener la URL: firebase deploy --only functions
+        const FIREBASE_FUNCTION_URL = 'https://us-central1-fastmind-c6603.cloudfunctions.net/getApiKeys';
+        
+        // Función para cargar API keys desde Firebase Function
+        async function loadApiKeysFromFunction() {
+            try {
+                const response = await fetch(FIREBASE_FUNCTION_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.keys) {
+                        if (data.keys.openai) {
+                            window.OPENAI_API_KEY = data.keys.openai;
+                        }
+                        if (data.keys.gemini) {
+                            window.GEMINI_API_KEY = data.keys.gemini;
+                        }
+                        console.log('✅ API keys loaded from Firebase Function');
+                        return true;
+                    }
+                } else {
+                    console.warn('⚠️ Firebase Function not available, using fallback');
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not load keys from Firebase Function:', error.message);
+            }
+            return false;
+        }
+        
+        // Intentar cargar desde Firebase Function primero (sin bloquear la carga de la página)
+        loadApiKeysFromFunction().catch(() => {
+            console.log('Firebase Function not available, will use config files');
+        });
+    </script>
+    <script src="./config.js" onerror="console.log('Local config.js not found, trying production config...')"></script>
+    <script src="./config.prod.js" onerror="console.warn('Production config.prod.js not found. API keys must be set via localStorage or window variables')"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1255,8 +1298,28 @@
             const userQuery = simpleMode ? question : `**Local KnowledgeBase:**\n${localKnowledgeBase}\n---\n**User question:** ${question}`;
             
             // Load API keys
-            const openaiKey = window.OPENAI_API_KEY || localStorage.getItem('OPENAI_API_KEY') || '';
-            const geminiKey = window.GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
+            // Priority: 1. Firebase Function (already set in window), 2. window variables (config.js), 3. localStorage
+            let openaiKey = window.OPENAI_API_KEY || localStorage.getItem('OPENAI_API_KEY') || '';
+            let geminiKey = window.GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
+            
+            // If keys not loaded, try Firebase Function one more time (sync)
+            if (!openaiKey && !geminiKey) {
+                try {
+                    const response = await fetch('https://us-central1-fastmind-c6603.cloudfunctions.net/getApiKeys');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.keys) {
+                            openaiKey = data.keys.openai || '';
+                            geminiKey = data.keys.gemini || '';
+                            // Cache in window for next time
+                            if (openaiKey) window.OPENAI_API_KEY = openaiKey;
+                            if (geminiKey) window.GEMINI_API_KEY = geminiKey;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Firebase Function not available:', e.message);
+                }
+            }
             
             if (!openaiKey && !geminiKey) {
                 console.error('No API keys found. Please set OPENAI_API_KEY or GEMINI_API_KEY');

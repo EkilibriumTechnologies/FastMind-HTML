@@ -18,6 +18,10 @@
     <link rel="icon" type="image/x-icon" href="./fastmind_logo.ico">
 
     <!-- Styles & Scripts -->
+    <!-- Load API Key configuration -->
+    <!-- Priority: 1. config.js (local dev, in .gitignore), 2. config.prod.js (production, in Git), 3. localStorage -->
+    <script src="./config.js" onerror="console.log('Local config.js not found, trying production config...')"></script>
+    <script src="./config.prod.js" onerror="console.warn('Production config.prod.js not found. API keys must be set via localStorage or window variables')"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

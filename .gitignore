@@ -1,10 +1,24 @@
 # API Keys and sensitive configuration
 config.js
+config.prod.js
+www/config.prod.js
 *.key
 *.pem
 *.p12
 *.keystore
 *.jks
+
+# Scripts with API keys (deployment scripts)
+DEPLOY_COMMANDS.ps1
+deploy-firebase-functions.ps1
+DEBUG_DEPLOY.ps1
+DEPLOY_FINAL.ps1
+
+# Firebase Functions
+functions/.env
+functions/.env.local
+functions/node_modules/
+functions/.runtimeconfig.json
 
 # Environment files
 .env
