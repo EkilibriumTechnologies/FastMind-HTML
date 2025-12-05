@@ -99,18 +99,6 @@
         body.dark-mode #onboarding-modal {
             background: #0F172A;
         }
-        body.dark-mode #upgradeModal .bg-white {
-            background: #1E293B;
-        }
-        body.dark-mode #upgradeModal h2 {
-            color: #F1F5F9;
-        }
-        body.dark-mode #upgradeModal p {
-            color: #CBD5E1;
-        }
-        body.dark-mode #upgradeModal .text-slate-700 {
-            color: #E2E8F0;
-        }
         body.dark-mode nav {
             background: rgba(30, 41, 59, 0.9);
             border-color: #334155;
@@ -158,46 +146,6 @@
         }
         body.dark-mode .hover\:text-slate-500:hover {
             color: #94A3B8;
-        }
-        
-        /* PREMIUM FEATURE SYSTEM - Premium Locking Styles */
-        .premium-locked {
-            filter: blur(3px);
-            pointer-events: none;
-            opacity: 0.5;
-            position: relative;
-        }
-        
-        .premium-gate {
-            position: relative;
-        }
-        
-        .premium-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 14px;
-            font-weight: 600;
-            background: rgba(0, 0, 0, 0.4);
-            color: white;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 10;
-            backdrop-filter: blur(2px);
-            pointer-events: auto; /* Override parent's pointer-events: none */
-        }
-        
-        .premium-overlay:hover {
-            background: rgba(0, 0, 0, 0.5);
-        }
-        
-        body.dark-mode .premium-overlay {
-            background: rgba(0, 0, 0, 0.6);
         }
         
         /* Smooth Card Styles */
@@ -391,37 +339,6 @@
         </div>
     </div>
 
-    <!-- PREMIUM FEATURE SYSTEM - Upgrade Modal -->
-    <div id="upgradeModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-[90%] transform scale-95 transition-transform duration-300 m-4 relative animate-pop-in">
-            <button onclick="closeUpgradeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <div class="flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mb-4 shadow-inner ring-4 ring-white"><i data-lucide="star" class="w-8 h-8 fill-current"></i></div>
-                <h2 class="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Unlock Premium</h2>
-                <p class="text-slate-600 text-sm mb-6 leading-relaxed">Access all advanced fasting features and AI insights.</p>
-                <div class="w-full space-y-3 mb-6 text-left">
-                    <div class="flex items-center space-x-2 text-sm text-slate-700"><i data-lucide="check" class="w-4 h-4 text-emerald-500"></i><span>AI Chat & Personalized Tips</span></div>
-                    <div class="flex items-center space-x-2 text-sm text-slate-700"><i data-lucide="check" class="w-4 h-4 text-emerald-500"></i><span>Mood Tracking & Journal</span></div>
-                    <div class="flex items-center space-x-2 text-sm text-slate-700"><i data-lucide="check" class="w-4 h-4 text-emerald-500"></i><span>Advanced Protocols (18/6, 20/4, OMAD)</span></div>
-                    <div class="flex items-center space-x-2 text-sm text-slate-700"><i data-lucide="check" class="w-4 h-4 text-emerald-500"></i><span>Gamification & XP System</span></div>
-                    <div class="flex items-center space-x-2 text-sm text-slate-700"><i data-lucide="check" class="w-4 h-4 text-emerald-500"></i><span>Advanced Sound Effects</span></div>
-                </div>
-                <div class="flex flex-col gap-3 w-full">
-                    <button onclick="comprarPremium()" class="w-full flex items-center justify-between bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-amber-200 transition transform active:scale-95">
-                        <span>MONTHLY</span>
-                        <span>$4.99</span>
-                    </button>
-                    <button onclick="comprarLifetime()" class="w-full flex items-center justify-between bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition transform active:scale-95">
-                        <span>LIFETIME</span>
-                        <span>$24.99</span>
-                    </button>
-                    <p class="text-xs text-slate-500 text-center mt-1">*El precio se adapta automáticamente por país según Google Play.</p>
-                    <button id="closeUpgrade" onclick="closeUpgradeModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-2xl transition">Maybe Later</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <div class="max-w-xl mx-auto w-full p-6 flex-1 overflow-y-auto relative"> 
         
         <!-- Header -->
@@ -432,15 +349,15 @@
                          <!-- Custom SVG: Meditator/Yogi -->
                          <svg id="header-status-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 status-avatar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3.5" /><path d="M9 14a6 6 0 0 0-6 6v1h18v-1a6 6 0 0 0-6-6" /><path d="M12 14v3" /><path d="M12 20v.01" /></svg>
                      </div>
-                     <span id="user-level-badge" class="absolute -bottom-1 -right-1 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm premium-feature premium-gate">1</span>
+                     <span id="user-level-badge" class="absolute -bottom-1 -right-1 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm">1</span>
                  </div>
                  <div class="flex flex-col items-start">
                      <div class="flex items-center gap-1">
                          <span id="user-profile-name" class="text-sm font-bold text-slate-800 max-w-[100px] truncate">Guest</span>
-                         <div id="streak-container" class="hidden items-center bg-orange-50 px-1.5 rounded-full border border-orange-100 premium-feature premium-gate"><span class="text-orange-500 text-[10px]">🔥</span><span id="streak-count" class="text-[10px] font-bold text-orange-600 ml-0.5">0</span></div>
+                         <div id="streak-container" class="hidden items-center bg-orange-50 px-1.5 rounded-full border border-orange-100"><span class="text-orange-500 text-[10px]">🔥</span><span id="streak-count" class="text-[10px] font-bold text-orange-600 ml-0.5">0</span></div>
                      </div>
-                     <span id="user-rank-display" class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide premium-feature premium-gate">Novice</span>
-                     <div class="w-16 h-1 bg-slate-200 rounded-full mt-1 overflow-hidden premium-feature premium-gate"><div id="xp-progress-bar" class="h-full bg-sky-400 w-0 transition-all duration-500"></div></div>
+                     <span id="user-rank-display" class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Novice</span>
+                     <div class="w-16 h-1 bg-slate-200 rounded-full mt-1 overflow-hidden"><div id="xp-progress-bar" class="h-full bg-sky-400 w-0 transition-all duration-500"></div></div>
                  </div>
             </button>
 
@@ -476,28 +393,16 @@
             <div class="space-y-6">
                 <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" data-key="settingsLanguage">Language</label><div class="flex bg-slate-100 rounded-xl p-1"><input type="radio" name="language" id="lang-en" value="en" class="hidden peer/en" checked><label for="lang-en" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/en:bg-white peer-checked/en:text-slate-900 peer-checked/en:shadow-sm transition-all">English</label><input type="radio" name="language" id="lang-es" value="es" class="hidden peer/es"><label for="lang-es" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/es:bg-white peer-checked/es:text-slate-900 peer-checked/es:shadow-sm transition-all">Español</label></div></div>
                 <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" data-key="settingsMode">Mode</label><div class="flex bg-slate-100 rounded-xl p-1"><input type="radio" name="mode" id="mode-biological" value="biological" class="hidden peer/bio" checked><label for="mode-biological" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/bio:bg-white peer-checked/bio:text-slate-900 peer-checked/bio:shadow-sm transition-all" data-key="settingsBiological">Biological</label><input type="radio" name="mode" id="mode-mind" value="mind" class="hidden peer/mind"><label for="mode-mind" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/mind:bg-white peer-checked/mind:text-slate-900 peer-checked/mind:shadow-sm transition-all" data-key="settingsMind">Mental</label></div></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" data-key="settingsGoal">Fast Goal</label><div class="grid grid-cols-2 gap-3"><div class="relative"><input type="radio" name="goal" id="goal-none" value="0" class="peer hidden" checked><label for="goal-none" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoalNone">None</label></div><div class="relative"><input type="radio" name="goal" id="goal-16" value="16" class="peer hidden"><label for="goal-16" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal16">16:8</label></div><div class="relative premium-feature premium-gate"><input type="radio" name="goal" id="goal-18" value="18" class="peer hidden"><label for="goal-18" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal18">18:6</label></div><div class="relative premium-feature premium-gate"><input type="radio" name="goal" id="goal-23" value="23" class="peer hidden"><label for="goal-23" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal23">OMAD</label></div></div></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" data-key="settingsGoal">Fast Goal</label><div class="grid grid-cols-2 gap-3"><div class="relative"><input type="radio" name="goal" id="goal-none" value="0" class="peer hidden" checked><label for="goal-none" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoalNone">None</label></div><div class="relative"><input type="radio" name="goal" id="goal-16" value="16" class="peer hidden"><label for="goal-16" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal16">16:8</label></div><div class="relative"><input type="radio" name="goal" id="goal-18" value="18" class="peer hidden"><label for="goal-18" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal18">18:6</label></div><div class="relative"><input type="radio" name="goal" id="goal-23" value="23" class="peer hidden"><label for="goal-23" class="block w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 font-medium text-sm text-center transition-all" data-key="settingsGoal23">OMAD</label></div></div></div>
                 <div class="flex items-center justify-between py-2"><span id="mute-label" class="text-sm font-medium text-slate-700" data-key="settingsSoundUnmuted">Sound Effects</span><label class="switch"><input type="checkbox" id="mute-toggle"><span class="slider"></span></label></div>
                 <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3" data-key="settingsTheme">Theme</label><div class="flex bg-slate-100 rounded-xl p-1"><input type="radio" name="theme" id="theme-light" value="light" class="hidden peer/light" checked><label for="theme-light" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/light:bg-white peer-checked/light:text-slate-900 peer-checked/light:shadow-sm transition-all" data-key="settingsThemeLight">Light</label><input type="radio" name="theme" id="theme-dark" value="dark" class="hidden peer/dark"><label for="theme-dark" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/dark:bg-white peer-checked/dark:text-slate-900 peer-checked/dark:shadow-sm transition-all" data-key="settingsThemeDark">Dark</label><input type="radio" name="theme" id="theme-auto" value="auto" class="hidden peer/auto"><label for="theme-auto" class="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-slate-500 cursor-pointer peer-checked/auto:bg-white peer-checked/auto:text-slate-900 peer-checked/auto:shadow-sm transition-all" data-key="settingsThemeAuto">Auto</label></div></div>
                 <div class="pt-4 mt-4 border-t border-slate-100"><h3 class="text-xs font-bold text-rose-500 uppercase tracking-wider mb-3">Danger Zone</h3><button onclick="deleteAccount()" class="w-full flex items-center justify-center space-x-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-3 px-6 rounded-xl transition duration-200 border border-rose-200"><i data-lucide="trash-2" class="w-4 h-4"></i><span>Delete Account</span></button></div>
             </div>
             <div id="install-container" class="hidden mt-6 pt-6 border-t border-slate-100"><button id="btn-install" class="w-full flex items-center justify-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition duration-200"><i data-lucide="download" class="w-4 h-4"></i><span data-key="settingsInstallButton">Install App</span></button></div>
-            <div id="premium-container" class="mt-4 pt-4 border-t border-slate-100 space-y-3">
-                <button onclick="comprarPremium()" class="w-full flex items-center justify-between bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md">
-                    <div class="flex items-center space-x-2">
-                        <i data-lucide="star" class="w-4 h-4 fill-current"></i>
-                        <span>MONTHLY</span>
-                    </div>
-                    <span class="text-lg">$4.99</span>
+            <div id="premium-container" class="mt-4 pt-4 border-t border-slate-100">
+                <button onclick="comprarPremium()" class="w-full flex items-center justify-center space-x-2 bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md">
+                    <i data-lucide="star" class="w-4 h-4 fill-current"></i><span>Get Premium</span>
                 </button>
-                <button onclick="comprarLifetime()" class="w-full flex items-center justify-between bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md">
-                    <div class="flex items-center space-x-2">
-                        <i data-lucide="crown" class="w-4 h-4 fill-current"></i>
-                        <span>LIFETIME</span>
-                    </div>
-                    <span class="text-lg">$24.99</span>
-                </button>
-                <p class="text-xs text-slate-500 text-center mt-2">*El precio se adapta automáticamente por país según Google Play.</p>
             </div>
         </div>
 
@@ -520,7 +425,7 @@
                         
                         <div class="progress-text flex flex-col items-center">
                             <!-- MOOD ICON (NEW) -->
-                            <button id="mood-indicator" onclick="openMoodCheckin()" class="mb-1 p-2 bg-white/80 rounded-full shadow-sm hover:scale-110 transition-transform mood-btn-pulse premium-feature premium-gate">
+                            <button id="mood-indicator" onclick="openMoodCheckin()" class="mb-1 p-2 bg-white/80 rounded-full shadow-sm hover:scale-110 transition-transform mood-btn-pulse">
                                 <span id="mood-icon-display" class="text-lg">😶</span>
                             </button>
 
@@ -554,7 +459,7 @@
             </div>
 
             <!-- CHAT TAB -->
-            <div id="chat-content" class="hidden mb-8 panel-transition premium-feature premium-gate">
+            <div id="chat-content" class="hidden mb-8 panel-transition">
                 <div class="glass-card flex flex-col h-[70vh] overflow-hidden">
                     <div class="p-4 border-b border-slate-100 bg-white/50 backdrop-blur-sm flex items-center justify-center sticky top-0 z-10"><span class="font-bold text-slate-800" data-key="chatTitle">FastMind AI</span></div>
                     <div id="chat-history" class="flex-1 overflow-y-auto p-4 scrollbar-hide bg-white/30"></div>
@@ -580,7 +485,7 @@
             </div>
 
             <!-- JOURNAL CONTENT (NEW) -->
-            <div id="journal-content" class="hidden mb-8 panel-transition premium-feature premium-gate">
+            <div id="journal-content" class="hidden mb-8 panel-transition">
                <div class="glass-card p-6 flex flex-col h-[70vh]">
                    <h2 class="text-lg font-bold text-slate-900 mb-4 text-center" data-key="journalTitle">My Journal</h2>
                    <div class="mb-4">
@@ -606,255 +511,38 @@
 
     <script>
         // ======== FASTMIND PREMIUM SYSTEM ======== //
-        const PRODUCT_MONTHLY = "fastmind_premium_monthly";
-        const PRODUCT_LIFETIME = "fastmind_premium_lifetime";
         const isNative = typeof Capacitor !== "undefined" && Capacitor.isNativePlatform();
         console.log("Native App:", isNative);
-        
-        // GOOGLE BILLING SYSTEM - Sync both premium status systems to prevent inconsistencies
-        function syncPremiumStatus() {
-            const oldSystem = localStorage.getItem("fastmind_premium") === "true";
-            const newSystemStatus = localStorage.getItem("premiumStatus");
-            // GOOGLE BILLING SYSTEM - Only check premiumManager if it's available (module may not be loaded yet)
-            let newSystem = newSystemStatus === "premium";
-            if (typeof premiumManager !== 'undefined' && premiumManager.isPremium) {
-                try {
-                    newSystem = newSystem || premiumManager.isPremium();
-                } catch (e) {
-                    // premiumManager not ready yet, use localStorage only
-                    console.log("premiumManager not ready, using localStorage only");
-                }
-            }
-            
-            // If systems are out of sync, use the most permissive value (if either says premium, both should)
-            if (oldSystem !== newSystem) {
-                const shouldBePremium = oldSystem || newSystem;
-                console.log("⚠️ Premium status sync: syncing both systems to", shouldBePremium);
-                
-                if (shouldBePremium) {
-                    localStorage.setItem("fastmind_premium", "true");
-                    if (typeof premiumManager !== 'undefined' && premiumManager.setPremium) {
-                        try {
-                            premiumManager.setPremium(true);
-                        } catch (e) {
-                            // premiumManager not ready, just update localStorage
-                            localStorage.setItem("premiumStatus", "premium");
-                        }
-                    } else {
-                        localStorage.setItem("premiumStatus", "premium");
-                    }
-                } else {
-                    localStorage.setItem("fastmind_premium", "false");
-                    if (typeof premiumManager !== 'undefined' && premiumManager.setPremium) {
-                        try {
-                            premiumManager.setPremium(false);
-                        } catch (e) {
-                            // premiumManager not ready, just update localStorage
-                            localStorage.setItem("premiumStatus", "free");
-                        }
-                    } else {
-                        localStorage.setItem("premiumStatus", "free");
-                    }
-                }
-            }
-            
-            return oldSystem || newSystem;
-        }
-        
-        // GOOGLE BILLING SYSTEM - Full sync after module loads (when premiumManager is available)
-        function syncPremiumStatusFull() {
-            if (typeof premiumManager === 'undefined') {
-                return; // Module not loaded yet
-            }
-            
-            const oldSystem = localStorage.getItem("fastmind_premium") === "true";
-            const newSystemStatus = localStorage.getItem("premiumStatus");
-            let newSystem = false;
-            
-            try {
-                newSystem = newSystemStatus === "premium" || premiumManager.isPremium();
-            } catch (e) {
-                newSystem = newSystemStatus === "premium";
-            }
-            
-            // If systems are out of sync, use the most permissive value
-            if (oldSystem !== newSystem) {
-                const shouldBePremium = oldSystem || newSystem;
-                console.log("⚠️ Full premium status sync: syncing both systems to", shouldBePremium);
-                
-                if (shouldBePremium) {
-                    localStorage.setItem("fastmind_premium", "true");
-                    localStorage.setItem("premiumStatus", "premium");
-                    try {
-                        premiumManager.setPremium(true);
-                    } catch (e) {
-                        console.warn("Error syncing premiumManager:", e);
-                    }
-                } else {
-                    localStorage.setItem("fastmind_premium", "false");
-                    localStorage.setItem("premiumStatus", "free");
-                    try {
-                        premiumManager.setPremium(false);
-                    } catch (e) {
-                        console.warn("Error syncing premiumManager:", e);
-                    }
-                }
-            }
-        }
-        
-        // GOOGLE BILLING SYSTEM - Unified premium check that syncs both systems
-        function isPremiumUser() {
-            // Sync first to ensure consistency
-            return syncPremiumStatus();
-        }
-        
-        // GOOGLE BILLING SYSTEM - Activate premium in both systems
-        function activarPremium(planType = "monthly") {
-            localStorage.setItem("fastmind_premium", "true");
-            localStorage.setItem("fastmind_premium_plan", planType);
-            localStorage.setItem("premiumStatus", "premium");
-            console.log("🔥 Premium activado:", planType);
-            document.body.classList.add("premium-enabled");
-            
-            // Also update premiumManager for compatibility
-            if (typeof premiumManager !== 'undefined') {
-                premiumManager.setPremium(true);
-            }
-            
-            actualizarUI();
-        }
-        
-        // GOOGLE BILLING SYSTEM - Deactivate premium in both systems
-        function desactivarPremium() {
-            localStorage.setItem("fastmind_premium", "false");
-            localStorage.removeItem("fastmind_premium_plan");
-            localStorage.setItem("premiumStatus", "free");
-            console.log("❌ Premium desactivado");
-            document.body.classList.remove("premium-enabled");
-            
-            // Also update premiumManager for compatibility
-            if (typeof premiumManager !== 'undefined') {
-                premiumManager.setPremium(false);
-            }
-            
-            actualizarUI();
-        }
-        
-        // GOOGLE BILLING SYSTEM - Update UI using unified premium check
+        function isPremiumUser() { return localStorage.getItem("fastmind_premium") === "true"; }
+        function activarPremium() { localStorage.setItem("fastmind_premium", "true"); console.log("🔥 Premium activado"); document.body.classList.add("premium-enabled"); }
+        function desactivarPremium() { localStorage.setItem("fastmind_premium", "false"); console.log("❌ Premium desactivado"); document.body.classList.remove("premium-enabled"); }
         function actualizarUI() {
-            const premium = isPremiumUser(); // This will sync both systems
-            const premiumElements = document.querySelectorAll(".premium-only");
-            premiumElements.forEach(el => { el.style.display = premium ? "block" : "none"; });
-            const freeLocked = document.querySelectorAll(".locked-free");
-            freeLocked.forEach(el => { 
-                el.style.opacity = premium ? "1" : "0.4"; 
-                el.style.pointerEvents = premium ? "auto" : "none"; 
-            });
+           const premium = isPremiumUser();
+           const premiumElements = document.querySelectorAll(".premium-only");
+           premiumElements.forEach(el => { el.style.display = premium ? "block" : "none"; });
+           const freeLocked = document.querySelectorAll(".locked-free");
+           freeLocked.forEach(el => { el.style.opacity = premium ? "1" : "0.4"; el.style.pointerEvents = premium ? "auto" : "none"; });
         }
-        
-        // GOOGLE BILLING SYSTEM - Sync premium status on page load
-        document.addEventListener("DOMContentLoaded", () => {
-            syncPremiumStatus();
-            actualizarUI();
-        });
-        
-        // GOOGLE BILLING SYSTEM - Initialize billing with store object (cordova-plugin-purchase)
+        document.addEventListener("DOMContentLoaded", () => { actualizarUI(); });
         if (isNative) {
-            document.addEventListener("deviceready", () => {
-                console.log("Device Ready: Iniciando sistema de compras…");
-                if (typeof store !== 'undefined') {
-                    store.verbosity = store.DEBUG;
-                    
-                    // Register monthly subscription
-                    store.register({ id: PRODUCT_MONTHLY, type: store.SUBSCRIPTION });
-                    store.when(PRODUCT_MONTHLY).approved((order) => {
-                        order.finish();
-                        activarPremium("monthly");
-                        // GOOGLE BILLING SYSTEM - Close modal only after successful purchase
-                        if (typeof window.closeUpgradeModal === 'function') {
-                            window.closeUpgradeModal();
-                        }
-                        console.log("✅ Monthly subscription approved");
-                    });
-                    
-                    // Register lifetime purchase (non-consumable)
-                    store.register({ id: PRODUCT_LIFETIME, type: store.NON_CONSUMABLE });
-                    store.when(PRODUCT_LIFETIME).approved((order) => {
-                        order.finish();
-                        activarPremium("lifetime");
-                        // GOOGLE BILLING SYSTEM - Close modal only after successful purchase
-                        if (typeof window.closeUpgradeModal === 'function') {
-                            window.closeUpgradeModal();
-                        }
-                        console.log("✅ Lifetime purchase approved");
-                    });
-                    
-                    // Handle purchase errors
-                    store.error((error) => {
-                        console.error("Store error:", error);
-                        alert("Purchase error: " + (error.message || "Unknown error"));
-                    });
-                    
-                    store.ready(() => { 
-                        console.log("🟢 Billing listo");
-                        // Restore premium status from localStorage if it exists
-                        if (isPremiumUser()) {
-                            const planType = localStorage.getItem("fastmind_premium_plan") || "monthly";
-                            activarPremium(planType);
-                            console.log("✅ Premium status restored from localStorage:", planType);
-                        }
-                        // Restore previous purchases from Google Play
-                        store.refresh();
-                    });
-                    
-                    store.refresh();
-                } else {
-                    console.warn("Store object not available");
-                }
-            });
+           document.addEventListener("deviceready", () => {
+               console.log("Device Ready: Iniciando sistema de compras…");
+               if (typeof store !== 'undefined') {
+                   store.verbosity = store.DEBUG;
+                   store.register({ id: "fastmind_premium_monthly", type: store.SUBSCRIPTION });
+                   store.when("fastmind_premium_monthly").approved((order) => { order.finish(); activarPremium(); actualizarUI(); });
+                   store.ready(() => { console.log("🟢 Billing listo"); });
+                   store.refresh();
+               }
+           });
         }
-        
-        // GOOGLE BILLING SYSTEM - Purchase monthly subscription
         function comprarPremium() {
-            if (!isNative) {
-                alert("Purchases only work in the Google Play version of the app.");
-                return;
-            }
-            
-            if (typeof store !== 'undefined') {
-                store.order(PRODUCT_MONTHLY);
-            } else if (typeof window !== 'undefined' && window.billing && window.billing.purchasePremium) {
-                // Fallback to Capacitor billing plugin
-                window.billing.purchasePremium(PRODUCT_MONTHLY);
-            } else {
-                alert("Billing system not available. Please install the app from Google Play.");
-            }
+           if (!isNative) { alert("Esta compra solo está disponible en la app instalada desde Google Play."); return; }
+           if (typeof store !== 'undefined') store.order("fastmind_premium_monthly");
         }
-        
-        // GOOGLE BILLING SYSTEM - Purchase lifetime
-        function comprarLifetime() {
-            if (!isNative) {
-                alert("Purchases only work in the Google Play version of the app.");
-                return;
-            }
-            
-            if (typeof store !== 'undefined') {
-                store.order(PRODUCT_LIFETIME);
-            } else if (typeof window !== 'undefined' && window.billing && window.billing.purchasePremium) {
-                // Fallback to Capacitor billing plugin
-                window.billing.purchasePremium(PRODUCT_LIFETIME);
-            } else {
-                alert("Billing system not available. Please install the app from Google Play.");
-            }
-        }
-        
-        // Expose functions globally
         window.testPremiumOn = activarPremium;
         window.testPremiumOff = desactivarPremium;
-        window.comprarPremium = comprarPremium;
-        window.comprarLifetime = comprarLifetime;
-        window.syncPremiumStatusFull = syncPremiumStatusFull;
-        window.actualizarUI = actualizarUI;
+        window.comprarPremium = comprarPremium; // Make it global
     </script>
 
     <script type="module">
@@ -873,142 +561,6 @@
         let auth, db, currentUser, historyUnsubscribe, userUnsubscribe, allUserFasts=[], currentCalendarMonth=new Date().getMonth(), currentCalendarYear=new Date().getFullYear(), isRegisterMode=false;
         let journalUnsubscribe;
         let currentTheme='light', themeCheckInterval=null;
-        
-        // PREMIUM FEATURE SYSTEM - Premium Manager (must be defined before soundManager)
-        const premiumManager = {
-            // Get premium status from localStorage
-            getStatus() {
-                return localStorage.getItem('premiumStatus') || 'free';
-            },
-            
-            // Get trial start date
-            getTrialStartDate() {
-                const dateStr = localStorage.getItem('trialStartDate');
-                return dateStr ? new Date(dateStr) : null;
-            },
-            
-            // Check if user is premium
-            isPremium() {
-                const status = this.getStatus();
-                return status === 'premium' || this.isInTrial();
-            },
-            
-            // Check if user is in trial
-            isInTrial() {
-                const status = this.getStatus();
-                if (status === 'premium') return false;
-                
-                const trialStart = this.getTrialStartDate();
-                if (!trialStart) return false;
-                
-                const now = new Date();
-                const diffTime = now - trialStart;
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                return diffDays <= 7;
-            },
-            
-            // Get days left in trial
-            daysLeft() {
-                if (!this.isInTrial()) return 0;
-                
-                const trialStart = this.getTrialStartDate();
-                if (!trialStart) return 0;
-                
-                const now = new Date();
-                const diffTime = now - trialStart;
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                return Math.max(0, 7 - diffDays);
-            },
-            
-            // Start trial
-            startTrial() {
-                if (this.getTrialStartDate()) return; // Trial already started
-                
-                localStorage.setItem('trialStartDate', new Date().toISOString());
-                localStorage.setItem('premiumStatus', 'trial');
-            },
-            
-            // GOOGLE BILLING SYSTEM - Set premium status from billing purchase (syncs both systems)
-            setPremium(isPremium) {
-                if (isPremium) {
-                    localStorage.setItem('premiumStatus', 'premium');
-                    localStorage.setItem('fastmind_premium', 'true'); // Sync old system
-                    document.body.classList.add('premium-enabled');
-                    this.applyGating(); // Re-apply gating to unlock features
-                } else {
-                    localStorage.setItem('premiumStatus', 'free');
-                    localStorage.setItem('fastmind_premium', 'false'); // Sync old system
-                    document.body.classList.remove('premium-enabled');
-                    this.applyGating(); // Re-apply gating to lock features
-                }
-            },
-            
-            // Require premium - shows modal if not premium
-            requirePremium(featureName) {
-                if (this.isPremium()) return true;
-                this.showUpgradeModal();
-                return false;
-            },
-            
-            // Show upgrade modal
-            showUpgradeModal() {
-                const modal = document.getElementById('upgradeModal');
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    requestAnimationFrame(() => modal.classList.remove('opacity-0'));
-                }
-            },
-            
-            // Close upgrade modal
-            closeUpgradeModal() {
-                const modal = document.getElementById('upgradeModal');
-                if (modal) {
-                    modal.classList.add('opacity-0');
-                    setTimeout(() => modal.classList.add('hidden'), 300);
-                }
-            },
-            
-            // Initialize - auto-start trial if first launch
-            init() {
-                const status = this.getStatus();
-                const trialStart = this.getTrialStartDate();
-                
-                // Auto-start trial on first launch
-                if (status === 'free' && !trialStart) {
-                    this.startTrial();
-                }
-                
-                // Update status if trial expired
-                if (status === 'trial' && !this.isInTrial()) {
-                    localStorage.setItem('premiumStatus', 'free');
-                }
-            },
-            
-            // Apply premium gating to UI elements
-            applyGating() {
-                const premiumFeatures = document.querySelectorAll('.premium-feature');
-                premiumFeatures.forEach(feature => {
-                    if (!this.isPremium()) {
-                        feature.classList.add('premium-locked');
-                        
-                        // Add overlay if not already present
-                        if (!feature.querySelector('.premium-overlay')) {
-                            const overlay = document.createElement('div');
-                            overlay.className = 'premium-overlay';
-                            overlay.textContent = 'Unlock Premium';
-                            overlay.onclick = () => this.showUpgradeModal();
-                            feature.appendChild(overlay);
-                        }
-                    } else {
-                        feature.classList.remove('premium-locked');
-                        const overlay = feature.querySelector('.premium-overlay');
-                        if (overlay) overlay.remove();
-                    }
-                });
-            }
-        };
         
         // NEW SOUND FEATURE - Sound Manager
         const soundManager = {
@@ -1044,8 +596,6 @@
             
             // NEW SOUND FEATURE - Play motivation sound
             playMotivation() {
-                // PREMIUM FEATURE SYSTEM - Gate advanced sounds
-                if (!premiumManager.isPremium()) return;
                 if (!this.isEnabled) return;
                 try {
                     if (this.motivationPlayer && this.motivationPlayer.loaded) {
@@ -1063,8 +613,6 @@
             
             // NEW SOUND FEATURE - Play warning sound
             playWarning() {
-                // PREMIUM FEATURE SYSTEM - Gate advanced sounds
-                if (!premiumManager.isPremium()) return;
                 if (!this.isEnabled) return;
                 try {
                     if (this.warningPlayer && this.warningPlayer.loaded) {
@@ -1082,8 +630,6 @@
             
             // NEW SOUND FEATURE - Play completion sound
             playCompletion() {
-                // PREMIUM FEATURE SYSTEM - Gate advanced sounds
-                if (!premiumManager.isPremium()) return;
                 if (!this.isEnabled) return;
                 try {
                     if (this.completionPlayer && this.completionPlayer.loaded) {
@@ -1128,80 +674,8 @@
         window.closeVictoryModal = () => { victoryModal.classList.add('hidden', 'opacity-0'); };
         window.closeOnboarding = () => { onboardingModal.classList.add('hidden'); localStorage.setItem('fastMindOnboardingSeen', 'true'); };
         
-        // PREMIUM FEATURE SYSTEM - Upgrade modal handlers
-        window.closeUpgradeModal = () => { premiumManager.closeUpgradeModal(); };
-        // GOOGLE BILLING SYSTEM - Billing bridge for Capacitor
-        window.billing = {
-            initialize: async () => {
-                try {
-                    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.BillingPlugin) {
-                        await Capacitor.Plugins.BillingPlugin.initializeBilling();
-                        console.log('Billing initialized');
-                    }
-                } catch (e) {
-                    console.error('Billing initialization error:', e);
-                }
-            },
-            purchasePremium: async (productId = 'fastmind_premium') => {
-                try {
-                    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.BillingPlugin) {
-                        const result = await Capacitor.Plugins.BillingPlugin.startPurchase({ productId });
-                        if (result && result.success) {
-                            premiumManager.setPremium(true);
-                            premiumManager.closeUpgradeModal();
-                            console.log('Premium purchase successful');
-                        } else {
-                            console.log('Purchase cancelled or failed:', result);
-                        }
-                    } else {
-                        console.warn('Billing plugin not available - running in browser?');
-                        alert('Billing is only available in the installed Android app.');
-                    }
-                } catch (e) {
-                    console.error('Purchase error:', e);
-                    alert('Purchase failed. Please try again.');
-                }
-            },
-            checkPremiumStatus: async () => {
-                try {
-                    if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.BillingPlugin) {
-                        const result = await Capacitor.Plugins.BillingPlugin.checkPremiumStatus();
-                        if (result && result.isPremium) {
-                            // Determine plan type from product ID if available
-                            const planType = (result.productId && result.productId.includes('lifetime')) ? 'lifetime' : 'monthly';
-                            activarPremium(planType); // This already syncs both systems
-                            console.log('Premium status verified from Google Play:', planType);
-                        }
-                    }
-                } catch (e) {
-                    console.error('Premium status check error:', e);
-                }
-            }
-        };
-        
-        // GOOGLE BILLING SYSTEM - Update upgrade button handler (backward compatibility)
-        window.handleUpgradeClick = () => { 
-            comprarPremium();
-        };
-        
-        // GOOGLE BILLING SYSTEM - Listen for purchase updates from Android
-        // GOOGLE BILLING SYSTEM - Listen for purchase updates from BillingPlugin
-        if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.BillingPlugin) {
-            Capacitor.Plugins.BillingPlugin.addListener('purchaseUpdate', (data) => {
-                if (data && data.isPremium) {
-                    // Determine plan type from product ID if available
-                    const planType = (data.productId && data.productId.includes('lifetime')) ? 'lifetime' : 'monthly';
-                    activarPremium(planType); // This already syncs both systems
-                    console.log('Premium activated from purchase update:', planType);
-                }
-            });
-        }
-        
         // Attach the missing function to window so onclick works
         window.openMoodCheckin = function() {
-             // PREMIUM FEATURE SYSTEM - Gate mood tracking
-             if (!premiumManager.requirePremium('Mood Tracking')) return;
-             
              isMidFastCheckin = true;
              moodModalTitle.textContent = "How are you feeling?";
              moodModal.classList.remove('hidden');
@@ -1222,11 +696,6 @@
         
         // --- AI INSIGHT LOGIC ---
         async function generateWelcomeMessage() {
-             // PREMIUM FEATURE SYSTEM - Gate AI insights
-             if (!premiumManager.isPremium()) {
-                 return; // Don't show AI insights for free users
-             }
-             
              aiInsightPopup.classList.remove('hidden');
              requestAnimationFrame(() => aiInsightPopup.classList.remove('opacity-0'));
              insightLoading.classList.remove('hidden');
@@ -1275,28 +744,7 @@
         }
         function setLanguage(lang){if(lang===currentLanguage)return;currentLanguage=lang;if(running)getPhase(elapsedHours);applyTranslations(lang);}
         function setMode(mode){if(mode===currentMode)return;currentMode=mode;if(running)getPhase(elapsedHours);updateTimerVisuals();updateTimer();}
-        function setGoal(goal){
-            goal=parseInt(goal,10);
-            // PREMIUM FEATURE SYSTEM - Gate advanced protocols (18/6, OMAD)
-            // Note: 20/4 protocol is not implemented in UI, only 18/6 and OMAD are premium
-            if (goal === 18 || goal === 23) {
-                if (!premiumManager.requirePremium('Advanced Protocols')) {
-                    // Uncheck the radio button if premium check fails
-                    const radio = document.getElementById(`goal-${goal}`);
-                    if (radio) radio.checked = false;
-                    // Restore previous selection
-                    const prevGoalId = currentGoalHours === 0 ? 'goal-none' : `goal-${currentGoalHours}`;
-                    const prevRadio = document.getElementById(prevGoalId);
-                    if (prevRadio) prevRadio.checked = true;
-                    return;
-                }
-            }
-            if(goal===currentGoalHours)return;
-            currentGoalHours=goal;
-            if(running){goalReached=false;if(currentGoalHours>0){goalTargetTime=startTime+(currentGoalHours*3600*1000);goalDisplay.classList.remove('hidden')}else{goalTargetTime=0;goalDisplay.classList.add('hidden')}}
-            updateGoalDisplay();
-            updateTimer();
-        }
+        function setGoal(goal){goal=parseInt(goal,10);if(goal===currentGoalHours)return;currentGoalHours=goal;if(running){goalReached=false;if(currentGoalHours>0){goalTargetTime=startTime+(currentGoalHours*3600*1000);goalDisplay.classList.remove('hidden')}else{goalTargetTime=0;goalDisplay.classList.add('hidden')}}updateGoalDisplay();updateTimer();}
         
         // Dark Mode Functions
         function isNightTime() {
@@ -1599,9 +1047,6 @@
 
         // Global Mood
         window.selectMood = async function(mood) {
-            // PREMIUM FEATURE SYSTEM - Gate mood tracking
-            if (!premiumManager.requirePremium('Mood Tracking')) return;
-            
             const moodEmoji = mood === 'Energetic' ? '⚡' : mood === 'Focused' ? '🧘‍♂️' : mood === 'Tired' ? '🥱' : '🍔';
             moodIconDisplay.textContent = moodEmoji; 
             
@@ -1723,9 +1168,6 @@
         }
 
         async function saveJournalEntry() {
-            // PREMIUM FEATURE SYSTEM - Gate journal
-            if (!premiumManager.requirePremium('Journal')) return;
-            
             const text = journalInput.value.trim();
             if(!text) return;
             if(!currentUser) { alert("Please login to save notes."); return; }
@@ -1752,16 +1194,6 @@
 
         function switchTab(tab){
             if((tab==='chat'||tab==='history'||tab==='journal')&&!currentUser)return;
-            
-            // PREMIUM FEATURE SYSTEM - Check premium access before changing tab
-            if(tab==='chat'){
-                if (!premiumManager.requirePremium('AI Chat')) return;
-            }
-            else if(tab==='journal'){
-                if (!premiumManager.requirePremium('Journal')) return;
-            }
-            
-            // Only update currentTab after all permission checks pass
             currentTab=tab;
             chatContent.classList.add('hidden');historyContent.classList.add('hidden');timerContent.classList.add('hidden');loginContainer.classList.add('hidden');journalContent.classList.add('hidden');
             btnTimer.classList.remove('active');btnChat.classList.remove('active');btnHistory.classList.remove('active');btnJournal.classList.remove('active');
@@ -1811,12 +1243,6 @@
         }
 
         async function askFastMind(question, simpleMode = false) {
-            // PREMIUM FEATURE SYSTEM - Gate AI chat
-            if (!premiumManager.isPremium()) {
-                premiumManager.showUpgradeModal();
-                return translations[currentLanguage]?.chatError || "This feature requires Premium.";
-            }
-            
             const localKnowledgeBase = `[Fasting Guide Context Placeholder]`; 
             const systemPrompt = simpleMode 
                ? "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags)." 
@@ -2066,25 +1492,6 @@
         
         // Init
         initTheme();
-        // PREMIUM FEATURE SYSTEM - Initialize premium manager
-        premiumManager.init();
-        premiumManager.applyGating();
-        
-        // GOOGLE BILLING SYSTEM - Full sync after premiumManager is initialized
-        if (typeof window !== 'undefined' && typeof window.syncPremiumStatusFull === 'function') {
-            window.syncPremiumStatusFull();
-            if (typeof window.actualizarUI === 'function') {
-                window.actualizarUI();
-            }
-        }
-        
-        // GOOGLE BILLING SYSTEM - Initialize billing and check premium status
-        if (typeof Capacitor !== 'undefined') {
-            window.billing.initialize().then(() => {
-                window.billing.checkPremiumStatus();
-            });
-        }
-        
         initDialInteraction();
         checkOnboarding();
         const savedStart=localStorage.getItem('fastStartTime');
@@ -2092,8 +1499,6 @@
         applyTranslations('en');
         // NEW SOUND FEATURE - Initialize sound toggle after translations
         initSoundToggle();
-        // PREMIUM FEATURE SYSTEM - Re-apply gating after DOM is ready
-        setTimeout(() => premiumManager.applyGating(), 100);
         
     </script>
 </body>
