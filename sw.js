@@ -1,11 +1,12 @@
-const CACHE_NAME = 'fastmind-v6';
+const CACHE_NAME = 'fastmind-v8';
 const ASSETS = [
   './manifest.json'
   // NOTE: NOT caching index.html - always fetch fresh from network
 ];
 
-// Install event
+// Install event - Force activate immediately to clear old cache
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Activate immediately
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -58,6 +59,10 @@ self.addEventListener('fetch', event => {
   if (event.request.url.includes('index.html')) {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
+        .catch(() => {
+          console.error('SW: Network fetch failed for index.html');
+          return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/html' } });
+        })
     );
     return;
   }
@@ -65,16 +70,32 @@ self.addEventListener('fetch', event => {
   // Stale-while-revalidate for other assets (CSS, JS, images, etc.)
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
-        const fetchPromise = fetch(event.request).then(networkResponse => {
-            // Don't cache HTML files or Firebase requests
-            if (!networkResponse.url.includes('index.html') && 
-                !networkResponse.url.includes('firebase') &&
-                !networkResponse.url.includes('googleapis.com') &&
-                !networkResponse.url.includes('gstatic.com')) {
-              caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse.clone()));
-            }
-            return networkResponse;
-        });
+        const fetchPromise = fetch(event.request)
+          .then(networkResponse => {
+              // Clone the response BEFORE using it to cache
+              const responseClone = networkResponse.clone();
+              
+              // Don't cache HTML files or Firebase requests
+              if (!networkResponse.url.includes('index.html') && 
+                  !networkResponse.url.includes('firebase') &&
+                  !networkResponse.url.includes('googleapis.com') &&
+                  !networkResponse.url.includes('gstatic.com')) {
+                // Use the clone for caching, original for returning
+                caches.open(CACHE_NAME).then(cache => {
+                  cache.put(event.request, responseClone).catch(err => {
+                    console.error('SW: Cache put error:', err);
+                  });
+                });
+              }
+              return networkResponse;
+          })
+          .catch(error => {
+              console.error('SW: Fetch error:', error);
+              // Return cached response if available, otherwise return error
+              return cachedResponse || new Response('Network error', { status: 503 });
+          });
+        
+        // Return cached response immediately if available, otherwise wait for network
         return cachedResponse || fetchPromise;
     })
   );
