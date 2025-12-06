@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fastmind-v9';
+const CACHE_NAME = 'fastmind-v11';
 const ASSETS = [
   './manifest.json'
   // NOTE: NOT caching index.html - always fetch fresh from network
@@ -31,6 +31,12 @@ self.addEventListener('activate', event => {
 
 // Fetch event - Network Only for HTML (NO CACHE) to prevent stale content
 self.addEventListener('fetch', event => {
+  // IMPORTANT: Let OpenAI API requests pass through WITHOUT interception
+  if (event.request.url.includes('api.openai.com')) {
+    // Let OpenAI requests go directly to network, no Service Worker interference
+    return;
+  }
+  
   // IMPORTANT: Let Firebase requests pass through WITHOUT interception
   if (event.request.url.includes('firebase') || 
       event.request.url.includes('googleapis.com') ||
