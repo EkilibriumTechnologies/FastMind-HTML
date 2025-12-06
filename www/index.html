@@ -18,11 +18,6 @@
     <link rel="icon" type="image/x-icon" href="./fastmind_logo.ico">
 
     <!-- Styles & Scripts -->
-    <!-- Load API Key configuration -->
-    <!-- API Key is hardcoded in askFastMind function - no config.js needed -->
-    <script>
-        console.log('✅ OpenAI API key is hardcoded in askFastMind function');
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -477,9 +472,11 @@
              const storedStreak = parseInt(localStorage.getItem('fastUserStreak') || '0');
              const currentRank = calculateRank(storedPoints).name;
              
-             const promptContext = `User Context: Fasting Duration: ${elapsedHours.toFixed(1)} hours. Current Phase: ${currentPhase.keyword}. Rank: ${currentRank}. Streak: ${storedStreak} days. Task: Write a witty, insightful, and very short (max 2 sentences) welcome message. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
-             try {
-                 const message = await askFastMind(promptContext, true);
+            const systemPrompt = "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags).";
+            const userMessage = `User Context: Fasting Duration: ${elapsedHours.toFixed(1)} hours. Current Phase: ${currentPhase.keyword}. Rank: ${currentRank}. Streak: ${storedStreak} days. Task: Write a witty, insightful, and very short (max 2 sentences) welcome message. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
+            const fullMessage = `${systemPrompt}\n\n${userMessage}`;
+            try {
+                const message = await askFastMind(fullMessage);
                  insightLoading.classList.add('hidden');
                  aiInsightText.innerHTML = message;
                  aiInsightText.classList.remove('hidden');
@@ -778,19 +775,21 @@
 
             // AI Advice for Mid-Fast Checkin
             if (isMidFastCheckin) {
-                 const currentPhase = getPhase(elapsedHours);
-                 const prompt = `User context: Fasting phase "${currentPhase.keyword}" (${elapsedHours.toFixed(1)}h). Current Mood: ${mood}. ${journalContext} Task: Give 1 specific sentence of advice or encouragement based on this context. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
-                 
-                 moodModal.classList.add('opacity-0');
-                 setTimeout(() => moodModal.classList.add('hidden'), 300);
-                 
-                 aiInsightPopup.classList.remove('hidden');
-                 requestAnimationFrame(() => aiInsightPopup.classList.remove('opacity-0'));
-                 insightLoading.classList.remove('hidden');
-                 aiInsightText.classList.add('hidden');
-                 
-                 try {
-                     const advice = await askFastMind(prompt, true);
+                const currentPhase = getPhase(elapsedHours);
+                const systemPrompt = "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags).";
+                const userMessage = `User context: Fasting phase "${currentPhase.keyword}" (${elapsedHours.toFixed(1)}h). Current Mood: ${mood}. ${journalContext} Task: Give 1 specific sentence of advice or encouragement based on this context. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
+                const fullMessage = `${systemPrompt}\n\n${userMessage}`;
+                
+                moodModal.classList.add('opacity-0');
+                setTimeout(() => moodModal.classList.add('hidden'), 300);
+                
+                aiInsightPopup.classList.remove('hidden');
+                requestAnimationFrame(() => aiInsightPopup.classList.remove('opacity-0'));
+                insightLoading.classList.remove('hidden');
+                aiInsightText.classList.add('hidden');
+                
+                try {
+                    const advice = await askFastMind(fullMessage);
                      insightLoading.classList.add('hidden');
                      aiInsightText.innerHTML = advice;
                      aiInsightText.classList.remove('hidden');
@@ -946,139 +945,74 @@
         async function handleChatSubmit(e){
             e.preventDefault();const q=chatInput.value.trim();if(!q)return;
             chatInput.value='';chatInput.disabled=true;chatSubmit.disabled=true;chatSpinner.classList.remove('hidden');
-            try{const a=await askFastMind(q);chatHistory.push([q,a]);}catch(err){chatHistory.push([q,translations[currentLanguage].chatError]);}
+            // RAG System: Build comprehensive prompt with knowledge base context
+            const systemPrompt = `You are FastMind, an expert AI fasting coach with access to a comprehensive knowledge base about intermittent fasting, nutrition, and wellness.
+
+HYBRID RAG SYSTEM:
+1. LOCAL KNOWLEDGE BASE: You have access to validated scientific information about:
+   - Intermittent fasting protocols (16:8, 18:6, 20:4, OMAD, extended fasts)
+   - Biological phases during fasting (Digest, Burn, Switch, Cleanse, Renew)
+   - Health benefits and scientific evidence
+   - Safety guidelines and contraindications
+   - Nutrition and meal planning
+   - Common questions and concerns
+
+2. WEB SEARCH FALLBACK: For questions outside the knowledge base, use your training data and general knowledge.
+
+INSTRUCTIONS:
+- Answer in the user's language (detect from question)
+- Provide accurate, science-based information
+- Be encouraging and motivational
+- If citing sources, mention them
+- Do NOT use markdown formatting (no asterisks, hashtags, or special formatting)
+- Keep answers concise but comprehensive
+- If unsure, say so and suggest consulting a healthcare provider`;
+
+            const fullMessage = `${systemPrompt}\n\nUSER QUESTION: ${q}`;
+            try{const a=await askFastMind(fullMessage);chatHistory.push([q,a]);}catch(err){chatHistory.push([q,translations[currentLanguage].chatError]);}
             renderChatHistory();chatInput.disabled=false;chatSubmit.disabled=false;chatSpinner.classList.add('hidden');chatInput.focus();
         }
 
-        async function askFastMind(question, simpleMode = false) {
+        // Cloudflare Worker URL for secure AI requests
+        const WORKER_URL = "https://fastmind.consulting-10f.workers.dev/";
+        
+        async function askFastMind(message) {
             // PREMIUM FEATURE SYSTEM - Gate AI chat
             if (!premiumManager.isPremium()) {
                 premiumManager.showUpgradeModal();
                 return translations[currentLanguage]?.chatError || "This feature requires Premium.";
             }
             
-            const localKnowledgeBase = `[Fasting Guide Context Placeholder]`; 
-            const systemPrompt = simpleMode 
-               ? "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags)." 
-               : "You are FastMind. Answer in user language. Hybrid RAG: 1. Local KB. 2. Google Search. Do not use markdown formatting (no asterisks or hashtags).";
-            const userQuery = simpleMode ? question : `**Local KnowledgeBase:**\n${localKnowledgeBase}\n---\n**User question:** ${question}`;
-            
-            // OpenAI API Key - Hardcoded (works in native apps where there's no CORS)
-            const openaiKey = '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';
-            
-            // Try OpenAI models in order: gpt-4o-mini, gpt-4o, gpt-3.5-turbo
-            const models = ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'];
-            let lastError = null;
-            
             try {
-                for (const model of models) {
-                    let timeoutId = null;
-                    try {
-                        console.log(`Trying OpenAI: ${model}`);
-                        
-                        // Direct OpenAI API call - works in native apps (no CORS)
-                        // For localhost web: may have CORS, but will work in apps
-                        const apiUrl = 'https://api.openai.com/v1/chat/completions';
-                        
-                        const payload = {
-                            model: model,
-                            messages: [
-                                {role: 'system', content: systemPrompt},
-                                {role: 'user', content: userQuery}
-                            ],
-                            temperature: 0.7,
-                            max_tokens: simpleMode ? 150 : 500
-                        };
-                        
-                        const headers = {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${openaiKey}`
-                        };
-                        
-                        const controller = new AbortController();
-                        timeoutId = setTimeout(() => controller.abort(), 30000);
-                        
-                        const res = await fetch(apiUrl, { 
-                            method: 'POST', 
-                            headers: headers,
-                            body: JSON.stringify(payload),
-                            signal: controller.signal
-                        });
-                        
-                        clearTimeout(timeoutId);
-                    
-                        if (!res.ok) {
-                            const errorData = await res.json().catch(() => ({}));
-                            const error = new Error(`HTTP ${res.status}: ${errorData.error?.message || res.statusText}`);
-                            error.status = res.status;
-                            throw error;
-                        }
-                        
-                        const data = await res.json();
-                        
-                        if (data.error) {
-                            throw new Error(`OpenAI Error: ${data.error.message || JSON.stringify(data.error)}`);
-                        }
-                        
-                        const text = data.choices?.[0]?.message?.content;
-                        
-                        if (!text) {
-                            throw new Error('No text in response');
-                        }
-                        
-                        const cleanText = text.replace(/[\*#]/g, '').trim();
-                        
-                        if (!cleanText || cleanText.length === 0) {
-                            throw new Error('Empty response');
-                        }
-                        
-                        console.log(`✅ Success with OpenAI: ${model}`);
-                        return cleanText;
-                        
-                    } catch (modelError) {
-                        try { if (timeoutId) clearTimeout(timeoutId); } catch(e) {}
-                        lastError = modelError;
-                        console.warn(`❌ OpenAI ${model} failed:`, modelError.message);
-                        
-                        // Continue to next model unless this is the last one
-                        if (model === models[models.length - 1]) {
-                            throw modelError;
-                        }
-                        continue;
-                    }
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o-mini",
+                        input: message
+                    })
+                });
+
+                if (!response.ok) {
+                    console.error("Worker error", response.status, await response.text().catch(() => ''));
+                    return translations[currentLanguage]?.chatError || "AI server error.";
                 }
-                
-                throw lastError || new Error('All OpenAI models failed');
-                
-            } catch (e) { 
-                console.error('AI Request Error (all models failed):', e);
-                
-                // More specific error messages based on error type
-                if (e.name === 'AbortError') {
-                    return translations[currentLanguage]?.chatError || "AI request timed out. Please try again.";
-                } 
-                
-                // Check status code first (most reliable)
-                if (e.status === 401) {
-                    return translations[currentLanguage]?.chatError || "⚠️ OpenAI API key is invalid. Please check your API key.";
-                } else if (e.status === 403) {
-                    return translations[currentLanguage]?.chatError || "⚠️ OpenAI access denied (403). The API key may be invalid or expired.";
-                } else if (e.status === 429) {
-                    return translations[currentLanguage]?.chatError || "⚠️ OpenAI quota exceeded (429). Please try again later or check your OpenAI account quota.";
-                }
-                
-                // Then check message content
-                if (e.message) {
-                    if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError') || e.message.includes('ERR_FAILED')) {
-                        return translations[currentLanguage]?.chatError || "⚠️ Connection error. Please check your internet connection and try again.";
-                    } else if (e.message.includes('401')) {
-                        return translations[currentLanguage]?.chatError || "⚠️ OpenAI API key is invalid. Please check your API key.";
-                    } else if (e.message.includes('429')) {
-                        return translations[currentLanguage]?.chatError || "⚠️ OpenAI quota exceeded. Please try again later.";
-                    }
-                }
-                
-                return translations[currentLanguage]?.chatError || `⚠️ Error connecting to AI: ${e.message || 'Unknown error'}. Please try again.`; 
+
+                const data = await response.json();
+
+                // Extract assistant text from the Worker → OpenAI response
+                const text =
+                    data?.output?.[0]?.content?.[0]?.text ||
+                    data?.choices?.[0]?.message?.content ||
+                    translations[currentLanguage]?.chatError || "No response from FastMind";
+
+                return text;
+
+            } catch (err) {
+                console.error("askFastMind error:", err);
+                return translations[currentLanguage]?.chatError || "AI request failed.";
             }
         }
         
