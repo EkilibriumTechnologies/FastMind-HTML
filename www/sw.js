@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fastmind-v11';
+const CACHE_NAME = 'fastmind-v12';
 const ASSETS = [
   './manifest.json'
   // NOTE: NOT caching index.html - always fetch fresh from network
@@ -30,22 +30,33 @@ self.addEventListener('activate', event => {
 
 // Fetch event - Network Only for HTML (NO CACHE) to prevent stale content
 self.addEventListener('fetch', event => {
-  // IMPORTANT: Let OpenAI API requests pass through WITHOUT interception
-  if (event.request.url.includes('api.openai.com')) {
-    // Let OpenAI requests go directly to network, no Service Worker interference
-    return;
+  // CRITICAL: Skip ALL API requests - let them pass through without Service Worker
+  const requestUrl = event.request.url;
+  
+  // Skip OpenAI API completely
+  if (requestUrl.includes('api.openai.com')) {
+    return; // Don't intercept at all
   }
   
-  // IMPORTANT: Let Firebase requests pass through WITHOUT interception
-  if (event.request.url.includes('firebase') || 
-      event.request.url.includes('googleapis.com') ||
-      event.request.url.includes('gstatic.com') ||
-      event.request.url.includes('firebaseapp.com') ||
-      event.request.url.includes('firestore.googleapis.com') ||
-      event.request.url.includes('identitytoolkit.googleapis.com') ||
-      event.request.url.includes('securetoken.googleapis.com')) {
-    // Let Firebase requests go directly to network, no Service Worker interference
-    return;
+  // Skip Gemini API completely  
+  if (requestUrl.includes('generativelanguage.googleapis.com')) {
+    return; // Don't intercept at all
+  }
+  
+  // Skip Firebase requests completely
+  if (requestUrl.includes('firebase') || 
+      requestUrl.includes('googleapis.com') ||
+      requestUrl.includes('gstatic.com') ||
+      requestUrl.includes('firebaseapp.com') ||
+      requestUrl.includes('firestore.googleapis.com') ||
+      requestUrl.includes('identitytoolkit.googleapis.com') ||
+      requestUrl.includes('securetoken.googleapis.com')) {
+    return; // Don't intercept at all
+  }
+  
+  // CRITICAL: Skip ALL POST requests FIRST (APIs use POST) - Must be before any event.respondWith
+  if (event.request.method !== 'GET') {
+    return; // Don't intercept POST/PUT/DELETE/PATCH requests at all
   }
   
   // For navigation (HTML), ALWAYS fetch from network, NEVER use cache

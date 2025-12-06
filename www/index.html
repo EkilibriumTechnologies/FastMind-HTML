@@ -1273,7 +1273,7 @@
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installContainer.classList.remove('hidden'); });
         btnInstall.addEventListener('click', async () => { if (!deferredPrompt) return; installContainer.classList.add('hidden'); deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; });
         window.addEventListener('appinstalled', () => { installContainer.classList.add('hidden'); deferredPrompt = null; });
-        if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { window.addEventListener('load', async () => { try { const registrations = await navigator.serviceWorker.getRegistrations(); for (let reg of registrations) await reg.unregister(); if ('caches' in window) { const names = await caches.keys(); await Promise.all(names.map(n => caches.delete(n))); } await navigator.serviceWorker.register('./sw.js?v=11&t=' + Date.now()); } catch(err) { console.error('ServiceWorker failed:', err); } }); }
+        if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { window.addEventListener('load', async () => { try { const registrations = await navigator.serviceWorker.getRegistrations(); for (let reg of registrations) await reg.unregister(); if ('caches' in window) { const names = await caches.keys(); await Promise.all(names.map(n => caches.delete(n))); } await navigator.serviceWorker.register('./sw.js?v=12&t=' + Date.now()); } catch(err) { console.error('ServiceWorker failed:', err); } }); }
         
         // Init
         initDialInteraction();

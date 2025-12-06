@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fastmind-v11';
+const CACHE_NAME = 'fastmind-v12';
 const ASSETS = [
   './manifest.json'
   // NOTE: NOT caching index.html - always fetch fresh from network
@@ -31,22 +31,30 @@ self.addEventListener('activate', event => {
 
 // Fetch event - Network Only for HTML (NO CACHE) to prevent stale content
 self.addEventListener('fetch', event => {
-  // IMPORTANT: Let OpenAI API requests pass through WITHOUT interception
-  if (event.request.url.includes('api.openai.com')) {
-    // Let OpenAI requests go directly to network, no Service Worker interference
-    return;
+  const requestUrl = event.request.url;
+  const requestMethod = event.request.method;
+  
+  // CRITICAL: Skip ALL POST requests (APIs use POST) - Don't intercept at all
+  if (requestMethod !== 'GET') {
+    return; // Don't intercept POST/PUT/DELETE/PATCH requests
+  }
+  
+  // CRITICAL: Skip ALL API requests - Let them pass through completely
+  if (requestUrl.includes('api.openai.com') || 
+      requestUrl.includes('generativelanguage.googleapis.com') ||
+      requestUrl.includes('openai.com')) {
+    return; // Don't intercept OpenAI requests at all
   }
   
   // IMPORTANT: Let Firebase requests pass through WITHOUT interception
-  if (event.request.url.includes('firebase') || 
-      event.request.url.includes('googleapis.com') ||
-      event.request.url.includes('gstatic.com') ||
-      event.request.url.includes('firebaseapp.com') ||
-      event.request.url.includes('firestore.googleapis.com') ||
-      event.request.url.includes('identitytoolkit.googleapis.com') ||
-      event.request.url.includes('securetoken.googleapis.com')) {
-    // Let Firebase requests go directly to network, no Service Worker interference
-    return;
+  if (requestUrl.includes('firebase') || 
+      requestUrl.includes('googleapis.com') ||
+      requestUrl.includes('gstatic.com') ||
+      requestUrl.includes('firebaseapp.com') ||
+      requestUrl.includes('firestore.googleapis.com') ||
+      requestUrl.includes('identitytoolkit.googleapis.com') ||
+      requestUrl.includes('securetoken.googleapis.com')) {
+    return; // Don't intercept Firebase requests at all
   }
   
   // For navigation (HTML), ALWAYS fetch from network, NEVER use cache
