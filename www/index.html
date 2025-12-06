@@ -977,13 +977,16 @@ INSTRUCTIONS:
         const WORKER_URL = "https://fastmind.consulting-10f.workers.dev/";
         
         async function askFastMind(message) {
-            // PREMIUM FEATURE SYSTEM - Gate AI chat
-            if (!premiumManager.isPremium()) {
+            // PREMIUM FEATURE SYSTEM - Gate AI chat (only if premiumManager exists)
+            if (typeof premiumManager !== 'undefined' && premiumManager && !premiumManager.isPremium()) {
                 premiumManager.showUpgradeModal();
                 return translations[currentLanguage]?.chatError || "This feature requires Premium.";
             }
             
             try {
+                console.log('🤖 askFastMind: Sending request to Worker:', WORKER_URL);
+                console.log('📤 askFastMind: Message length:', message.length);
+                
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: {
@@ -995,12 +998,16 @@ INSTRUCTIONS:
                     })
                 });
 
+                console.log('📥 askFastMind: Response status:', response.status, response.statusText);
+
                 if (!response.ok) {
-                    console.error("Worker error", response.status, await response.text().catch(() => ''));
-                    return translations[currentLanguage]?.chatError || "AI server error.";
+                    const errorText = await response.text().catch(() => '');
+                    console.error("❌ Worker error", response.status, errorText);
+                    return translations[currentLanguage]?.chatError || `AI server error (${response.status}).`;
                 }
 
                 const data = await response.json();
+                console.log('📦 askFastMind: Response data received:', data);
 
                 // Extract assistant text from the Worker → OpenAI response
                 const text =
@@ -1008,11 +1015,17 @@ INSTRUCTIONS:
                     data?.choices?.[0]?.message?.content ||
                     translations[currentLanguage]?.chatError || "No response from FastMind";
 
+                console.log('✅ askFastMind: Extracted text length:', text.length);
                 return text;
 
             } catch (err) {
-                console.error("askFastMind error:", err);
-                return translations[currentLanguage]?.chatError || "AI request failed.";
+                console.error("❌ askFastMind error:", err);
+                console.error("Error details:", {
+                    name: err.name,
+                    message: err.message,
+                    stack: err.stack
+                });
+                return translations[currentLanguage]?.chatError || `AI request failed: ${err.message}`;
             }
         }
         
