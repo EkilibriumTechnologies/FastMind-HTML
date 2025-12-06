@@ -19,23 +19,9 @@
 
     <!-- Styles & Scripts -->
     <!-- Load API Key configuration -->
-    <!-- Priority: 1. config.js (local dev - carga primero), 2. Firebase Function (producción), 3. config.prod.js (fallback), 4. localStorage -->
-    <script src="./config.js" onerror="console.log('Local config.js not found, will try Firebase Function...')"></script>
+    <!-- API Key is hardcoded in askFastMind function - no config.js needed -->
     <script>
-        // Prevenir que config.prod.js sobrescriba config.js si ya hay keys
-        const originalOpenAI = window.OPENAI_API_KEY;
-    </script>
-    <script src="./config.prod.js" onerror="console.log('config.prod.js not found (normal for local dev)')"></script>
-    <script>
-        // Restaurar key de config.js si config.prod.js la sobrescribió con placeholder
-        if (originalOpenAI && (!window.OPENAI_API_KEY || window.OPENAI_API_KEY.includes('YOUR_'))) {
-            window.OPENAI_API_KEY = originalOpenAI;
-        }
-    </script>
-    <script>
-        // API key is loaded from config.js (already loaded above)
-        // No Firebase Functions needed - using key directly from config.js
-        console.log('✅ Using OpenAI API key from config.js');
+        console.log('✅ OpenAI API key is hardcoded in askFastMind function');
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">

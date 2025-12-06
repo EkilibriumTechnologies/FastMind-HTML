@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fastmind-v12';
+const CACHE_NAME = 'fastmind-v13';
 const ASSETS = [
   './manifest.json'
   // NOTE: NOT caching index.html - always fetch fresh from network
@@ -30,8 +30,14 @@ self.addEventListener('activate', event => {
 
 // Fetch event - Network Only for HTML (NO CACHE) to prevent stale content
 self.addEventListener('fetch', event => {
-  // CRITICAL: Skip ALL API requests - let them pass through without Service Worker
   const requestUrl = event.request.url;
+  const requestMethod = event.request.method;
+  
+  // CRITICAL: Skip ALL POST/PUT/DELETE/PATCH requests FIRST (APIs use POST)
+  // This MUST be the FIRST check - before any URL checks or event.respondWith()
+  if (requestMethod !== 'GET') {
+    return; // Don't intercept at all - let API requests pass through
+  }
   
   // Skip OpenAI API completely
   if (requestUrl.includes('api.openai.com')) {
@@ -52,11 +58,6 @@ self.addEventListener('fetch', event => {
       requestUrl.includes('identitytoolkit.googleapis.com') ||
       requestUrl.includes('securetoken.googleapis.com')) {
     return; // Don't intercept at all
-  }
-  
-  // CRITICAL: Skip ALL POST requests FIRST (APIs use POST) - Must be before any event.respondWith
-  if (event.request.method !== 'GET') {
-    return; // Don't intercept POST/PUT/DELETE/PATCH requests at all
   }
   
   // For navigation (HTML), ALWAYS fetch from network, NEVER use cache

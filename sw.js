@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fastmind-v12';
+const CACHE_NAME = 'fastmind-v13';
 const ASSETS = [
   './manifest.json'
   // NOTE: NOT caching index.html - always fetch fresh from network
