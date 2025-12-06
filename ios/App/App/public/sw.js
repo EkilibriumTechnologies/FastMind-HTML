@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fastmind-v6';
+const CACHE_NAME = 'fastmind-v14-worker';
 const ASSETS = [
   './manifest.json'
   // NOTE: NOT caching index.html - always fetch fresh from network
@@ -30,6 +30,21 @@ self.addEventListener('activate', event => {
 
 // Fetch event - Network Only for HTML (NO CACHE) to prevent stale content
 self.addEventListener('fetch', event => {
+  // Skip OpenAI API completely (no longer used - using Cloudflare Worker instead)
+  if (event.request.url.includes('api.openai.com')) {
+    return; // Don't intercept at all
+  }
+  
+  // Skip Cloudflare Worker requests - let them pass through
+  if (event.request.url.includes('workers.dev') || event.request.url.includes('fastmind.consulting')) {
+    return; // Don't intercept Worker requests
+  }
+  
+  // Skip Gemini API completely  
+  if (event.request.url.includes('generativelanguage.googleapis.com')) {
+    return; // Don't intercept at all
+  }
+  
   // IMPORTANT: Let Firebase requests pass through WITHOUT interception
   if (event.request.url.includes('firebase') || 
       event.request.url.includes('googleapis.com') ||
