@@ -39,9 +39,14 @@ self.addEventListener('fetch', event => {
     return; // Don't intercept at all - let API requests pass through
   }
   
-  // Skip OpenAI API completely
+  // Skip OpenAI API completely (no longer used - using Cloudflare Worker instead)
   if (requestUrl.includes('api.openai.com')) {
     return; // Don't intercept at all
+  }
+  
+  // Skip Cloudflare Worker requests - let them pass through
+  if (requestUrl.includes('workers.dev') || requestUrl.includes('fastmind.consulting')) {
+    return; // Don't intercept Worker requests
   }
   
   // Skip Gemini API completely  

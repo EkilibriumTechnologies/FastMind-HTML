@@ -85,3 +85,7 @@
 3. **Netlify:** Configurado para servir desde carpeta `www`
 4. **Service Worker:** Configurado para no cachear en Netlify
 
+
+
+
+

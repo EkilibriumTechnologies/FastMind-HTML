@@ -106,3 +106,7 @@
 - OpenAI permite llamadas desde cualquier dominio HTTPS
 - No hay configuración adicional necesaria
 
+
+
+
+

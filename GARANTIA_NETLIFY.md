@@ -87,3 +87,7 @@ Resultado: ✅ Funciona perfectamente
 
 Pero según el código actual, **no debería haber problemas**.
 
+
+
+
+

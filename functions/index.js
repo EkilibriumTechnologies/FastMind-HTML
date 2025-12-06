@@ -15,7 +15,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors')({ 
   origin: true, // Allow all origins for now
-  methods: ['GET', 'OPTIONS'],
+  methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 });
 
@@ -89,6 +89,86 @@ exports.getApiKeys = functions.https.onRequest((req, res) => {
 
     } catch (error) {
       console.error('Error getting API keys:', error);
+      res.status(500).json({ 
+        error: 'Internal server error',
+        message: error.message 
+      });
+    }
+  });
+});
+
+/**
+ * Proxy function to call OpenAI API (solves CORS issue)
+ * This function makes calls to OpenAI from the server, avoiding browser CORS restrictions
+ */
+exports.chatWithOpenAI = functions.https.onRequest((req, res) => {
+  // Handle OPTIONS preflight request
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Access-Control-Max-Age', '3600');
+    return res.status(204).send('');
+  }
+
+  return cors(req, res, async () => {
+    try {
+      // Only allow POST requests
+      if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+      }
+
+      // Get OpenAI API key from environment
+      let openaiKey = process.env.OPENAI_API_KEY;
+      
+      if (!openaiKey) {
+        try {
+          const openaiConfig = functions.config().openai || {};
+          openaiKey = openaiConfig.key;
+        } catch (e) {
+          console.warn('functions.config() not available');
+        }
+      }
+
+      if (!openaiKey) {
+        return res.status(500).json({ 
+          error: 'OpenAI API key not configured',
+          message: 'Please configure OPENAI_API_KEY in Firebase Functions'
+        });
+      }
+
+      // Get request body from client
+      const { model, messages, temperature, max_tokens } = req.body;
+
+      if (!model || !messages) {
+        return res.status(400).json({ 
+          error: 'Missing required fields',
+          message: 'model and messages are required'
+        });
+      }
+
+      // Make request to OpenAI API (using native fetch in Node.js 20+)
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: messages,
+          temperature: temperature || 0.7,
+          max_tokens: max_tokens || 500
+        })
+      });
+
+      const data = await openaiResponse.json();
+
+      // Return response to client
+      res.status(openaiResponse.status).json(data);
+
+    } catch (error) {
+      console.error('Error calling OpenAI:', error);
       res.status(500).json({ 
         error: 'Internal server error',
         message: error.message 

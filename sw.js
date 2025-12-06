@@ -46,6 +46,11 @@ self.addEventListener('fetch', event => {
     return; // Don't intercept OpenAI requests at all
   }
   
+  // Skip Cloudflare Worker requests - let them pass through
+  if (requestUrl.includes('workers.dev') || requestUrl.includes('fastmind.consulting')) {
+    return; // Don't intercept Worker requests
+  }
+  
   // IMPORTANT: Let Firebase requests pass through WITHOUT interception
   if (requestUrl.includes('firebase') || 
       requestUrl.includes('googleapis.com') ||

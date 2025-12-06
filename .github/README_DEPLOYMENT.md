@@ -58,3 +58,7 @@ Los siguientes archivos están en `.gitignore` y NO se subirán a Git:
 3. Considera usar GitHub Secret Scanning para detectar keys expuestas
 
 
+
+
+
+
