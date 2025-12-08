@@ -184,6 +184,21 @@ if (Test-Path $pbxprojPath) {
     Write-Host "   ✗ project.pbxproj no encontrado" -ForegroundColor Red
 }
 
+# 4. Sincronizar con Capacitor (para Appflow)
+Write-Host "4. Sincronizando con Capacitor..." -ForegroundColor Yellow
+try {
+    $syncOutput = npx cap sync 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "   ✓ Capacitor sincronizado correctamente" -ForegroundColor Green
+        Write-Host "     Los archivos de versión se han copiado a android/ e ios/" -ForegroundColor Gray
+    } else {
+        Write-Host "   ⚠ Advertencia: npx cap sync tuvo problemas, pero las versiones están actualizadas" -ForegroundColor Yellow
+    }
+} catch {
+    Write-Host "   ⚠ Advertencia: No se pudo ejecutar npx cap sync automáticamente" -ForegroundColor Yellow
+    Write-Host "     Ejecuta manualmente: npx cap sync" -ForegroundColor Gray
+}
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "✓ Versión actualizada exitosamente" -ForegroundColor Green
@@ -194,8 +209,12 @@ Write-Host "  Capacitor:    $NewVersion" -ForegroundColor White
 Write-Host "  Android:      $NewVersion (versionCode: $newVersionCode)" -ForegroundColor White
 Write-Host "  iOS:          $NewVersion (build: $newBuildNumber)" -ForegroundColor White
 Write-Host ""
+Write-Host "✓ Sincronización con Capacitor completada" -ForegroundColor Green
+Write-Host "  Appflow ahora recibirá la versión $NewVersion correctamente" -ForegroundColor Cyan
+Write-Host ""
 Write-Host "Próximos pasos:" -ForegroundColor Yellow
-Write-Host "  1. Ejecuta: npx cap sync (para sincronizar archivos)" -ForegroundColor Cyan
-Write-Host "  2. Construye tu app con la nueva versión" -ForegroundColor Cyan
+Write-Host "  1. Verifica los cambios con: git status" -ForegroundColor Cyan
+Write-Host "  2. Haz commit y push de los cambios" -ForegroundColor Cyan
+Write-Host "  3. Appflow usará automáticamente la versión $NewVersion" -ForegroundColor Cyan
 Write-Host ""
 

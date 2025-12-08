@@ -3,5 +3,6 @@
 	"appName": "fastmind",
 	"webDir": "www",
 	"bundledWebRuntime": false,
+	"version": "1.0.1",
 	"packageClassList": []
 }

@@ -473,11 +473,9 @@
              const storedStreak = parseInt(localStorage.getItem('fastUserStreak') || '0');
              const currentRank = calculateRank(storedPoints).name;
              
-             const systemPrompt = "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags).";
-             const userMessage = `User Context: Fasting Duration: ${elapsedHours.toFixed(1)} hours. Current Phase: ${currentPhase.keyword}. Rank: ${currentRank}. Streak: ${storedStreak} days. Task: Write a witty, insightful, and very short (max 2 sentences) welcome message. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
-             const fullMessage = `${systemPrompt}\n\n${userMessage}`;
+             const promptContext = `You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags). User Context: Fasting Duration: ${elapsedHours.toFixed(1)} hours. Current Phase: ${currentPhase.keyword}. Rank: ${currentRank}. Streak: ${storedStreak} days. Task: Write a witty, insightful, and very short (max 2 sentences) welcome message. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
              try {
-                 const message = await askFastMind(fullMessage);
+                 const message = await askFastMind(promptContext);
                  insightLoading.classList.add('hidden');
                  aiInsightText.innerHTML = message;
                  aiInsightText.classList.remove('hidden');
@@ -777,9 +775,7 @@
             // AI Advice for Mid-Fast Checkin
             if (isMidFastCheckin) {
                  const currentPhase = getPhase(elapsedHours);
-                 const systemPrompt = "You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags).";
-                 const userMessage = `User context: Fasting phase "${currentPhase.keyword}" (${elapsedHours.toFixed(1)}h). Current Mood: ${mood}. ${journalContext} Task: Give 1 specific sentence of advice or encouragement based on this context. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
-                 const fullMessage = `${systemPrompt}\n\n${userMessage}`;
+                 const prompt = `You are FastMind, a scientific fasting coach. Be brief, witty, and encouraging. Do not use markdown formatting (no asterisks or hashtags). User context: Fasting phase "${currentPhase.keyword}" (${elapsedHours.toFixed(1)}h). Current Mood: ${mood}. ${journalContext} Task: Give 1 specific sentence of advice or encouragement based on this context. Language: ${currentLanguage === 'es' ? 'Spanish' : 'English'}`;
                  
                  moodModal.classList.add('opacity-0');
                  setTimeout(() => moodModal.classList.add('hidden'), 300);
@@ -790,7 +786,7 @@
                  aiInsightText.classList.add('hidden');
                  
                  try {
-                     const advice = await askFastMind(fullMessage);
+                     const advice = await askFastMind(prompt);
                      insightLoading.classList.add('hidden');
                      aiInsightText.innerHTML = advice;
                      aiInsightText.classList.remove('hidden');
@@ -946,6 +942,7 @@
         async function handleChatSubmit(e){
             e.preventDefault();const q=chatInput.value.trim();if(!q)return;
             chatInput.value='';chatInput.disabled=true;chatSubmit.disabled=true;chatSpinner.classList.remove('hidden');
+            
             // RAG System: Build comprehensive prompt with knowledge base context
             const systemPrompt = `You are FastMind, an expert AI fasting coach with access to a comprehensive knowledge base about intermittent fasting, nutrition, and wellness.
 
@@ -977,17 +974,46 @@ INSTRUCTIONS:
         // Cloudflare Worker URL for secure AI requests
         const WORKER_URL = "https://fastmind.consulting-10f.workers.dev/";
         
+        // TEST USER BYPASS - Check if user is demo@fastmind.app for unlimited access
+        function isDemoUser() {
+            return currentUser && currentUser.email === "demo@fastmind.app";
+        }
+        
+        // TEST USER BYPASS - Override premiumManager.isPremium() if premiumManager exists
+        // This ensures demo user has access even if premiumManager.isPremium() is called directly
+        function setupPremiumBypass() {
+            if (typeof premiumManager !== 'undefined' && premiumManager && typeof premiumManager.isPremium === 'function') {
+                // Only override if not already overridden
+                if (!premiumManager.isPremium._bypassInstalled) {
+                    const originalIsPremium = premiumManager.isPremium.bind(premiumManager);
+                    premiumManager.isPremium = function() {
+                        if (isDemoUser()) {
+                            return true; // Always return true for demo user
+                        }
+                        return originalIsPremium();
+                    };
+                    premiumManager.isPremium._bypassInstalled = true;
+                }
+            }
+        }
+        
+        // Setup bypass immediately if premiumManager already exists
+        setupPremiumBypass();
+        
+        // Also setup bypass periodically in case premiumManager is loaded later
+        setInterval(setupPremiumBypass, 1000);
+        
         async function askFastMind(message) {
-            // PREMIUM FEATURE SYSTEM - Gate AI chat (only if premiumManager exists)
-            if (typeof premiumManager !== 'undefined' && premiumManager && !premiumManager.isPremium()) {
+            // TEST USER BYPASS - Grant unlimited access to demo@fastmind.app
+            if (isDemoUser()) {
+                // Skip all premium checks for demo user
+            } else if (typeof premiumManager !== 'undefined' && premiumManager && !premiumManager.isPremium()) {
                 premiumManager.showUpgradeModal();
                 return translations[currentLanguage]?.chatError || "This feature requires Premium.";
             }
             
             try {
-                console.log('🤖 askFastMind: Sending request to Worker:', WORKER_URL);
-                console.log('📤 askFastMind: Message length:', message.length);
-                
+                console.log('🤖 Sending request to Cloudflare Worker:', WORKER_URL);
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: {
@@ -999,7 +1025,7 @@ INSTRUCTIONS:
                     })
                 });
 
-                console.log('📥 askFastMind: Response status:', response.status, response.statusText);
+                console.log('📥 Worker response status:', response.status, response.statusText);
 
                 if (!response.ok) {
                     const errorText = await response.text().catch(() => '');
@@ -1008,7 +1034,7 @@ INSTRUCTIONS:
                 }
 
                 const data = await response.json();
-                console.log('📦 askFastMind: Response data received:', data);
+                console.log('📦 Worker response data:', data);
 
                 // Extract assistant text from the Worker → OpenAI response
                 const text =
@@ -1016,7 +1042,7 @@ INSTRUCTIONS:
                     data?.choices?.[0]?.message?.content ||
                     translations[currentLanguage]?.chatError || "No response from FastMind";
 
-                console.log('✅ askFastMind: Extracted text length:', text.length);
+                console.log('✅ Extracted text:', text.substring(0, 50) + '...');
                 return text;
 
             } catch (err) {
@@ -1062,6 +1088,8 @@ INSTRUCTIONS:
                     updateUIForLoggedIn(user);
                     loadFastingHistory();
                     loadUserStats(user.uid);
+                    // TEST USER BYPASS - Setup premium bypass after user login
+                    setupPremiumBypass();
                 } else {
                     currentUser=null;
                     updateUIForLoggedOut();
@@ -1201,10 +1229,13 @@ INSTRUCTIONS:
         
         muteToggle.addEventListener('change', () => { isMuted = !muteToggle.checked; }); 
 
+        // Declare deferredPrompt variable
+        let deferredPrompt = null;
+
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installContainer.classList.remove('hidden'); });
         btnInstall.addEventListener('click', async () => { if (!deferredPrompt) return; installContainer.classList.add('hidden'); deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; });
         window.addEventListener('appinstalled', () => { installContainer.classList.add('hidden'); deferredPrompt = null; });
-        if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.error('ServiceWorker failed:', err)); }); }
+        if ('serviceWorker' in navigator && !window.location.href.startsWith('blob:')) { window.addEventListener('load', async () => { try { const registrations = await navigator.serviceWorker.getRegistrations(); for (let reg of registrations) await reg.unregister(); if ('caches' in window) { const names = await caches.keys(); await Promise.all(names.map(n => caches.delete(n))); } await navigator.serviceWorker.register('./sw.js?v=8&t=' + Date.now()); } catch(err) { console.error('ServiceWorker failed:', err); } }); }
         
         // Init
         initDialInteraction();
