@@ -4,8 +4,9 @@ const ASSETS = [
   // NOTE: NOT caching index.html - always fetch fresh from network
 ];
 
-// Install event
+// Install event - Force activate immediately to clear old cache
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Activate immediately
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -33,15 +34,16 @@ self.addEventListener('fetch', event => {
   const requestUrl = event.request.url;
   const requestMethod = event.request.method;
   
-  // CRITICAL: Skip ALL POST/PUT/DELETE/PATCH requests FIRST (APIs use POST)
-  // This MUST be the FIRST check - before any URL checks or event.respondWith()
+  // CRITICAL: Skip ALL POST requests (APIs use POST) - Don't intercept at all
   if (requestMethod !== 'GET') {
-    return; // Don't intercept at all - let API requests pass through
+    return; // Don't intercept POST/PUT/DELETE/PATCH requests
   }
   
-  // Skip OpenAI API completely (no longer used - using Cloudflare Worker instead)
-  if (requestUrl.includes('api.openai.com')) {
-    return; // Don't intercept at all
+  // CRITICAL: Skip ALL API requests - Let them pass through completely
+  if (requestUrl.includes('api.openai.com') || 
+      requestUrl.includes('generativelanguage.googleapis.com') ||
+      requestUrl.includes('openai.com')) {
+    return; // Don't intercept OpenAI requests at all
   }
   
   // Skip Cloudflare Worker requests - let them pass through
@@ -49,12 +51,7 @@ self.addEventListener('fetch', event => {
     return; // Don't intercept Worker requests
   }
   
-  // Skip Gemini API completely  
-  if (requestUrl.includes('generativelanguage.googleapis.com')) {
-    return; // Don't intercept at all
-  }
-  
-  // Skip Firebase requests completely
+  // IMPORTANT: Let Firebase requests pass through WITHOUT interception
   if (requestUrl.includes('firebase') || 
       requestUrl.includes('googleapis.com') ||
       requestUrl.includes('gstatic.com') ||
@@ -62,7 +59,7 @@ self.addEventListener('fetch', event => {
       requestUrl.includes('firestore.googleapis.com') ||
       requestUrl.includes('identitytoolkit.googleapis.com') ||
       requestUrl.includes('securetoken.googleapis.com')) {
-    return; // Don't intercept at all
+    return; // Don't intercept Firebase requests at all
   }
   
   // For navigation (HTML), ALWAYS fetch from network, NEVER use cache

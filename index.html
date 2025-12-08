@@ -974,9 +974,40 @@ INSTRUCTIONS:
         // Cloudflare Worker URL for secure AI requests
         const WORKER_URL = "https://fastmind.consulting-10f.workers.dev/";
         
+        // TEST USER BYPASS - Check if user is demo@fastmind.app for unlimited access
+        function isDemoUser() {
+            return currentUser && currentUser.email === "demo@fastmind.app";
+        }
+        
+        // TEST USER BYPASS - Override premiumManager.isPremium() if premiumManager exists
+        // This ensures demo user has access even if premiumManager.isPremium() is called directly
+        function setupPremiumBypass() {
+            if (typeof premiumManager !== 'undefined' && premiumManager && typeof premiumManager.isPremium === 'function') {
+                // Only override if not already overridden
+                if (!premiumManager.isPremium._bypassInstalled) {
+                    const originalIsPremium = premiumManager.isPremium.bind(premiumManager);
+                    premiumManager.isPremium = function() {
+                        if (isDemoUser()) {
+                            return true; // Always return true for demo user
+                        }
+                        return originalIsPremium();
+                    };
+                    premiumManager.isPremium._bypassInstalled = true;
+                }
+            }
+        }
+        
+        // Setup bypass immediately if premiumManager already exists
+        setupPremiumBypass();
+        
+        // Also setup bypass periodically in case premiumManager is loaded later
+        setInterval(setupPremiumBypass, 1000);
+        
         async function askFastMind(message) {
-            // PREMIUM FEATURE SYSTEM - Gate AI chat (only if premiumManager exists)
-            if (typeof premiumManager !== 'undefined' && premiumManager && !premiumManager.isPremium()) {
+            // TEST USER BYPASS - Grant unlimited access to demo@fastmind.app
+            if (isDemoUser()) {
+                // Skip all premium checks for demo user
+            } else if (typeof premiumManager !== 'undefined' && premiumManager && !premiumManager.isPremium()) {
                 premiumManager.showUpgradeModal();
                 return translations[currentLanguage]?.chatError || "This feature requires Premium.";
             }
@@ -1057,6 +1088,8 @@ INSTRUCTIONS:
                     updateUIForLoggedIn(user);
                     loadFastingHistory();
                     loadUserStats(user.uid);
+                    // TEST USER BYPASS - Setup premium bypass after user login
+                    setupPremiumBypass();
                 } else {
                     currentUser=null;
                     updateUIForLoggedOut();

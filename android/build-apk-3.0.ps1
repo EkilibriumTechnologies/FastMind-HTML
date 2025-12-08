@@ -1,21 +1,14 @@
 # Script para construir APK/AAB versión 3.0
-# Este script te pedirá las contraseñas de forma segura
+# Contraseñas guardadas - no se pedirán más
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Build APK/AAB FastMind Version 3.0" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Solicitar contraseñas de forma segura
-$secureKeystorePassword = Read-Host "Ingresa la contraseña del KEYSTORE" -AsSecureString
-$secureKeyPassword = Read-Host "Ingresa la contraseña de la KEY" -AsSecureString
-
-# Convertir a texto plano (solo para esta sesión)
-$BSTR1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKeystorePassword)
-$keystorePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR1)
-
-$BSTR2 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKeyPassword)
-$keyPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR2)
+# Contraseñas guardadas (no se pedirán más)
+$keystorePassword = "FastMind2025!"
+$keyPassword = "FastMind2025!"
 
 # El alias por defecto es 'fastmind-key' según build.gradle
 $keyAlias = "fastmind-key"
