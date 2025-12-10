@@ -27,23 +27,68 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ProductDetails.SubscriptionOfferDetails;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @CapacitorPlugin(name = "BillingPlugin")
 public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
 
     private static final String TAG = "BillingPlugin";
+    
+    // VALID PRODUCT IDs - Only these two products are supported
+    private static final String PRODUCT_ID_MONTHLY = "fastmind_premium_monthly";
+    private static final String PRODUCT_ID_LIFETIME = "fastmind_premium_lifetime";
+    private static final Set<String> VALID_PRODUCT_IDS = new HashSet<>(Arrays.asList(
+        PRODUCT_ID_MONTHLY,
+        PRODUCT_ID_LIFETIME
+    ));
+    
     private BillingClient billingClient;
     private boolean isServiceConnected = false;
     private PluginCall pendingPurchaseCall;
 
     // GOOGLE BILLING SYSTEM - Helper method to detect product type as string (Billing v6 uses strings)
     private String detectProductType(String productId) {
-        if (productId.contains("lifetime")) {
-            return BillingClient.ProductType.INAPP; // "inapp"
-        } else {
-            return BillingClient.ProductType.SUBS; // "subs"
+        if (productId == null) {
+            return null;
         }
+        // Lifetime is a one-time purchase (non-consumable in-app product)
+        if (PRODUCT_ID_LIFETIME.equals(productId)) {
+            return BillingClient.ProductType.INAPP;
+        }
+        // Monthly is a subscription
+        if (PRODUCT_ID_MONTHLY.equals(productId)) {
+            return BillingClient.ProductType.SUBS;
+        }
+        return null;
+    }
+
+    // GOOGLE BILLING SYSTEM - Validate product ID
+    private boolean isValidProductId(String productId) {
+        return productId != null && VALID_PRODUCT_IDS.contains(productId);
+    }
+
+    // GOOGLE BILLING SYSTEM - Check if purchase grants premium access
+    private boolean isPremiumPurchase(Purchase purchase) {
+        if (purchase == null || purchase.getProducts() == null) {
+            return false;
+        }
+        
+        List<String> products = purchase.getProducts();
+        for (String productId : products) {
+            // Only check valid product IDs
+            if (isValidProductId(productId)) {
+                // For subscriptions, check if purchase state is PURCHASED
+                // Note: Google Play automatically marks expired subscriptions as expired,
+                // but we verify purchase state here
+                if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // GOOGLE BILLING SYSTEM - Initialize Billing Client
@@ -102,12 +147,25 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
                 return;
             }
 
-            String productId = call.getString("productId", "fastmind_premium");
+            String productId = call.getString("productId");
+            
+            // Validate product ID
+            if (!isValidProductId(productId)) {
+                Log.e(TAG, "Invalid or missing productId: " + productId);
+                call.reject("Invalid product ID. Must be: " + PRODUCT_ID_MONTHLY + " or " + PRODUCT_ID_LIFETIME);
+                return;
+            }
+
             pendingPurchaseCall = call;
 
             // GOOGLE BILLING SYSTEM - Determine product type dynamically (SUBS for monthly, INAPP for lifetime)
-            // Billing v6 uses strings, not enums
             final String productType = detectProductType(productId);
+            if (productType == null) {
+                Log.e(TAG, "Could not determine product type for: " + productId);
+                call.reject("Unknown product type");
+                pendingPurchaseCall = null;
+                return;
+            }
 
             // BILLING BRIDGE - Query product details
             QueryProductDetailsParams.Product product = QueryProductDetailsParams.Product.newBuilder()
@@ -131,16 +189,26 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
                         return;
                     }
 
-                    if (productDetailsList.isEmpty()) {
+                    if (productDetailsList == null || productDetailsList.isEmpty()) {
                         Log.e(TAG, "Product not found: " + productId);
                         if (pendingPurchaseCall != null) {
-                            pendingPurchaseCall.reject("Product not found");
+                            pendingPurchaseCall.reject("Product not found in Google Play Console");
                             pendingPurchaseCall = null;
                         }
                         return;
                     }
 
                     ProductDetails productDetails = productDetailsList.get(0);
+                    
+                    // Verify we got the correct product
+                    if (!productId.equals(productDetails.getProductId())) {
+                        Log.e(TAG, "Product ID mismatch: expected " + productId + ", got " + productDetails.getProductId());
+                        if (pendingPurchaseCall != null) {
+                            pendingPurchaseCall.reject("Product ID mismatch");
+                            pendingPurchaseCall = null;
+                        }
+                        return;
+                    }
                     
                     // GOOGLE BILLING SYSTEM - Handle both subscription and one-time purchases
                     BillingFlowParams.ProductDetailsParams productDetailsParams;
@@ -150,7 +218,7 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
                         List<SubscriptionOfferDetails> offers = productDetails.getSubscriptionOfferDetails();
                         
                         if (offers == null || offers.isEmpty()) {
-                            Log.e(TAG, "No subscription offers found");
+                            Log.e(TAG, "No subscription offers found for: " + productId);
                             if (pendingPurchaseCall != null) {
                                 pendingPurchaseCall.reject("No subscription offers found");
                                 pendingPurchaseCall = null;
@@ -160,6 +228,15 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
 
                         SubscriptionOfferDetails offerDetails = offers.get(0);
                         String offerToken = offerDetails.getOfferToken();
+                        
+                        if (offerToken == null || offerToken.isEmpty()) {
+                            Log.e(TAG, "Offer token is null or empty");
+                            if (pendingPurchaseCall != null) {
+                                pendingPurchaseCall.reject("Invalid subscription offer");
+                                pendingPurchaseCall = null;
+                            }
+                            return;
+                        }
 
                         productDetailsParams = BillingFlowParams.ProductDetailsParams.newBuilder()
                                 .setProductDetails(productDetails)
@@ -222,6 +299,7 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             if (!isServiceConnected || billingClient == null) {
                 JSObject result = new JSObject();
                 result.put("isPremium", false);
+                result.put("reason", "Billing service not connected");
                 call.resolve(result);
                 return;
             }
@@ -231,8 +309,9 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             final boolean[] isPremium = {false};
             final int[] queriesCompleted = {0};
             final int totalQueries = 2;
+            final PluginCall[] callRef = {call}; // Prevent race condition
 
-            // Query subscriptions
+            // Query subscriptions (SUBS) - only monthly subscription
             QueryPurchasesParams subsParams = QueryPurchasesParams.newBuilder()
                     .setProductType(BillingClient.ProductType.SUBS)
                     .build();
@@ -240,13 +319,14 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             billingClient.queryPurchasesAsync(subsParams, new PurchasesResponseListener() {
                 @Override
                 public void onQueryPurchasesResponse(BillingResult billingResult, List<Purchase> purchases) {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
                         for (Purchase purchase : purchases) {
-                            List<String> products = purchase.getProducts();
-                            if (products != null) {
-                                for (String product : products) {
-                                    if (product.equals("fastmind_premium_monthly") || product.equals("fastmind_premium_lifetime")) {
-                                        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                            if (isPremiumPurchase(purchase)) {
+                                // Check if this is the monthly subscription
+                                List<String> products = purchase.getProducts();
+                                if (products != null) {
+                                    for (String product : products) {
+                                        if (PRODUCT_ID_MONTHLY.equals(product)) {
                                             if (!purchase.isAcknowledged()) {
                                                 acknowledgePurchase(purchase);
                                             }
@@ -258,16 +338,21 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
                                 }
                             }
                         }
+                    } else {
+                        Log.w(TAG, "Query subscriptions failed: " + billingResult.getDebugMessage());
                     }
                     
-                    queriesCompleted[0]++;
-                    if (queriesCompleted[0] >= totalQueries) {
-                        finishPremiumCheck(call, isPremium[0], foundProductId[0]);
+                    synchronized (callRef) {
+                        queriesCompleted[0]++;
+                        if (queriesCompleted[0] >= totalQueries && callRef[0] != null) {
+                            finishPremiumCheck(callRef[0], isPremium[0], foundProductId[0]);
+                            callRef[0] = null; // Prevent double resolution
+                        }
                     }
                 }
             });
 
-            // Query one-time purchases (INAPP)
+            // Query one-time purchases (INAPP) - only lifetime purchase
             QueryPurchasesParams inappParams = QueryPurchasesParams.newBuilder()
                     .setProductType(BillingClient.ProductType.INAPP)
                     .build();
@@ -275,13 +360,14 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             billingClient.queryPurchasesAsync(inappParams, new PurchasesResponseListener() {
                 @Override
                 public void onQueryPurchasesResponse(BillingResult billingResult, List<Purchase> purchases) {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
                         for (Purchase purchase : purchases) {
-                            List<String> products = purchase.getProducts();
-                            if (products != null) {
-                                for (String product : products) {
-                                    if (product.equals("fastmind_premium_monthly") || product.equals("fastmind_premium_lifetime")) {
-                                        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                            if (isPremiumPurchase(purchase)) {
+                                // Check if this is the lifetime purchase
+                                List<String> products = purchase.getProducts();
+                                if (products != null) {
+                                    for (String product : products) {
+                                        if (PRODUCT_ID_LIFETIME.equals(product)) {
                                             if (!purchase.isAcknowledged()) {
                                                 acknowledgePurchase(purchase);
                                             }
@@ -293,11 +379,16 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
                                 }
                             }
                         }
+                    } else {
+                        Log.w(TAG, "Query in-app purchases failed: " + billingResult.getDebugMessage());
                     }
                     
-                    queriesCompleted[0]++;
-                    if (queriesCompleted[0] >= totalQueries) {
-                        finishPremiumCheck(call, isPremium[0], foundProductId[0]);
+                    synchronized (callRef) {
+                        queriesCompleted[0]++;
+                        if (queriesCompleted[0] >= totalQueries && callRef[0] != null) {
+                            finishPremiumCheck(callRef[0], isPremium[0], foundProductId[0]);
+                            callRef[0] = null; // Prevent double resolution
+                        }
                     }
                 }
             });
@@ -305,6 +396,7 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             Log.e(TAG, "Error checking premium status", e);
             JSObject result = new JSObject();
             result.put("isPremium", false);
+            result.put("error", e.getMessage());
             call.resolve(result);
         }
     }
@@ -319,31 +411,35 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
         call.resolve(result);
 
         // BILLING BRIDGE - Send premium status to JS
-        if (isPremium) {
+        if (isPremium && productId != null) {
             sendPurchaseToJS(true, productId);
         }
     }
 
     // GOOGLE BILLING SYSTEM - Acknowledge purchase
     private void acknowledgePurchase(Purchase purchase) {
-        if (purchase.isAcknowledged()) {
+        if (purchase == null || purchase.isAcknowledged() || billingClient == null) {
             return;
         }
 
-        AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
-                .setPurchaseToken(purchase.getPurchaseToken())
-                .build();
+        try {
+            AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
+                    .setPurchaseToken(purchase.getPurchaseToken())
+                    .build();
 
-        billingClient.acknowledgePurchase(params, new AcknowledgePurchaseResponseListener() {
-            @Override
-            public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                    Log.d(TAG, "Purchase acknowledged");
-                } else {
-                    Log.e(TAG, "Failed to acknowledge purchase: " + billingResult.getDebugMessage());
+            billingClient.acknowledgePurchase(params, new AcknowledgePurchaseResponseListener() {
+                @Override
+                public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                        Log.d(TAG, "Purchase acknowledged successfully");
+                    } else {
+                        Log.e(TAG, "Failed to acknowledge purchase: " + billingResult.getDebugMessage());
+                    }
                 }
-            }
-        });
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error acknowledging purchase", e);
+        }
     }
 
     // BILLING LISTENER - Handle purchase updates
@@ -378,17 +474,17 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
         String foundProductId = null;
         
         for (Purchase purchase : purchases) {
-            List<String> products = purchase.getProducts();
-            if (products != null) {
-                for (String product : products) {
-                    // Check for both monthly subscription and lifetime purchase
-                    if (product.equals("fastmind_premium_monthly") || product.equals("fastmind_premium_lifetime")) {
-                        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                            // Acknowledge purchase
+            if (isPremiumPurchase(purchase)) {
+                // Find the valid product ID in this purchase
+                List<String> products = purchase.getProducts();
+                if (products != null) {
+                    for (String product : products) {
+                        if (isValidProductId(product)) {
+                            // Acknowledge purchase if needed
                             acknowledgePurchase(purchase);
                             hasPremium = true;
                             foundProductId = product;
-                            break;
+                            break; // Use first valid product found
                         }
                     }
                 }
@@ -403,12 +499,15 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             if (foundProductId != null) {
                 result.put("productId", foundProductId);
             }
+            if (!hasPremium) {
+                result.put("error", "Purchase completed but no valid premium product found");
+            }
             pendingPurchaseCall.resolve(result);
             pendingPurchaseCall = null;
         }
 
         // Send premium status to JS
-        if (hasPremium) {
+        if (hasPremium && foundProductId != null) {
             sendPurchaseToJS(true, foundProductId);
         }
     }
@@ -416,10 +515,13 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
     // GOOGLE BILLING SYSTEM - Send purchase status to JavaScript
     private void sendPurchaseToJS(boolean isPremium, String productId) {
         try {
+            if (!isPremium || productId == null) {
+                return;
+            }
+            
             JSObject data = new JSObject();
             data.put("isPremium", isPremium);
-            // Use actual productId if provided, otherwise default
-            data.put("productId", productId != null ? productId : "fastmind_premium");
+            data.put("productId", productId); // Use actual productId, no fallback
             
             // BILLING BRIDGE - Notify JS via Capacitor
             notifyListeners("purchaseUpdate", data);
@@ -441,8 +543,9 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             final List<JSObject> allPurchases = new ArrayList<>();
             final int[] queriesCompleted = {0};
             final int totalQueries = 2;
+            final PluginCall[] callRef = {call}; // Prevent race condition
 
-            // Query subscriptions
+            // Query subscriptions (SUBS)
             QueryPurchasesParams subsParams = QueryPurchasesParams.newBuilder()
                     .setProductType(BillingClient.ProductType.SUBS)
                     .build();
@@ -450,14 +553,14 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             billingClient.queryPurchasesAsync(subsParams, new PurchasesResponseListener() {
                 @Override
                 public void onQueryPurchasesResponse(BillingResult billingResult, List<Purchase> purchases) {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
                         try {
                             for (Purchase purchase : purchases) {
                                 List<String> products = purchase.getProducts();
                                 if (products != null && !products.isEmpty()) {
                                     for (String product : products) {
-                                        // Only include our premium products
-                                        if (product.equals("fastmind_premium_monthly") || product.equals("fastmind_premium_lifetime")) {
+                                        // Only include valid premium products
+                                        if (PRODUCT_ID_MONTHLY.equals(product)) {
                                             JSObject purchaseObj = new JSObject();
                                             purchaseObj.put("productId", product);
                                             purchaseObj.put("purchaseToken", purchase.getPurchaseToken());
@@ -474,11 +577,14 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
                         }
                     }
                     
-                    queriesCompleted[0]++;
-                    if (queriesCompleted[0] >= totalQueries) {
-                        JSObject result = new JSObject();
-                        result.put("purchases", allPurchases);
-                        call.resolve(result);
+                    synchronized (callRef) {
+                        queriesCompleted[0]++;
+                        if (queriesCompleted[0] >= totalQueries && callRef[0] != null) {
+                            JSObject result = new JSObject();
+                            result.put("purchases", allPurchases);
+                            callRef[0].resolve(result);
+                            callRef[0] = null; // Prevent double resolution
+                        }
                     }
                 }
             });
@@ -491,14 +597,14 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
             billingClient.queryPurchasesAsync(inappParams, new PurchasesResponseListener() {
                 @Override
                 public void onQueryPurchasesResponse(BillingResult billingResult, List<Purchase> purchases) {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
                         try {
                             for (Purchase purchase : purchases) {
                                 List<String> products = purchase.getProducts();
                                 if (products != null && !products.isEmpty()) {
                                     for (String product : products) {
-                                        // Only include our premium products
-                                        if (product.equals("fastmind_premium_monthly") || product.equals("fastmind_premium_lifetime")) {
+                                        // Only include valid premium products
+                                        if (PRODUCT_ID_LIFETIME.equals(product)) {
                                             JSObject purchaseObj = new JSObject();
                                             purchaseObj.put("productId", product);
                                             purchaseObj.put("purchaseToken", purchase.getPurchaseToken());
@@ -515,11 +621,14 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
                         }
                     }
                     
-                    queriesCompleted[0]++;
-                    if (queriesCompleted[0] >= totalQueries) {
-                        JSObject result = new JSObject();
-                        result.put("purchases", allPurchases);
-                        call.resolve(result);
+                    synchronized (callRef) {
+                        queriesCompleted[0]++;
+                        if (queriesCompleted[0] >= totalQueries && callRef[0] != null) {
+                            JSObject result = new JSObject();
+                            result.put("purchases", allPurchases);
+                            callRef[0].resolve(result);
+                            callRef[0] = null; // Prevent double resolution
+                        }
                     }
                 }
             });
@@ -546,4 +655,3 @@ public class BillingPlugin extends Plugin implements PurchasesUpdatedListener {
         pendingPurchaseCall = null;
     }
 }
-
